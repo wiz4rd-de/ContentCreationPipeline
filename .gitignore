@@ -1,6 +1,12 @@
+# API credentials
 *.env
-*/.DS_Store
-*/settings.local.json
+
+# macOS
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Pipeline output (keep directory structure)
 output/*
 !output/.gitkeep
-
