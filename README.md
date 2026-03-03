@@ -59,8 +59,8 @@ All outputs are saved to `output/YYYY-MM-DD_<topic>/`.
 4. Set your market and language:
 
    ```env
-   SEO_MARKET=us
-   SEO_LANGUAGE=en
+   SEO_MARKET=de
+   SEO_LANGUAGE=de
    ```
 
 ## Usage

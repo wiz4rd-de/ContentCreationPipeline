@@ -33,7 +33,7 @@ For each primary keyword, retrieve the top 10 search results.
 curl -s -X POST "$DATAFORSEO_BASE/serp/google/organic/live/regular" \
   -u "$DATAFORSEO_LOGIN:$DATAFORSEO_PASSWORD" \
   -H "Content-Type: application/json" \
-  -d '[{"keyword": "<KEYWORD>", "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2840, "depth": 10}]' \
+  -d '[{"keyword": "<KEYWORD>", "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2276, "depth": 10}]' \
   | jq '.tasks[0].result[0].items'
 ```
 

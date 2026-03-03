@@ -36,7 +36,7 @@ Adapt the curl call to `$SEO_PROVIDER`:
 curl -s -X POST "$DATAFORSEO_BASE/keywords_data/google_ads/search_volume/live" \
   -u "$DATAFORSEO_LOGIN:$DATAFORSEO_PASSWORD" \
   -H "Content-Type: application/json" \
-  -d '[{"keywords": ["<SEED_KEYWORD>"], "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2840}]' \
+  -d '[{"keywords": ["<SEED_KEYWORD>"], "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2276}]' \
   | jq '.tasks[0].result'
 ```
 
