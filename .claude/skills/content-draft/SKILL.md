@@ -11,7 +11,7 @@ Transform a content briefing into a complete, publish-ready article draft.
 
 Ask the user for:
 1. **Which brief to use** — pick from available `brief-*.md` files in the current output folder, or provide a path
-2. **Tone / voice adjustments** (optional — override what the brief specifies)
+2. **Tone / voice adjustments** (optional — override what the brief specifies) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive). If found, list them and suggest the first match as default. The user can pick one, provide their own, or skip.
 3. **Special instructions** — e.g. "use du instead of Sie", "include personal anecdotes", "keep paragraphs short"
 4. **Target language** — default to the language used in the brief
 

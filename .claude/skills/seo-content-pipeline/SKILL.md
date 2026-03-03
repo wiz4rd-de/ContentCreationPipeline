@@ -18,7 +18,7 @@ Ask the user for:
 2. **Your domain** (optional — excluded from competitor analysis)
 3. **Business context** — what do you sell/offer? who is your audience?
 4. **Content goals** — traffic, leads, authority, conversions?
-5. **Brand voice / tone** (optional — for the final brief)
+5. **Brand voice / tone** (optional — for the final brief) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive). If found, list them and suggest the first match as default. The user can pick one, provide their own, or skip.
 
 ## Pipeline
 
