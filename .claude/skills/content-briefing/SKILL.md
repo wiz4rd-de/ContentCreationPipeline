@@ -13,7 +13,7 @@ Ask the user for:
 1. **Which content piece** to brief — pick from the strategy file, or specify a keyword/topic directly
 2. **Content template** — scan the `templates/` directory for available `template-*.md` files and present them as options. Also offer "Kein Template (generisches Briefing)" as a fallback. Show each template with its name and the content type definition from its first lines.
 3. **Target audience** (if not already defined in strategy)
-4. **Brand voice / tone guidelines** (optional) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive). If found, list them and suggest the first match as default. The user can pick one, provide their own, or skip.
+4. **Brand voice / tone guidelines** (optional) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive) and offer matches as options; let the user pick one, provide their own, or skip.
 5. **Any specific requirements** — word count, CTA, internal links, etc.
 
 ## Steps

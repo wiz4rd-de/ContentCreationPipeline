@@ -28,22 +28,20 @@ Check `output/` for existing keyword research files. If one exists for the topic
 
 For each primary keyword, retrieve the top 10 search results.
 
-**DataForSEO:**
+Adapt URL, auth header, and payload to `$SEO_PROVIDER` — see `api.env.example` for provider-specific endpoints and credentials.
+
 ```sh
+# Example (DataForSEO). Adapt for your provider.
 curl -s -X POST "$DATAFORSEO_BASE/serp/google/organic/live/regular" \
-  -u "$DATAFORSEO_LOGIN:$DATAFORSEO_PASSWORD" \
+  -H "Authorization: Basic $DATAFORSEO_AUTH" \
   -H "Content-Type: application/json" \
-  -d '[{"keyword": "<KEYWORD>", "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2276, "depth": 10}]' \
+  -d '[{"keyword": "<KEYWORD>", "language_code": "'"$SEO_LANGUAGE"'", "location_code": <LOCATION_CODE>, "depth": 10}]' \
   | jq '.tasks[0].result[0].items'
 ```
 
-**Generic / fallback — use WebFetch or curl:**
-```sh
-# Fetch each competitor page for content analysis
-curl -sL "https://competitor-url.example.com/page" | lynx -stdin -dump -nolist
-```
+> `location_code` is derived from `$SEO_MARKET` (e.g. `de` → 2276 for Germany). Refer to your provider's docs for the full mapping.
 
-Or use the WebFetch tool to retrieve and analyze competitor pages directly.
+Use WebFetch to retrieve and analyze competitor pages for content analysis.
 
 ### 3. Analyze each competitor page
 
@@ -58,7 +56,7 @@ For each of the top-ranking pages, extract:
 - **Unique angles or differentiators**
 - **Internal/external linking patterns** (if visible)
 
-Use WebFetch to read competitor pages when possible. Fall back to curl + text extraction for simpler parsing.
+Use WebFetch to read competitor pages.
 
 ### 4. Build the competitive landscape
 

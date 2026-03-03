@@ -29,33 +29,18 @@ cp api.env.example api.env
 
 ### 2. Call the keyword API
 
-Adapt the curl call to `$SEO_PROVIDER`:
+Adapt URL, auth header, and payload to `$SEO_PROVIDER` — see `api.env.example` for provider-specific endpoints and credentials.
 
-**DataForSEO:**
 ```sh
+# Example (DataForSEO). Adapt for your provider.
 curl -s -X POST "$DATAFORSEO_BASE/keywords_data/google_ads/search_volume/live" \
-  -u "$DATAFORSEO_LOGIN:$DATAFORSEO_PASSWORD" \
+  -H "Authorization: Basic $DATAFORSEO_AUTH" \
   -H "Content-Type: application/json" \
-  -d '[{"keywords": ["<SEED_KEYWORD>"], "language_code": "'"$SEO_LANGUAGE"'", "location_code": 2276}]' \
+  -d '[{"keywords": ["<SEED_KEYWORD>"], "language_code": "'"$SEO_LANGUAGE"'", "location_code": <LOCATION_CODE>}]' \
   | jq '.tasks[0].result'
 ```
 
-**SEMrush:**
-```sh
-curl -s "$SEMRUSH_BASE/?type=phrase_related&key=$SEMRUSH_API_KEY&phrase=<SEED_KEYWORD>&database=$SEO_MARKET&export_columns=Ph,Nq,Kd,Co,Nr"
-```
-
-**Ahrefs:**
-```sh
-curl -s -H "Authorization: Bearer $AHREFS_API_KEY" \
-  "$AHREFS_BASE/keywords-explorer/keywords-suggestions?target=<SEED_KEYWORD>&country=$SEO_MARKET"
-```
-
-**Generic:**
-```sh
-curl -s -H "Authorization: Bearer $GENERIC_API_KEY" \
-  "$GENERIC_KEYWORDS_URL?keyword=<SEED_KEYWORD>&market=$SEO_MARKET&lang=$SEO_LANGUAGE"
-```
+> `location_code` is derived from `$SEO_MARKET` (e.g. `de` → 2276 for Germany). Refer to your provider's docs for the full mapping.
 
 ### 3. Parse and structure the results
 

@@ -1,6 +1,6 @@
 ---
 name: seo-content-pipeline
-description: Run the full SEO content pipeline end-to-end from keyword research through competitor analysis, content strategy, to content briefing. Use when the user wants to run the complete pipeline for a topic.
+description: Run the full SEO content pipeline end-to-end from keyword research through competitor analysis, content strategy, content briefing, and optional article draft. Use when the user wants to run the complete pipeline for a topic.
 ---
 
 # SEO Content Pipeline
@@ -18,7 +18,7 @@ Ask the user for:
 2. **Your domain** (optional — excluded from competitor analysis)
 3. **Business context** — what do you sell/offer? who is your audience?
 4. **Content goals** — traffic, leads, authority, conversions?
-5. **Brand voice / tone** (optional — for the final brief) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive). If found, list them and suggest the first match as default. The user can pick one, provide their own, or skip.
+5. **Brand voice / tone** (optional — for the final brief) — scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive) and offer matches as options; let the user pick one, provide their own, or skip.
 
 ## Pipeline
 
