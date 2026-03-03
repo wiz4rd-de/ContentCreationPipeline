@@ -10,3 +10,6 @@
 # Pipeline output (keep directory structure)
 output/*
 !output/.gitkeep
+
+tmp/*
+
