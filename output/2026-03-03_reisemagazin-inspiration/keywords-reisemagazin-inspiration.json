@@ -1,0 +1,119 @@
+{
+  "seed_keyword": "reisemagazin inspiration",
+  "market": "de",
+  "date": "2026-03-03",
+  "clusters": [
+    {
+      "name": "Reiseziele (generisch)",
+      "primary_keyword": { "keyword": "reiseziele", "volume": 6600, "difficulty": 44, "cpc": 1.08, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "schönste reiseziele", "volume": 2400, "difficulty": 57, "cpc": 1.05, "intent": "informational" },
+        { "keyword": "reiseziele europa", "volume": 2400, "difficulty": 39, "cpc": 0.99, "intent": "informational" },
+        { "keyword": "schönste urlaubsorte", "volume": 1900, "difficulty": 50, "cpc": 1.14, "intent": "informational" },
+        { "keyword": "reiseziele 2026", "volume": 1000, "difficulty": 71, "cpc": 1.06, "intent": "informational" },
+        { "keyword": "reiseziele weltweit", "volume": 110, "difficulty": 49, "cpc": 0.68, "intent": "informational" },
+        { "keyword": "fernreiseziele", "volume": 480, "difficulty": 62, "cpc": 1.28, "intent": "informational" },
+        { "keyword": "traumziele", "volume": 390, "difficulty": 18, "cpc": 0.86, "intent": "informational" },
+        { "keyword": "schönste orte der welt", "volume": 720, "difficulty": 10, "cpc": 1.11, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Saisonale Reiseziele",
+      "primary_keyword": { "keyword": "reiseziele sommer", "volume": 720, "difficulty": 69, "cpc": 1.25, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "reiseziele winter", "volume": 880, "difficulty": 65, "cpc": 1.21, "intent": "commercial" },
+        { "keyword": "reiseziele herbst", "volume": 390, "difficulty": 63, "cpc": 1.22, "intent": "commercial" },
+        { "keyword": "reiseziele frühling", "volume": 90, "difficulty": 69, "cpc": 0.97, "intent": "commercial" },
+        { "keyword": "wohin reisen 2026", "volume": 10, "difficulty": 69, "cpc": 0.99, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Strandurlaub & Inseln",
+      "primary_keyword": { "keyword": "strandurlaub", "volume": 5400, "difficulty": 62, "cpc": 1.50, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "urlaub am meer", "volume": 5400, "difficulty": 71, "cpc": 1.37, "intent": "commercial" },
+        { "keyword": "schönste strände europa", "volume": 880, "difficulty": 47, "cpc": 1.18, "intent": "informational" },
+        { "keyword": "schönste inseln", "volume": 1000, "difficulty": 18, "cpc": 1.42, "intent": "informational" },
+        { "keyword": "inselhopping", "volume": 1000, "difficulty": 34, "cpc": 3.18, "intent": "commercial" }
+      ]
+    },
+    {
+      "name": "Städtereisen",
+      "primary_keyword": { "keyword": "schönste städte europa", "volume": 6600, "difficulty": 13, "cpc": 0.91, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "städtetrip europa", "volume": 5400, "difficulty": 68, "cpc": 0.72, "intent": "commercial" },
+        { "keyword": "städtereisen tipps", "volume": 140, "difficulty": 50, "cpc": 0.71, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Aktivurlaub & Abenteuer",
+      "primary_keyword": { "keyword": "wanderurlaub", "volume": 2900, "difficulty": 68, "cpc": 1.42, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "aktivurlaub", "volume": 1000, "difficulty": 63, "cpc": 1.38, "intent": "commercial" },
+        { "keyword": "abenteuerurlaub", "volume": 720, "difficulty": 62, "cpc": 1.91, "intent": "commercial" },
+        { "keyword": "abenteuerreisen", "volume": 1300, "difficulty": 57, "cpc": 2.52, "intent": "commercial" },
+        { "keyword": "roadtrip europa", "volume": 480, "difficulty": 35, "cpc": 0.73, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Natur & Berge",
+      "primary_keyword": { "keyword": "urlaub in den bergen", "volume": 4400, "difficulty": 77, "cpc": 1.12, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "natur urlaub", "volume": 140, "difficulty": 49, "cpc": 1.38, "intent": "commercial" },
+        { "keyword": "schönste nationalparks", "volume": 10, "difficulty": 9, "cpc": 1.13, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Wellness & Luxus",
+      "primary_keyword": { "keyword": "wellness urlaub", "volume": 4400, "difficulty": 87, "cpc": 0.96, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "luxusurlaub", "volume": 720, "difficulty": 66, "cpc": 1.50, "intent": "commercial" }
+      ]
+    },
+    {
+      "name": "Reise-Inspiration & Planung",
+      "primary_keyword": { "keyword": "reisemagazin", "volume": 590, "difficulty": 100, "cpc": 1.31, "intent": "navigational" },
+      "supporting_keywords": [
+        { "keyword": "urlaub ideen", "volume": 720, "difficulty": 61, "cpc": 1.08, "intent": "informational" },
+        { "keyword": "reiseideen", "volume": 140, "difficulty": 57, "cpc": 1.10, "intent": "informational" },
+        { "keyword": "reise tipps", "volume": 170, "difficulty": 42, "cpc": 1.37, "intent": "informational" },
+        { "keyword": "urlaub inspiration", "volume": 90, "difficulty": 73, "cpc": 1.08, "intent": "informational" },
+        { "keyword": "urlaubsinspiration", "volume": 70, "difficulty": 64, "cpc": 1.40, "intent": "informational" },
+        { "keyword": "reise inspiration", "volume": 50, "difficulty": 54, "cpc": 1.74, "intent": "informational" },
+        { "keyword": "bucket list reisen", "volume": 260, "difficulty": 32, "cpc": 1.95, "intent": "informational" },
+        { "keyword": "wohin reisen", "volume": 170, "difficulty": 60, "cpc": 1.04, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Zielgruppen-Urlaub",
+      "primary_keyword": { "keyword": "alleine reisen", "volume": 1900, "difficulty": 72, "cpc": 1.20, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "reiseziele mit kindern", "volume": 720, "difficulty": 77, "cpc": 1.28, "intent": "commercial" },
+        { "keyword": "romantischer urlaub", "volume": 590, "difficulty": 93, "cpc": 1.17, "intent": "commercial" },
+        { "keyword": "familienurlaub ideen", "volume": 70, "difficulty": 77, "cpc": 1.43, "intent": "informational" },
+        { "keyword": "reiseziele paare", "volume": 140, "difficulty": 75, "cpc": 1.20, "intent": "commercial" }
+      ]
+    },
+    {
+      "name": "Reisearten & Trends",
+      "primary_keyword": { "keyword": "kulturreisen", "volume": 1000, "difficulty": 45, "cpc": 1.59, "intent": "commercial" },
+      "supporting_keywords": [
+        { "keyword": "nachhaltig reisen", "volume": 720, "difficulty": 39, "cpc": 1.71, "intent": "informational" },
+        { "keyword": "slow travel", "volume": 390, "difficulty": 26, "cpc": 1.97, "intent": "informational" },
+        { "keyword": "kreuzfahrt tipps", "volume": 320, "difficulty": 23, "cpc": 0.92, "intent": "informational" },
+        { "keyword": "kurzurlaub ideen", "volume": 590, "difficulty": 71, "cpc": 0.82, "intent": "commercial" },
+        { "keyword": "wochenendtrip ideen", "volume": 880, "difficulty": 82, "cpc": 0.63, "intent": "commercial" },
+        { "keyword": "geheimtipps reisen", "volume": 170, "difficulty": 57, "cpc": 1.04, "intent": "informational" },
+        { "keyword": "geheimtipps europa", "volume": 140, "difficulty": 26, "cpc": 0.82, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Reiseblog & Content",
+      "primary_keyword": { "keyword": "reiseblog", "volume": 2900, "difficulty": 3, "cpc": 2.98, "intent": "navigational" },
+      "supporting_keywords": [
+        { "keyword": "reiserouten europa", "volume": 20, "difficulty": 17, "cpc": 0.64, "intent": "informational" },
+        { "keyword": "hidden gems europa", "volume": 10, "difficulty": 33, "cpc": 2.70, "intent": "informational" }
+      ]
+    }
+  ]
+}

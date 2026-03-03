@@ -1,0 +1,57 @@
+{
+  "seed_keyword": "keyword recherche",
+  "market": "de",
+  "date": "2026-03-03",
+  "clusters": [
+    {
+      "name": "Keyword Recherche (Hauptbegriff)",
+      "primary_keyword": { "keyword": "keyword recherche", "volume": 2400, "difficulty": 58, "cpc": 4.64, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "seo keyword recherche", "volume": 480, "difficulty": 16, "cpc": 4.97, "intent": "informational" },
+        { "keyword": "keyword recherche seo", "volume": 480, "difficulty": 16, "cpc": 4.97, "intent": "informational" },
+        { "keyword": "google keyword recherche", "volume": 170, "difficulty": 39, "cpc": 5.47, "intent": "informational" },
+        { "keyword": "keyword recherche google", "volume": 260, "difficulty": 53, "cpc": 4.93, "intent": "navigational" },
+        { "keyword": "keyword recherche anleitung", "volume": 170, "difficulty": 3, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "keyword recherche tipps", "volume": 20, "difficulty": 24, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "keyword recherche deutsch", "volume": 0, "difficulty": 0, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "suchbegriffe recherchieren", "volume": 0, "difficulty": 0, "cpc": 0.00, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Keyword Tools",
+      "primary_keyword": { "keyword": "google keyword planner", "volume": 6600, "difficulty": 44, "cpc": 2.20, "intent": "navigational" },
+      "supporting_keywords": [
+        { "keyword": "keyword recherche tool", "volume": 590, "difficulty": 17, "cpc": 7.40, "intent": "commercial" },
+        { "keyword": "keyword tool kostenlos", "volume": 480, "difficulty": 29, "cpc": 3.96, "intent": "commercial" },
+        { "keyword": "keyword recherche kostenlos", "volume": 260, "difficulty": 50, "cpc": 4.09, "intent": "commercial" },
+        { "keyword": "keyword generator", "volume": 390, "difficulty": 36, "cpc": 2.86, "intent": "commercial" },
+        { "keyword": "keyword planer", "volume": 480, "difficulty": 53, "cpc": 2.67, "intent": "navigational" },
+        { "keyword": "ubersuggest alternative", "volume": 40, "difficulty": 33, "cpc": 4.18, "intent": "commercial" },
+        { "keyword": "best keyword research tool", "volume": 30, "difficulty": 12, "cpc": 5.85, "intent": "commercial" }
+      ]
+    },
+    {
+      "name": "Keyword Analyse & Strategie",
+      "primary_keyword": { "keyword": "keyword analyse", "volume": 1000, "difficulty": 41, "cpc": 4.70, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "keyword mapping", "volume": 170, "difficulty": 7, "cpc": 4.77, "intent": "informational" },
+        { "keyword": "keyword difficulty", "volume": 50, "difficulty": 52, "cpc": 4.76, "intent": "informational" },
+        { "keyword": "keyword strategie", "volume": 40, "difficulty": 26, "cpc": 5.19, "intent": "informational" },
+        { "keyword": "keyword wettbewerb", "volume": 10, "difficulty": 50, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "suchvolumen prüfen", "volume": 10, "difficulty": 70, "cpc": 3.93, "intent": "informational" }
+      ]
+    },
+    {
+      "name": "Keywords finden",
+      "primary_keyword": { "keyword": "keywords finden", "volume": 480, "difficulty": 41, "cpc": 4.53, "intent": "informational" },
+      "supporting_keywords": [
+        { "keyword": "keyword suche", "volume": 320, "difficulty": 26, "cpc": 3.29, "intent": "informational" },
+        { "keyword": "keyword optimierung", "volume": 480, "difficulty": 11, "cpc": 3.68, "intent": "informational" },
+        { "keyword": "longtail keywords finden", "volume": 50, "difficulty": 18, "cpc": 3.33, "intent": "informational" },
+        { "keyword": "keyword ideen finden", "volume": 10, "difficulty": 0, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "nischen keywords finden", "volume": 20, "difficulty": 0, "cpc": 0.00, "intent": "informational" },
+        { "keyword": "seo keywords deutsch", "volume": 0, "difficulty": 0, "cpc": 0.00, "intent": "informational" }
+      ]
+    }
+  ]
+}
