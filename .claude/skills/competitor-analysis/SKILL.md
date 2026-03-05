@@ -45,18 +45,26 @@ Use WebFetch to retrieve and analyze competitor pages for content analysis.
 
 ### 3. Analyze each competitor page
 
-For each of the top-ranking pages, extract:
+For each competitor URL, run the page extractor to get precise structural data:
+
+```sh
+node src/extractor/extract-page.mjs "<URL>"
+```
+
+This returns JSON with: title, meta_description, canonical_url, og_title, og_description, h1, headings, word_count, link_count, main_content_preview.
+
+Use these precise values in your analysis instead of estimating from WebFetch. You may still use WebFetch for qualitative analysis (content format, topics, unique angles) that requires reading comprehension.
+
+For each page, extract or determine:
 
 - **URL and domain**
-- **Title tag** and **meta description**
-- **H1 and heading structure** (H2s, H3s)
-- **Estimated word count**
+- **Title tag** and **meta description** (from extractor)
+- **H1 and heading structure** (from extractor)
+- **Word count** (from extractor)
 - **Content format** (listicle, how-to, guide, comparison, etc.)
 - **Key topics and subtopics covered**
 - **Unique angles or differentiators**
-- **Internal/external linking patterns** (if visible)
-
-Use WebFetch to read competitor pages.
+- **Internal/external linking patterns** (from extractor)
 
 ### 4. Build the competitive landscape
 
