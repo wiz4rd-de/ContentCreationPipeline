@@ -1,0 +1,21 @@
+{
+  "tasks": [
+    {
+      "result": [
+        { "keyword": "keyword recherche", "keyword_difficulty": 42 },
+        { "keyword": "keyword analyse tool", "keyword_difficulty": 55 },
+        { "keyword": "beste keyword recherche tool", "keyword_difficulty": 38 },
+        { "keyword": "keyword recherche anleitung", "keyword_difficulty": 20 },
+        { "keyword": "seo keywords kaufen", "keyword_difficulty": 65 },
+        { "keyword": "how to find keywords", "keyword_difficulty": 70 },
+        { "keyword": "keyword recherche tipps", "keyword_difficulty": 15 },
+        { "keyword": "buy keyword tool", "keyword_difficulty": 45 },
+        { "keyword": "keyword recherche kostenlos", "keyword_difficulty": 30 },
+        { "keyword": "keyword recherche guide", "keyword_difficulty": 25 },
+        { "keyword": "keyword vergleich tool", "keyword_difficulty": 50 },
+        { "keyword": "best keyword research tool", "keyword_difficulty": 80 },
+        { "keyword": "unknown topic xyz", "keyword_difficulty": 10 }
+      ]
+    }
+  ]
+}

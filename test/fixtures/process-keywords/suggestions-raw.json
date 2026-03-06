@@ -1,0 +1,73 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "keyword recherche",
+          "items": [
+            {
+              "keyword_data": {
+                "keyword": "keyword recherche kostenlos",
+                "keyword_info": {
+                  "search_volume": 350,
+                  "cpc": 0.5,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "Keyword Analyse Tool",
+                "keyword_info": {
+                  "search_volume": 900,
+                  "cpc": 1.9,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "keyword recherche guide",
+                "keyword_info": {
+                  "search_volume": 180,
+                  "cpc": 0.7,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "keyword vergleich tool",
+                "keyword_info": {
+                  "search_volume": 150,
+                  "cpc": 2.0,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "best keyword research tool",
+                "keyword_info": {
+                  "search_volume": 3000,
+                  "cpc": 3.5,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "unknown topic xyz",
+                "keyword_info": {
+                  "search_volume": 100,
+                  "cpc": 0.3,
+                  "monthly_searches": []
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

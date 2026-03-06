@@ -1,0 +1,23 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "single keyword",
+          "items": [
+            {
+              "keyword_data": {
+                "keyword": "single keyword",
+                "keyword_info": {
+                  "search_volume": 500,
+                  "cpc": 1.0,
+                  "monthly_searches": []
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
