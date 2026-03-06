@@ -40,7 +40,10 @@ curl -s -X POST "$DATAFORSEO_BASE/keywords_data/google_ads/search_volume/live" \
   | jq '.tasks[0].result'
 ```
 
-> `location_code` is derived from `$SEO_MARKET` (e.g. `de` → 2276 for Germany). Refer to your provider's docs for the full mapping.
+> `location_code` is derived from `$SEO_MARKET`. Resolve it deterministically:
+> ```sh
+> node src/utils/resolve-location.mjs "$SEO_MARKET"
+> ```
 
 ### 3. Parse and structure the results
 

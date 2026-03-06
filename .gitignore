@@ -6,6 +6,7 @@
 
 # Claude Code local settings
 .claude/*
+!.claude/skills/*
 
 # Pipeline output (keep directory structure)
 output/*
