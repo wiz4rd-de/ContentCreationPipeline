@@ -6,46 +6,46 @@
           "seed_keyword": "keyword recherche",
           "items": [
             {
-              "keyword_data": {
-                "keyword": "keyword recherche tool",
-                "keyword_info": {
-                  "search_volume": 400,
-                  "cpc": 2.0,
-                  "monthly_searches": []
-                }
-              }
+              "se_type": "google",
+              "keyword": "keyword recherche tool",
+              "keyword_info": {
+                "search_volume": 400,
+                "cpc": 2.0,
+                "monthly_searches": []
+              },
+              "keyword_properties": {}
             },
             {
-              "keyword_data": {
-                "keyword": "Keyword Analyse",
-                "keyword_info": {
-                  "search_volume": 900,
-                  "cpc": 1.9,
-                  "monthly_searches": [
-                    { "year": 2025, "month": 1, "search_volume": 880 }
-                  ]
-                }
-              }
+              "se_type": "google",
+              "keyword": "Keyword Analyse",
+              "keyword_info": {
+                "search_volume": 900,
+                "cpc": 1.9,
+                "monthly_searches": [
+                  { "year": 2025, "month": 1, "search_volume": 880 }
+                ]
+              },
+              "keyword_properties": {}
             },
             {
-              "keyword_data": {
-                "keyword": "keyword recherche kostenlos",
-                "keyword_info": {
-                  "search_volume": 350,
-                  "cpc": 0.5,
-                  "monthly_searches": []
-                }
-              }
+              "se_type": "google",
+              "keyword": "keyword recherche kostenlos",
+              "keyword_info": {
+                "search_volume": 350,
+                "cpc": 0.5,
+                "monthly_searches": []
+              },
+              "keyword_properties": {}
             },
             {
-              "keyword_data": {
-                "keyword": "seo keyword recherche",
-                "keyword_info": {
-                  "search_volume": 500,
-                  "cpc": 2.3,
-                  "monthly_searches": []
-                }
-              }
+              "se_type": "google",
+              "keyword": "seo keyword recherche",
+              "keyword_info": {
+                "search_volume": 500,
+                "cpc": 2.3,
+                "monthly_searches": []
+              },
+              "keyword_properties": {}
             }
           ]
         }

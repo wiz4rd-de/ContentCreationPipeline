@@ -17,6 +17,7 @@
 //     [--brands "brand1,brand2"]
 
 import { readFileSync } from 'node:fs';
+import { extractKeywords } from './extract-keywords.mjs';
 
 // --- Parse arguments --------------------------------------------------------
 
@@ -61,32 +62,9 @@ function readJSON(path) {
   return JSON.parse(readFileSync(path, 'utf-8'));
 }
 
-// Extract keyword records from a DataForSEO Labs response (related / suggestions).
-// Difficulty is extracted from keyword_data.keyword_properties.keyword_difficulty,
-// eliminating the need for a separate API call.
-function extractKeywords(raw) {
-  const items = raw?.tasks?.[0]?.result?.[0]?.items;
-  if (!Array.isArray(items)) return [];
-  return items
-    .filter(item => item?.keyword_data?.keyword)
-    .map(item => {
-      const kd = item.keyword_data;
-      const info = kd.keyword_info || {};
-      const props = kd.keyword_properties || {};
-      const rawDifficulty = props.keyword_difficulty;
-      // Clamp to 0-100 integer, null if not present
-      const difficulty = rawDifficulty != null
-        ? Math.max(0, Math.min(100, Math.round(rawDifficulty)))
-        : null;
-      return {
-        keyword: kd.keyword.trim(),
-        search_volume: info.search_volume ?? null,
-        cpc: info.cpc ?? null,
-        monthly_searches: info.monthly_searches ?? null,
-        difficulty,
-      };
-    });
-}
+// extractKeywords is imported from ./extract-keywords.mjs
+// It handles both related_keywords and keyword_suggestions response shapes
+// and extracts keyword_difficulty from keyword_properties.
 
 // Build a case-insensitive lookup from a separate volume response (optional).
 // Expected shape: tasks[0].result[] with keyword, search_volume, cpc.
@@ -148,8 +126,8 @@ const suggestionsRaw = readJSON(suggestionsFile);
 const volumeMap = volumeFile ? buildVolumeMap(readJSON(volumeFile)) : new Map();
 
 // 2. Extract and deduplicate (case-insensitive, trimmed)
-const relatedKeywords = extractKeywords(relatedRaw);
-const suggestionsKeywords = extractKeywords(suggestionsRaw);
+const relatedKeywords = extractKeywords(relatedRaw, { includeDifficulty: true });
+const suggestionsKeywords = extractKeywords(suggestionsRaw, { includeDifficulty: true });
 
 const seen = new Map(); // lowercase key -> record
 

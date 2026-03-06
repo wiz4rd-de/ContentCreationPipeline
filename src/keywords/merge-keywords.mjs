@@ -7,6 +7,7 @@
 // Outputs JSON to stdout.
 
 import { readFileSync } from 'node:fs';
+import { extractKeywords } from './extract-keywords.mjs';
 
 // --- Parse arguments ---
 const args = process.argv.slice(2);
@@ -25,26 +26,8 @@ if (!relatedFile || !suggestionsFile || !seedKeyword) {
   process.exit(1);
 }
 
-// --- Extract keywords from a DataForSEO Labs response ---
-// Both related_keywords and keyword_suggestions share the same response shape:
-// tasks[0].result[0].items[] with keyword_data.keyword and keyword_data.keyword_info
-function extractKeywords(raw) {
-  const items = raw?.tasks?.[0]?.result?.[0]?.items;
-  if (!Array.isArray(items)) return [];
-
-  return items
-    .filter(item => item?.keyword_data?.keyword)
-    .map(item => {
-      const kd = item.keyword_data;
-      const info = kd.keyword_info || {};
-      return {
-        keyword: kd.keyword.trim(),
-        search_volume: info.search_volume ?? null,
-        cpc: info.cpc ?? null,
-        monthly_searches: info.monthly_searches ?? null,
-      };
-    });
-}
+// extractKeywords is imported from ./extract-keywords.mjs
+// It handles both related_keywords and keyword_suggestions response shapes.
 
 // --- Load and extract ---
 const relatedRaw = JSON.parse(readFileSync(relatedFile, 'utf-8'));
