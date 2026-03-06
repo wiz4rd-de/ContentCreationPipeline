@@ -12,6 +12,9 @@
                   "search_volume": 350,
                   "cpc": 0.5,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 30
                 }
               }
             },
@@ -22,6 +25,9 @@
                   "search_volume": 900,
                   "cpc": 1.9,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 60
                 }
               }
             },
@@ -32,6 +38,9 @@
                   "search_volume": 180,
                   "cpc": 0.7,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 25
                 }
               }
             },
@@ -42,6 +51,9 @@
                   "search_volume": 150,
                   "cpc": 2.0,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 50
                 }
               }
             },
@@ -52,6 +64,9 @@
                   "search_volume": 3000,
                   "cpc": 3.5,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 80
                 }
               }
             },
@@ -62,6 +77,9 @@
                   "search_volume": 100,
                   "cpc": 0.3,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 10
                 }
               }
             }

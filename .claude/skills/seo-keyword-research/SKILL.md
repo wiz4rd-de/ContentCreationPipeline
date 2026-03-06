@@ -50,25 +50,12 @@ Produces:
 - `$OUTDIR/keywords-suggestions-raw.json`
 - `$OUTDIR/keywords-expanded.json`
 
-#### 1c. Fetch keyword difficulty
-
-```sh
-node src/keywords/fetch-difficulty.mjs \
-  --expanded "$OUTDIR/keywords-expanded.json" \
-  --language "$SEO_LANGUAGE" --market "$SEO_MARKET" --outdir "$OUTDIR"
-```
-
-Produces:
-- `$OUTDIR/keywords-difficulty-raw.json`
-- Updated `$OUTDIR/keywords-expanded.json` (with difficulty merged)
-
-#### 1d. Process keywords into structured skeleton
+#### 1c. Process keywords into structured skeleton
 
 ```sh
 node src/keywords/process-keywords.mjs \
   --related "$OUTDIR/keywords-related-raw.json" \
   --suggestions "$OUTDIR/keywords-suggestions-raw.json" \
-  --difficulty "$OUTDIR/keywords-difficulty-raw.json" \
   --seed "<SEED_KEYWORD>" \
   [--brands "brand1,brand2"] \
   > "$OUTDIR/keywords-processed.json"
@@ -77,7 +64,7 @@ node src/keywords/process-keywords.mjs \
 This script deterministically:
 1. Reads all raw JSON files
 2. Deduplicates keywords (case-insensitive, trimmed)
-3. Merges volume, CPC, monthly_searches, and keyword difficulty per keyword
+3. Extracts volume, CPC, monthly_searches, and keyword difficulty per keyword (difficulty comes from `keyword_data.keyword_properties.keyword_difficulty` in the related/suggestions responses)
 4. Tags search intent via regex patterns (DE + EN)
 5. Clusters keywords via n-gram Jaccard overlap (threshold >= 0.5)
 6. Outputs a JSON skeleton with `null` placeholders for LLM fields (`cluster_label`, `strategic_notes`)

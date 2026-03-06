@@ -12,6 +12,9 @@
                   "search_volume": 500,
                   "cpc": 1.0,
                   "monthly_searches": []
+                },
+                "keyword_properties": {
+                  "keyword_difficulty": 35
                 }
               }
             }

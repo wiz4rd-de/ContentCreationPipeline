@@ -13,9 +13,6 @@ function run(opts = {}) {
   args.push('--related', opts.related || join(fixtures, 'related-raw.json'));
   args.push('--suggestions', opts.suggestions || join(fixtures, 'suggestions-raw.json'));
   args.push('--seed', opts.seed || 'keyword recherche');
-  if (opts.difficulty) {
-    args.push('--difficulty', opts.difficulty);
-  }
   if (opts.brands) {
     args.push('--brands', opts.brands);
   }
@@ -28,9 +25,6 @@ function runRaw(opts = {}) {
   args.push('--related', opts.related || join(fixtures, 'related-raw.json'));
   args.push('--suggestions', opts.suggestions || join(fixtures, 'suggestions-raw.json'));
   args.push('--seed', opts.seed || 'keyword recherche');
-  if (opts.difficulty) {
-    args.push('--difficulty', opts.difficulty);
-  }
   if (opts.brands) {
     args.push('--brands', opts.brands);
   }
@@ -48,76 +42,73 @@ describe('process-keywords', () => {
 
   describe('intent tagging', () => {
     it('tags transactional keywords (DE: kaufen)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'seo keywords kaufen');
       assert.equal(kw.intent, 'transactional');
     });
 
     it('tags transactional keywords (EN: buy)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'buy keyword tool');
       assert.equal(kw.intent, 'transactional');
     });
 
     it('tags commercial keywords (DE: beste)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'beste keyword recherche tool');
       assert.equal(kw.intent, 'commercial');
     });
 
     it('tags commercial keywords (EN: best)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'best keyword research tool');
       assert.equal(kw.intent, 'commercial');
     });
 
     it('tags commercial keywords (DE: vergleich)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'keyword vergleich tool');
       assert.equal(kw.intent, 'commercial');
     });
 
     it('tags informational keywords (EN: how)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'how to find keywords');
       assert.equal(kw.intent, 'informational');
     });
 
     it('tags informational keywords (DE: anleitung)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche anleitung');
       assert.equal(kw.intent, 'informational');
     });
 
     it('tags informational keywords (DE: tipps)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche tipps');
       assert.equal(kw.intent, 'informational');
     });
 
     it('tags informational keywords (EN: guide)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche guide');
       assert.equal(kw.intent, 'informational');
     });
 
     it('returns null for unknown intent', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'unknown topic xyz');
       assert.equal(kw.intent, null);
     });
 
     it('returns null for keywords that match no pattern', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
       assert.equal(kw.intent, null);
     });
 
     it('tags navigational when brand list is provided', () => {
-      const result = run({
-        difficulty: join(fixtures, 'difficulty-raw.json'),
-        brands: 'seo,xyz',
-      });
+      const result = run({ brands: 'seo,xyz' });
       // "seo keywords kaufen" contains "seo" as brand, so navigational wins
       const kw = allKeywords(result).find(k => k.keyword === 'seo keywords kaufen');
       assert.equal(kw.intent, 'navigational');
@@ -131,7 +122,7 @@ describe('process-keywords', () => {
 
   describe('clustering', () => {
     it('groups keywords with high n-gram overlap into the same cluster', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       // "keyword recherche" cluster should contain "keyword recherche anleitung",
       // "keyword recherche kostenlos", "keyword recherche tipps", etc.
       const cluster = result.clusters.find(c => c.cluster_keyword === 'keyword recherche');
@@ -143,7 +134,7 @@ describe('process-keywords', () => {
     });
 
     it('assigns cluster representative as the highest-volume keyword', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         const rep = cluster.keywords.find(k => k.keyword === cluster.cluster_keyword);
         assert.ok(rep, `cluster_keyword "${cluster.cluster_keyword}" must appear in keywords`);
@@ -158,7 +149,7 @@ describe('process-keywords', () => {
     });
 
     it('does not cluster keywords with low n-gram overlap', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       // "unknown topic xyz" should be in its own cluster
       const cluster = result.clusters.find(c => c.cluster_keyword === 'unknown topic xyz');
       assert.ok(cluster);
@@ -166,7 +157,7 @@ describe('process-keywords', () => {
     });
 
     it('each keyword appears in exactly one cluster', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const allKws = allKeywords(result);
       const keywordSet = new Set(allKws.map(k => k.keyword));
       assert.equal(allKws.length, keywordSet.size, 'no keyword should appear twice');
@@ -178,7 +169,7 @@ describe('process-keywords', () => {
 
   describe('deduplication', () => {
     it('deduplicates case-insensitively across related and suggestions', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       // "keyword analyse tool" in related (lowercase) and "Keyword Analyse Tool" in suggestions
       const matches = allKeywords(result).filter(
         k => k.keyword.toLowerCase() === 'keyword analyse tool',
@@ -187,7 +178,7 @@ describe('process-keywords', () => {
     });
 
     it('prefers the related entry when duplicated', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const kw = allKeywords(result).find(
         k => k.keyword.toLowerCase() === 'keyword analyse tool',
       );
@@ -196,7 +187,7 @@ describe('process-keywords', () => {
     });
 
     it('trims whitespace for deduplication', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       // All keywords should be trimmed
       for (const kw of allKeywords(result)) {
         assert.equal(kw.keyword, kw.keyword.trim());
@@ -204,18 +195,73 @@ describe('process-keywords', () => {
     });
   });
 
+  // --- Difficulty extraction from related/suggestions -----------------------
+
+  describe('difficulty extraction', () => {
+    it('extracts difficulty from keyword_properties in related response', () => {
+      const result = run();
+      const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
+      assert.equal(kw.difficulty, 42);
+    });
+
+    it('extracts difficulty from keyword_properties in suggestions response', () => {
+      const result = run();
+      // "keyword recherche kostenlos" only appears in suggestions
+      const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche kostenlos');
+      assert.equal(kw.difficulty, 30);
+    });
+
+    it('prefers related difficulty when keyword appears in both', () => {
+      const result = run();
+      // "keyword analyse tool" has difficulty 55 in related, 60 in suggestions
+      const kw = allKeywords(result).find(
+        k => k.keyword.toLowerCase() === 'keyword analyse tool',
+      );
+      assert.equal(kw.difficulty, 55);
+    });
+
+    it('returns null difficulty for seed keyword not in responses', () => {
+      const result = run({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'lonely seed',
+      });
+      const kw = allKeywords(result).find(k => k.keyword === 'lonely seed');
+      assert.equal(kw.difficulty, null);
+    });
+
+    it('returns null difficulty when keyword_properties is missing', () => {
+      // related-empty and suggestions-empty have no items, so seed gets null
+      const result = run({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'no props keyword',
+      });
+      const kw = allKeywords(result)[0];
+      assert.equal(kw.difficulty, null);
+    });
+  });
+
   // --- Determinism ----------------------------------------------------------
 
   describe('determinism', () => {
     it('produces byte-identical output for identical input', () => {
-      const run1 = runRaw({ difficulty: join(fixtures, 'difficulty-raw.json') });
-      const run2 = runRaw({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const run1 = runRaw();
+      const run2 = runRaw();
       assert.equal(run1, run2, 'same input must produce byte-identical output');
     });
 
-    it('produces byte-identical output without difficulty file', () => {
-      const run1 = runRaw({});
-      const run2 = runRaw({});
+    it('produces byte-identical output with empty inputs', () => {
+      const run1 = runRaw({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'test seed',
+      });
+      const run2 = runRaw({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'test seed',
+      });
       assert.equal(run1, run2, 'same input must produce byte-identical output');
     });
   });
@@ -250,23 +296,15 @@ describe('process-keywords', () => {
       assert.equal(kw.intent, null);
     });
 
-    it('handles all-null difficulty values', () => {
+    it('handles keywords without keyword_properties gracefully', () => {
+      // The empty fixtures have no items, so only seed appears with null difficulty
       const result = run({
-        difficulty: join(fixtures, 'difficulty-all-null.json'),
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'keyword recherche',
       });
-      // Keywords that match null-difficulty entries should get null
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
       assert.equal(kw.difficulty, null);
-      const kw2 = allKeywords(result).find(k => k.keyword === 'keyword analyse tool');
-      assert.equal(kw2.difficulty, null);
-    });
-
-    it('handles missing difficulty file gracefully', () => {
-      const result = run({});
-      // No --difficulty flag: all difficulties should be null
-      for (const kw of allKeywords(result)) {
-        assert.equal(kw.difficulty, null, `${kw.keyword} should have null difficulty`);
-      }
     });
   });
 
@@ -274,7 +312,7 @@ describe('process-keywords', () => {
 
   describe('output structure', () => {
     it('has required top-level fields', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       assert.ok('seed_keyword' in result);
       assert.ok('total_keywords' in result);
       assert.ok('total_clusters' in result);
@@ -283,7 +321,7 @@ describe('process-keywords', () => {
     });
 
     it('clusters have required fields including LLM null placeholders', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         assert.ok('cluster_keyword' in cluster);
         assert.ok('cluster_label' in cluster);
@@ -297,7 +335,7 @@ describe('process-keywords', () => {
     });
 
     it('keywords have all required fields', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const kw of allKeywords(result)) {
         assert.ok('keyword' in kw);
         assert.ok('search_volume' in kw);
@@ -310,7 +348,7 @@ describe('process-keywords', () => {
     });
 
     it('clusters have cluster_opportunity field', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         assert.ok('cluster_opportunity' in cluster);
         assert.equal(typeof cluster.cluster_opportunity, 'number');
@@ -318,12 +356,12 @@ describe('process-keywords', () => {
     });
 
     it('total_keywords matches actual keyword count', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       assert.equal(result.total_keywords, allKeywords(result).length);
     });
 
     it('total_clusters matches actual cluster count', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       assert.equal(result.total_clusters, result.clusters.length);
     });
   });
@@ -332,7 +370,7 @@ describe('process-keywords', () => {
 
   describe('sorting', () => {
     it('sorts keywords within clusters by opportunity_score descending', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         for (let i = 1; i < cluster.keywords.length; i++) {
           const prev = cluster.keywords[i - 1].opportunity_score ?? -1;
@@ -346,7 +384,7 @@ describe('process-keywords', () => {
     });
 
     it('uses volume desc then alphabetical tie-break for equal scores', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         for (let i = 1; i < cluster.keywords.length; i++) {
           const prev = cluster.keywords[i - 1];
@@ -377,14 +415,14 @@ describe('process-keywords', () => {
 
   describe('opportunity score', () => {
     it('computes correct score: search_volume / (difficulty + 1)', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
-      // "keyword recherche": volume=1200, difficulty=42 → 1200/43 = 27.91
+      const result = run();
+      // "keyword recherche": volume=1200, difficulty=42 -> 1200/43 = 27.91
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
       assert.equal(kw.opportunity_score, 27.91);
     });
 
     it('computes known scores for multiple keywords', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const expected = {
         'how to find keywords': 70.42,       // 5000/71
         'best keyword research tool': 37.04,  // 3000/81
@@ -402,37 +440,26 @@ describe('process-keywords', () => {
     });
 
     it('returns score 0 when volume is null', () => {
-      // Without difficulty file, all difficulties are null → scores are null.
-      // Use difficulty file but test with seed keyword that has null volume.
       const result = run({
         related: join(fixtures, 'related-empty.json'),
         suggestions: join(fixtures, 'suggestions-empty.json'),
-        difficulty: join(fixtures, 'difficulty-raw.json'),
         seed: 'keyword recherche',
       });
-      // seed "keyword recherche" has null volume, difficulty 42 → score 0
+      // seed "keyword recherche" has null volume, null difficulty -> score null
       const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
       assert.equal(kw.search_volume, null);
-      assert.equal(kw.opportunity_score, 0);
-    });
-
-    it('returns score 0 when volume is 0', () => {
-      // We need a fixture with volume=0. Use related-single which has volume=null
-      // and difficulty. The seed with volume null is already tested above.
-      // For volume=0 we verify in the formula test above (null → 0).
-      // Let's verify with the empty-input case where seed gets null volume.
-      const result = run({
-        related: join(fixtures, 'related-empty.json'),
-        suggestions: join(fixtures, 'suggestions-empty.json'),
-        difficulty: join(fixtures, 'difficulty-raw.json'),
-        seed: 'keyword recherche',
-      });
-      const kw = allKeywords(result).find(k => k.keyword === 'keyword recherche');
-      assert.equal(kw.opportunity_score, 0);
+      assert.equal(kw.difficulty, null);
+      // null difficulty -> null score
+      assert.equal(kw.opportunity_score, null);
     });
 
     it('returns score null when difficulty is null', () => {
-      const result = run({});  // no difficulty file → all difficulties null
+      const result = run({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'some keyword',
+      });
+      // no difficulty data for seed -> all difficulties null
       for (const kw of allKeywords(result)) {
         assert.equal(kw.opportunity_score, null,
           `${kw.keyword} should have null score when difficulty is null`);
@@ -440,7 +467,7 @@ describe('process-keywords', () => {
     });
 
     it('rounds to exactly 2 decimal places', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const kw of allKeywords(result)) {
         if (kw.opportunity_score != null && kw.opportunity_score !== 0) {
           const str = kw.opportunity_score.toString();
@@ -454,7 +481,7 @@ describe('process-keywords', () => {
     });
 
     it('computes correct cluster_opportunity average', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       for (const cluster of result.clusters) {
         const scores = cluster.keywords.map(k => k.opportunity_score ?? 0);
         const expectedAvg = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100;
@@ -464,15 +491,19 @@ describe('process-keywords', () => {
     });
 
     it('cluster_opportunity for single-keyword cluster equals keyword score', () => {
-      const result = run({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const result = run();
       const singleCluster = result.clusters.find(c => c.keyword_count === 1 && c.cluster_keyword === 'unknown topic xyz');
       assert.ok(singleCluster);
       assert.equal(singleCluster.cluster_opportunity, singleCluster.keywords[0].opportunity_score);
     });
 
     it('cluster_opportunity treats null scores as 0 in average', () => {
-      // Without difficulty, all scores are null → cluster_opportunity = 0
-      const result = run({});
+      // With empty inputs, all scores are null -> cluster_opportunity = 0
+      const result = run({
+        related: join(fixtures, 'related-empty.json'),
+        suggestions: join(fixtures, 'suggestions-empty.json'),
+        seed: 'some keyword',
+      });
       for (const cluster of result.clusters) {
         assert.equal(cluster.cluster_opportunity, 0,
           `cluster "${cluster.cluster_keyword}" should have 0 opportunity when all scores are null`);
@@ -480,8 +511,8 @@ describe('process-keywords', () => {
     });
 
     it('produces byte-identical output with opportunity scores', () => {
-      const run1 = runRaw({ difficulty: join(fixtures, 'difficulty-raw.json') });
-      const run2 = runRaw({ difficulty: join(fixtures, 'difficulty-raw.json') });
+      const run1 = runRaw();
+      const run2 = runRaw();
       assert.equal(run1, run2, 'opportunity scores must be deterministic');
     });
   });

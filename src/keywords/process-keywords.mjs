@@ -4,11 +4,14 @@
 // placeholders for LLM-only fields. Same input always produces byte-identical
 // output.
 //
+// Keyword difficulty is extracted directly from the related_keywords and
+// keyword_suggestions responses (keyword_data.keyword_properties.keyword_difficulty),
+// eliminating the need for a separate keyword_difficulty/live API call.
+//
 // Usage:
 //   node process-keywords.mjs \
 //     --related keywords-related-raw.json \
 //     --suggestions keywords-suggestions-raw.json \
-//     --difficulty keywords-difficulty-raw.json \
 //     --seed "keyword recherche" \
 //     [--volume keywords-volume-raw.json] \
 //     [--brands "brand1,brand2"]
@@ -26,7 +29,6 @@ function flagValue(name) {
 
 const relatedFile = flagValue('--related');
 const suggestionsFile = flagValue('--suggestions');
-const difficultyFile = flagValue('--difficulty');
 const volumeFile = flagValue('--volume');
 const seedKeyword = flagValue('--seed');
 const brandsRaw = flagValue('--brands');
@@ -34,7 +36,7 @@ const brandsRaw = flagValue('--brands');
 if (!relatedFile || !suggestionsFile || !seedKeyword) {
   console.error(
     'Usage: node process-keywords.mjs --related <file> --suggestions <file> --seed <keyword> ' +
-    '[--difficulty <file>] [--volume <file>] [--brands "brand1,brand2"]',
+    '[--volume <file>] [--brands "brand1,brand2"]',
   );
   process.exit(1);
 }
@@ -60,6 +62,8 @@ function readJSON(path) {
 }
 
 // Extract keyword records from a DataForSEO Labs response (related / suggestions).
+// Difficulty is extracted from keyword_data.keyword_properties.keyword_difficulty,
+// eliminating the need for a separate API call.
 function extractKeywords(raw) {
   const items = raw?.tasks?.[0]?.result?.[0]?.items;
   if (!Array.isArray(items)) return [];
@@ -68,27 +72,20 @@ function extractKeywords(raw) {
     .map(item => {
       const kd = item.keyword_data;
       const info = kd.keyword_info || {};
+      const props = kd.keyword_properties || {};
+      const rawDifficulty = props.keyword_difficulty;
+      // Clamp to 0-100 integer, null if not present
+      const difficulty = rawDifficulty != null
+        ? Math.max(0, Math.min(100, Math.round(rawDifficulty)))
+        : null;
       return {
         keyword: kd.keyword.trim(),
         search_volume: info.search_volume ?? null,
         cpc: info.cpc ?? null,
         monthly_searches: info.monthly_searches ?? null,
+        difficulty,
       };
     });
-}
-
-// Build a case-insensitive lookup of keyword_difficulty values.
-function buildDifficultyMap(raw) {
-  const map = new Map();
-  const results = raw?.tasks?.[0]?.result;
-  if (!Array.isArray(results)) return map;
-  for (const item of results) {
-    if (item?.keyword != null && item?.keyword_difficulty != null) {
-      const kd = Math.round(item.keyword_difficulty);
-      map.set(item.keyword.toLowerCase().trim(), Math.max(0, Math.min(100, kd)));
-    }
-  }
-  return map;
 }
 
 // Build a case-insensitive lookup from a separate volume response (optional).
@@ -148,7 +145,6 @@ function jaccard(setA, setB) {
 // 1. Read all raw JSON files
 const relatedRaw = readJSON(relatedFile);
 const suggestionsRaw = readJSON(suggestionsFile);
-const difficultyMap = difficultyFile ? buildDifficultyMap(readJSON(difficultyFile)) : new Map();
 const volumeMap = volumeFile ? buildVolumeMap(readJSON(volumeFile)) : new Map();
 
 // 2. Extract and deduplicate (case-insensitive, trimmed)
@@ -177,7 +173,8 @@ if (!seen.has(seedKey)) {
   });
 }
 
-// 3. Merge volume (from separate endpoint, if provided) and difficulty
+// 3. Merge volume (from separate endpoint, if provided); difficulty comes
+//    from the extracted keyword records (keyword_properties.keyword_difficulty)
 const merged = [...seen.values()].map(kw => {
   const key = kw.keyword.toLowerCase().trim();
 
@@ -186,14 +183,12 @@ const merged = [...seen.values()].map(kw => {
   const search_volume = vol?.search_volume ?? kw.search_volume;
   const cpc = vol?.cpc ?? kw.cpc;
 
-  const difficulty = difficultyMap.has(key) ? difficultyMap.get(key) : null;
-
   return {
     keyword: kw.keyword,
     search_volume,
     cpc,
     monthly_searches: kw.monthly_searches,
-    difficulty,
+    difficulty: kw.difficulty ?? null,
   };
 });
 
