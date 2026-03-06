@@ -260,7 +260,46 @@ for (const [, { repIdx, members }] of clusterMap) {
   });
 }
 
-// 6. Output JSON skeleton
+// 6. Opportunity score per keyword + re-sort within clusters
+// Formula: opportunity_score = search_volume / (keyword_difficulty + 1)
+//   - volume null or 0 → score 0
+//   - difficulty null → score null
+//   - Round to 2 decimal places
+
+function computeOpportunityScore(volume, difficulty) {
+  if (difficulty == null) return null;
+  if (volume == null || volume === 0) return 0;
+  return Math.round((volume / (difficulty + 1)) * 100) / 100;
+}
+
+for (const cluster of clusters) {
+  // Compute scores
+  for (const kw of cluster.keywords) {
+    kw.opportunity_score = computeOpportunityScore(kw.search_volume, kw.difficulty);
+  }
+
+  // Re-sort: score desc, then volume desc, then alphabetical tie-break
+  cluster.keywords.sort((a, b) => {
+    const scoreA = a.opportunity_score ?? -1;
+    const scoreB = b.opportunity_score ?? -1;
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    const volA = a.search_volume ?? -1;
+    const volB = b.search_volume ?? -1;
+    if (volB !== volA) return volB - volA;
+    return a.keyword.toLowerCase().localeCompare(b.keyword.toLowerCase());
+  });
+
+  // Cluster-level aggregate: average of all scores (nulls count as 0 in sum, but
+  // still count toward cluster_size for a fair average)
+  const scoreSum = cluster.keywords.reduce(
+    (sum, kw) => sum + (kw.opportunity_score ?? 0), 0,
+  );
+  cluster.cluster_opportunity = cluster.keywords.length > 0
+    ? Math.round((scoreSum / cluster.keywords.length) * 100) / 100
+    : 0;
+}
+
+// 7. Output JSON skeleton
 const output = {
   seed_keyword: seedKeyword.trim(),
   total_keywords: merged.length,
