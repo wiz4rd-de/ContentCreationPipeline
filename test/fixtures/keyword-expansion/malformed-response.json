@@ -1,0 +1,29 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "test",
+          "items": [
+            {
+              "keyword_data": null
+            },
+            {
+              "keyword_data": {
+                "keyword": "  valid keyword  ",
+                "keyword_info": {
+                  "search_volume": 100,
+                  "cpc": null,
+                  "monthly_searches": null
+                }
+              }
+            },
+            {
+              "some_other_field": "no keyword_data here"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
