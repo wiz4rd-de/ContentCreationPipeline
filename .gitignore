@@ -13,6 +13,9 @@ output/*
 
 tmp/*
 
+# Implementation tracker
+IMPLEMENTATION.md
+
 # Node.js dependencies
 node_modules/
 
