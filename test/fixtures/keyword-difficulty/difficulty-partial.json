@@ -1,0 +1,16 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "keyword": "keyword recherche",
+          "keyword_difficulty": 42
+        },
+        {
+          "keyword": "keyword analyse",
+          "keyword_difficulty": 55
+        }
+      ]
+    }
+  ]
+}
