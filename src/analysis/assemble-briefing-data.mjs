@@ -257,21 +257,6 @@ function buildContentFormatSignals() {
   return data.contentTopics.content_format_signals || {};
 }
 
-// --- 12. Stats summary ---
-function buildStatsSummary() {
-  const source = data.keywordsFiltered || data.keywordsProcessed;
-  const totalKeywords = source?.total_keywords ?? 0;
-  const filteredCount = data.keywordsFiltered?.filtered_keywords ?? totalKeywords;
-  const competitorCount = (data.competitorsData?.competitors || data.serp?.competitors || []).length;
-
-  return {
-    total_keywords: totalKeywords,
-    filtered_keywords: filteredCount,
-    competitor_count: competitorCount,
-    serp_features_detected: data.serp?.item_types_present?.length ?? 0,
-  };
-}
-
 // --- Keyword data ---
 function buildKeywordData() {
   const clusters = buildClusterRanking();
