@@ -61,7 +61,9 @@ try {
   const article = reader.parse();
   const mainText = article?.textContent || '';
   const word_count = mainText.split(/\s+/).filter(Boolean).length;
-  const main_content_preview = mainText.replace(/\s+/g, ' ').trim().slice(0, 300);
+  const main_content_text = mainText.replace(/\s+/g, ' ').trim();
+  const main_content_preview = main_content_text.slice(0, 300);
+  const readability_title = article?.title || '';
 
   console.log(JSON.stringify({
     url,
@@ -74,7 +76,9 @@ try {
     headings,
     word_count,
     link_count: { internal, external },
+    main_content_text,
     main_content_preview,
+    readability_title,
   }, null, 2));
 } catch (err) {
   console.log(JSON.stringify({ error: err.message, url }));
