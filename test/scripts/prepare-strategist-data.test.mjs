@@ -104,13 +104,15 @@ describe('prepare-strategist-data', () => {
       assert.equal(result.paa_questions.length, 3);
     });
 
-    it('formats questions with null answers', () => {
+    it('formats questions with question and answer fields', () => {
       const result = run();
       for (const paa of result.paa_questions) {
         assert.ok('question' in paa);
         assert.ok('answer' in paa);
-        assert.equal(paa.answer, null);
         assert.equal(typeof paa.question, 'string');
+        // answer may be null or a string depending on source data
+        const validType = (paa.answer === null || typeof paa.answer === 'string');
+        assert.ok(validType, 'answer must be null or string');
       }
     });
 

@@ -8,9 +8,9 @@
     "ai_overview": { "present": false },
     "featured_snippet": { "present": false },
     "people_also_ask": [
-      "Was ist SEO Reporting?",
-      "How to create an SEO report?",
-      "Welche KPIs gehören in einen SEO Report?"
+      {"question": "Was ist SEO Reporting?", "answer": "SEO Reporting ist die systematische Erfassung und Auswertung von SEO-Kennzahlen.", "url": "https://example.com/seo-reporting-explained", "domain": "example.com"},
+      {"question": "How to create an SEO report?", "answer": null, "url": null, "domain": null},
+      {"question": "Welche KPIs gehören in einen SEO Report?", "answer": "Wichtige KPIs sind organischer Traffic, Rankings, und Conversion Rate.", "url": "https://example.org/seo-kpis", "domain": "example.org"}
     ],
     "people_also_search": [],
     "related_searches": ["seo dashboard", "seo kpi tracking"],

@@ -166,8 +166,11 @@ const paaQuestions = [];
 const paaRaw = serp.serp_features?.people_also_ask;
 if (Array.isArray(paaRaw)) {
   for (const q of paaRaw) {
+    // Support both new object format and legacy string format
     if (typeof q === 'string' && q.length > 0) {
       paaQuestions.push({ question: q, answer: null });
+    } else if (q && typeof q === 'object' && typeof q.question === 'string' && q.question.length > 0) {
+      paaQuestions.push({ question: q.question, answer: q.answer || null });
     }
   }
 }
