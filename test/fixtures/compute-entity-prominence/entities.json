@@ -1,0 +1,34 @@
+{
+  "entity_clusters": [
+    {
+      "category_name": "Aktivitaeten",
+      "entities": [
+        {
+          "entity": "Schnorcheln",
+          "prominence": "8/10",
+          "synonyms": ["schnorcheln", "snorkeling", "schnorchelausflug"]
+        },
+        {
+          "entity": "Tauchen",
+          "prominence": "5/10",
+          "synonyms": ["tauchen", "diving", "tauchgang"]
+        }
+      ]
+    },
+    {
+      "category_name": "Orte",
+      "entities": [
+        {
+          "entity": "Riff",
+          "prominence": "9/10",
+          "synonyms": ["riff", "reef", "korallenriff"]
+        },
+        {
+          "entity": "Spa",
+          "prominence": "3/10",
+          "synonyms": ["spa"]
+        }
+      ]
+    }
+  ]
+}
