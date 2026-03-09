@@ -37,40 +37,52 @@ Run each script in order. If `briefing-data.json` already exists in the output d
 
 #### Step 1: SERP Processing
 ```bash
-node src/serp/process-serp.mjs --keyword "<seed-keyword>" --market <market> --out output/YYYY-MM-DD_<slug>/
+node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top 10 > output/YYYY-MM-DD_<slug>/serp-processed.json
 ```
-Extracts SERP features (AIO, PAA, featured snippets), identifies competitors, and saves `serp-processed.json`.
+Input: raw DataForSEO SERP JSON (positional arg). `--top N` limits organic results (default 10). Outputs structured JSON to stdout. Redirect to `serp-processed.json`.
 
 #### Step 2: Page Extraction
 ```bash
 # For each competitor URL from serp-processed.json:
-node src/extractor/extract-page.mjs --url "<competitor-url>" --out output/YYYY-MM-DD_<slug>/
+node src/extractor/extract-page.mjs "<competitor-url>" > output/YYYY-MM-DD_<slug>/pages/<competitor-slug>.json
 ```
-Extracts full readable text, headings, HTML signals, and readability metrics from each competitor page.
+Input: positional URL arg. Outputs JSON to stdout. Redirect each to `pages/<slug>.json`.
 
 #### Step 3: Keyword Processing
 ```bash
-node src/keywords/process-keywords.mjs --keyword "<seed-keyword>" --market <market> --out output/YYYY-MM-DD_<slug>/
+node src/keywords/process-keywords.mjs \
+  --related output/YYYY-MM-DD_<slug>/keywords-related-raw.json \
+  --suggestions output/YYYY-MM-DD_<slug>/keywords-suggestions-raw.json \
+  --seed "<seed-keyword>" \
+  [--volume output/YYYY-MM-DD_<slug>/keywords-volume-raw.json] \
+  [--brands "brand1,brand2"] \
+  > output/YYYY-MM-DD_<slug>/keywords-processed.json
 ```
-Expands seed keyword, clusters related keywords, computes difficulty and opportunity scores. Saves `keywords-processed.json`.
+Merges raw DataForSEO responses, clusters related keywords, computes difficulty and opportunity scores. Outputs JSON to stdout.
 
 #### Step 4: Keyword Filtering
 ```bash
-node src/keywords/filter-keywords.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/keywords/filter-keywords.mjs \
+  --keywords output/YYYY-MM-DD_<slug>/keywords-processed.json \
+  --serp output/YYYY-MM-DD_<slug>/serp-processed.json \
+  --seed "<seed-keyword>" \
+  [--blocklist blocklist.json] \
+  [--brands "brand1,brand2"] \
+  > output/YYYY-MM-DD_<slug>/keywords-filtered.json
 ```
-Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with token overlap scoring. Saves `keywords-filtered.json`.
+Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with token overlap scoring. Outputs JSON to stdout.
 
 #### Step 5: Page Structure Analysis
 ```bash
-node src/analysis/analyze-page-structure.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/analysis/analyze-page-structure.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ > output/YYYY-MM-DD_<slug>/page-structure.json
 ```
-Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Saves `page-structure.json`.
+Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Outputs JSON to stdout.
 
 #### Step 6: Content Topic Analysis
 ```bash
-node src/analysis/analyze-content-topics.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/analysis/analyze-content-topics.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ --seed "<seed-keyword>" > output/YYYY-MM-DD_<slug>/content-topics.json
 ```
-TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Saves `content-topics.json`.
+TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Outputs JSON to stdout.
 
 #### Step 7: Briefing Data Assembly
 ```bash

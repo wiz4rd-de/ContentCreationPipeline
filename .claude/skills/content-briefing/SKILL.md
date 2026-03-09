@@ -27,23 +27,38 @@ Execute each script in order. All scripts are deterministic -- same inputs produ
 
 ```bash
 # 1. SERP processing
-node src/serp/process-serp.mjs --keyword "<seed-keyword>" --market <market> --out output/YYYY-MM-DD_<slug>/
+# Input: raw SERP JSON from DataForSEO. Output: stdout JSON, redirect to serp-processed.json.
+node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top 10 > output/YYYY-MM-DD_<slug>/serp-processed.json
 
 # 2. Extract each competitor page
 # Read competitors from serp-processed.json, then for each URL:
-node src/extractor/extract-page.mjs --url "<competitor-url>" --out output/YYYY-MM-DD_<slug>/
+# Input: positional URL arg. Output: stdout JSON, redirect to pages/<slug>.json.
+node src/extractor/extract-page.mjs "<competitor-url>" > output/YYYY-MM-DD_<slug>/pages/<competitor-slug>.json
 
 # 3. Process keywords (clustering, difficulty, opportunity scores)
-node src/keywords/process-keywords.mjs --keyword "<seed-keyword>" --market <market> --out output/YYYY-MM-DD_<slug>/
+# Input: raw DataForSEO response files. Output: stdout JSON, redirect to keywords-processed.json.
+node src/keywords/process-keywords.mjs \
+  --related output/YYYY-MM-DD_<slug>/keywords-related-raw.json \
+  --suggestions output/YYYY-MM-DD_<slug>/keywords-suggestions-raw.json \
+  --seed "<seed-keyword>" \
+  [--volume output/YYYY-MM-DD_<slug>/keywords-volume-raw.json] \
+  [--brands "brand1,brand2"] \
+  > output/YYYY-MM-DD_<slug>/keywords-processed.json
 
 # 4. Filter keywords (ethics, brand, off-topic filtering + FAQ prioritization)
-node src/keywords/filter-keywords.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/keywords/filter-keywords.mjs \
+  --keywords output/YYYY-MM-DD_<slug>/keywords-processed.json \
+  --serp output/YYYY-MM-DD_<slug>/serp-processed.json \
+  --seed "<seed-keyword>" \
+  [--blocklist blocklist.json] \
+  [--brands "brand1,brand2"] \
+  > output/YYYY-MM-DD_<slug>/keywords-filtered.json
 
 # 5. Analyze page structure (module detection, content depth)
-node src/analysis/analyze-page-structure.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/analysis/analyze-page-structure.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ > output/YYYY-MM-DD_<slug>/page-structure.json
 
 # 6. Analyze content topics (TF-IDF entity extraction, section weights)
-node src/analysis/analyze-content-topics.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/analysis/analyze-content-topics.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ --seed "<seed-keyword>" > output/YYYY-MM-DD_<slug>/content-topics.json
 
 # 7. Assemble briefing data (consolidate all outputs)
 node src/analysis/assemble-briefing-data.mjs --dir output/YYYY-MM-DD_<slug>/
