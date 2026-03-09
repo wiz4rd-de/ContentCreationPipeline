@@ -129,6 +129,65 @@ describe('extract-page.mjs', () => {
     }
   });
 
+  it('outputs html_signals with element counts from Readability content', async () => {
+    const htmlWithSignals = `<!DOCTYPE html>
+<html><head><title>Signals Test</title></head>
+<body>
+  <h1>Signals</h1>
+  <p>Intro paragraph with enough text to be parsed by Readability as the main content area.
+  We need enough content for Readability to consider this article worthy of extraction.</p>
+  <table><tr><td>Row 1</td></tr></table>
+  <table><tr><td>Row 2</td></tr></table>
+  <ul><li>Bullet</li></ul>
+  <ol><li>Numbered</li></ol>
+  <details><summary>FAQ item</summary><p>Answer</p></details>
+  <iframe src="https://youtube.com/embed/x"></iframe>
+  <video src="video.mp4"></video>
+  <form><input type="text"></form>
+  <img src="a.jpg"><img src="b.jpg"><img src="c.jpg">
+  <p>More text to ensure Readability keeps this content as the main article body.
+  Additional sentences help Readability determine this is substantial content worth parsing.</p>
+</body></html>`;
+    const { server, url } = await createFixtureServer(htmlWithSignals);
+    try {
+      const stdout = await runExtractor(url);
+      const result = JSON.parse(stdout);
+      assert.ok(result.html_signals, 'html_signals must be present');
+      const hs = result.html_signals;
+      assert.ok(typeof hs.faq_sections === 'number', 'faq_sections must be a number');
+      assert.ok(typeof hs.tables === 'number', 'tables must be a number');
+      assert.ok(typeof hs.ordered_lists === 'number', 'ordered_lists must be a number');
+      assert.ok(typeof hs.unordered_lists === 'number', 'unordered_lists must be a number');
+      assert.ok(typeof hs.video_embeds === 'number', 'video_embeds must be a number');
+      assert.ok(typeof hs.forms === 'number', 'forms must be a number');
+      assert.ok(typeof hs.images_in_content === 'number', 'images_in_content must be a number');
+    } finally {
+      server.close();
+    }
+  });
+
+  it('html_signals has all zero counts for plain text page', async () => {
+    const plainHtml = `<!DOCTYPE html>
+<html><head><title>Plain</title></head>
+<body><h1>Plain Page</h1><p>Just plain text content with no special elements. This paragraph
+is long enough for Readability to parse it as the main article content area.</p></body></html>`;
+    const { server, url } = await createFixtureServer(plainHtml);
+    try {
+      const stdout = await runExtractor(url);
+      const result = JSON.parse(stdout);
+      const hs = result.html_signals;
+      assert.equal(hs.faq_sections, 0, 'no faq_sections in plain page');
+      assert.equal(hs.tables, 0, 'no tables in plain page');
+      assert.equal(hs.ordered_lists, 0, 'no ordered_lists in plain page');
+      assert.equal(hs.unordered_lists, 0, 'no unordered_lists in plain page');
+      assert.equal(hs.video_embeds, 0, 'no video_embeds in plain page');
+      assert.equal(hs.forms, 0, 'no forms in plain page');
+      assert.equal(hs.images_in_content, 0, 'no images_in_content in plain page');
+    } finally {
+      server.close();
+    }
+  });
+
   it('exits with error JSON when no URL is provided', () => {
     try {
       execFileSync('node', [scriptPath], { encoding: 'utf8', timeout: 10000 });
