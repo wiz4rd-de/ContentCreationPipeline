@@ -53,7 +53,10 @@ curl -s -X POST "$DATAFORSEO_BASE/serp/google/organic/live/advanced" \
 
 > **Encoding:** Always use `charset=utf-8` in the Content-Type header to support umlauts and special characters in keywords.
 
-> `location_code` is derived from `$SEO_MARKET` (e.g. `de` → 2276 for Germany). Refer to your provider's docs for the full mapping.
+> `location_code` is derived from `$SEO_MARKET`. Resolve it deterministically:
+> ```sh
+> node src/utils/resolve-location.mjs "$SEO_MARKET"
+> ```
 
 ### 1.3 Process SERP data (deterministic)
 

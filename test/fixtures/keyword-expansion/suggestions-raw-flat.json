@@ -1,0 +1,37 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "test keyword",
+          "items": [
+            {
+              "se_type": "google",
+              "keyword": "flat shape keyword",
+              "keyword_info": {
+                "search_volume": 500,
+                "cpc": 1.5,
+                "monthly_searches": []
+              },
+              "keyword_properties": {
+                "keyword_difficulty": 35
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "another flat keyword",
+              "keyword_info": {
+                "search_volume": 200,
+                "cpc": 0.8,
+                "monthly_searches": []
+              },
+              "keyword_properties": {
+                "keyword_difficulty": 20
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

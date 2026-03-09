@@ -13,6 +13,7 @@ Ask the user for:
 1. **Seed keyword or topic** (required)
 2. **Target market** (default: from `SEO_MARKET` in config)
 3. **Number of keywords to return** (default: 30)
+4. **Brand list** (optional, for navigational intent tagging)
 
 ## Steps
 
@@ -27,62 +28,84 @@ If `api.env` does not exist, tell the user to create it from the example:
 cp api.env.example api.env
 ```
 
-### 2. Call the keyword API
+### Phase 1 — Deterministic data collection
 
-Adapt URL, auth header, and payload to `$SEO_PROVIDER` — see `api.env.example` for provider-specific endpoints and credentials.
+All steps in this phase are deterministic scripts. No LLM inference.
+
+#### 1a. Resolve location code
 
 ```sh
-# Example (DataForSEO). Adapt for your provider.
-curl -s -X POST "$DATAFORSEO_BASE/keywords_data/google_ads/search_volume/live" \
-  -H "Authorization: Basic $DATAFORSEO_AUTH" \
-  -H "Content-Type: application/json" \
-  -d '[{"keywords": ["<SEED_KEYWORD>"], "language_code": "'"$SEO_LANGUAGE"'", "location_code": <LOCATION_CODE>}]' \
-  | jq '.tasks[0].result'
+node src/utils/resolve-location.mjs "$SEO_MARKET"
 ```
 
-> `location_code` is derived from `$SEO_MARKET` (e.g. `de` → 2276 for Germany). Refer to your provider's docs for the full mapping.
+#### 1b. Expand keywords (related + suggestions)
 
-### 3. Parse and structure the results
+```sh
+node src/keywords/fetch-keywords.mjs "<SEED_KEYWORD>" \
+  --market "$SEO_MARKET" --language "$SEO_LANGUAGE" --outdir "$OUTDIR" --limit 50
+```
 
-From the API response, extract and organize into a table:
+Produces:
+- `$OUTDIR/keywords-related-raw.json`
+- `$OUTDIR/keywords-suggestions-raw.json`
+- `$OUTDIR/keywords-expanded.json`
 
-| Keyword | Search Volume | Keyword Difficulty | CPC | Search Intent |
-|---------|--------------|-------------------|-----|---------------|
-| ...     | ...          | ...               | ... | ...           |
+#### 1c. Process keywords into structured skeleton
 
-Classify search intent as: **informational**, **navigational**, **commercial**, or **transactional**.
+```sh
+node src/keywords/process-keywords.mjs \
+  --related "$OUTDIR/keywords-related-raw.json" \
+  --suggestions "$OUTDIR/keywords-suggestions-raw.json" \
+  --seed "<SEED_KEYWORD>" \
+  [--brands "brand1,brand2"] \
+  > "$OUTDIR/keywords-processed.json"
+```
 
-If the API does not return intent data, infer it from the keyword phrasing:
-- "how to", "what is", "guide" → informational
-- "best", "top", "review", "vs" → commercial
-- "buy", "price", "discount", "coupon" → transactional
-- brand names, specific product names → navigational
+This script deterministically:
+1. Reads all raw JSON files
+2. Deduplicates keywords (case-insensitive, trimmed)
+3. Extracts volume, CPC, monthly_searches, and keyword difficulty per keyword (difficulty comes from `keyword_data.keyword_properties.keyword_difficulty` in the related/suggestions responses)
+4. Tags search intent via regex patterns (DE + EN)
+5. Clusters keywords via n-gram Jaccard overlap (threshold >= 0.5)
+6. Outputs a JSON skeleton with `null` placeholders for LLM fields (`cluster_label`, `strategic_notes`)
 
-### 4. Group into clusters
+### Phase 2 — Qualitative LLM analysis
 
-Group related keywords into topical clusters. For each cluster, note:
-- Primary keyword (highest volume)
-- Supporting keywords
-- Dominant intent
+The LLM fills ONLY the null fields in the processed skeleton:
+- `cluster_label`: a human-readable name for each cluster
+- `strategic_notes`: qualitative analysis per cluster
 
-### 5. Save output
+**Do NOT re-classify intent, re-cluster, or modify any numeric data.** Only fill null placeholders.
 
-Write the structured results to:
+### 3. Save output
+
+Write the final results to:
 ```
 output/YYYY-MM-DD_<SEED_KEYWORD_SLUG>/keywords-<SEED_KEYWORD_SLUG>.json
 ```
 
-JSON schema:
+JSON schema (output of `process-keywords.mjs`):
 ```json
 {
   "seed_keyword": "...",
-  "market": "...",
-  "date": "YYYY-MM-DD",
+  "total_keywords": 0,
+  "total_clusters": 0,
   "clusters": [
     {
-      "name": "cluster name",
-      "primary_keyword": { "keyword": "...", "volume": 0, "difficulty": 0, "cpc": 0, "intent": "..." },
-      "supporting_keywords": [ ... ]
+      "cluster_keyword": "highest volume keyword",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 0,
+      "keywords": [
+        {
+          "keyword": "...",
+          "search_volume": 0,
+          "cpc": 0,
+          "monthly_searches": [],
+          "difficulty": 0,
+          "intent": "informational|commercial|transactional|navigational|null"
+        }
+      ]
     }
   ]
 }

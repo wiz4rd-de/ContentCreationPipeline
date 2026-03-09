@@ -1,0 +1,59 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "keyword recherche",
+          "items": [
+            {
+              "keyword_data": {
+                "keyword": "keyword recherche",
+                "keyword_info": {
+                  "search_volume": 1200,
+                  "cpc": 2.5,
+                  "monthly_searches": [
+                    { "year": 2025, "month": 1, "search_volume": 1100 },
+                    { "year": 2025, "month": 2, "search_volume": 1300 }
+                  ]
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "keyword analyse",
+                "keyword_info": {
+                  "search_volume": 800,
+                  "cpc": 1.8,
+                  "monthly_searches": [
+                    { "year": 2025, "month": 1, "search_volume": 750 },
+                    { "year": 2025, "month": 2, "search_volume": 850 }
+                  ]
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "SEO Keywords finden",
+                "keyword_info": {
+                  "search_volume": 600,
+                  "cpc": 3.1,
+                  "monthly_searches": []
+                }
+              }
+            },
+            {
+              "keyword_data": {
+                "keyword": "Keyword Planner",
+                "keyword_info": {
+                  "search_volume": 5000,
+                  "cpc": 1.2,
+                  "monthly_searches": []
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
