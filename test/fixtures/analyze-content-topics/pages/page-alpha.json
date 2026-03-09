@@ -1,0 +1,18 @@
+{
+  "url": "https://alpha.example.com/mallorca-urlaub",
+  "main_content_text": "Mallorca Urlaub Mallorca ist eine beliebte Insel im Mittelmeer. Die beste Reisezeit fuer Mallorca ist von Mai bis Oktober. Straende und Buchten Die Straende von Mallorca sind wunderschoen. Cala Millor und Cala Ratjada gehoeren zu den beliebtesten Straenden. Das Wasser ist kristallklar und eignet sich perfekt zum Schwimmen und Tauchen. Viele Touristen besuchen die Insel wegen der schoenen Straende. Sehenswuerdigkeiten Die Kathedrale La Seu in Palma ist das Wahrzeichen der Insel. Das Castell de Bellver bietet einen tollen Ausblick ueber die Stadt. Die Drachhoehlen in Porto Cristo sind ein beliebtes Ausflugsziel fuer Familien und Paare. Aktivitaeten und Sport Wandern in der Serra de Tramuntana ist besonders beliebt bei Naturfreunden. Radfahren ist eine weitere populaere Aktivitaet auf Mallorca. Die Insel bietet zahlreiche Golfplaetze und Wassersportmoeglichkeiten.",
+  "headings": [
+    { "level": 2, "text": "Straende und Buchten" },
+    { "level": 2, "text": "Sehenswuerdigkeiten" },
+    { "level": 2, "text": "Aktivitaeten und Sport" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 1,
+    "ordered_lists": 1,
+    "unordered_lists": 2,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 5
+  }
+}
