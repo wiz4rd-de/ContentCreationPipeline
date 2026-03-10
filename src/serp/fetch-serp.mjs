@@ -12,215 +12,302 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// --- Parse arguments ---
-const args = process.argv.slice(2);
+// --- Pure functions (exported for testing) ---
 
-function flagValue(name, fallback) {
-  const idx = args.indexOf(name);
-  if (idx === -1) return fallback;
-  return args[idx + 1];
-}
+/**
+ * Parse CLI argv into structured options.
+ * @param {string[]} argv - process.argv.slice(2)
+ * @returns {{ keyword, market, language, outdir, depth, timeout }}
+ */
+function parseArgs(argv) {
+  function flagValue(name, fallback) {
+    const idx = argv.indexOf(name);
+    if (idx === -1) return fallback;
+    return argv[idx + 1];
+  }
 
-const keyword = args.find(a => {
-  if (a.startsWith('--')) return false;
-  // Skip values that follow a flag
-  const prevIdx = args.indexOf(a) - 1;
-  if (prevIdx >= 0 && args[prevIdx].startsWith('--')) return false;
-  return true;
-});
-const market = flagValue('--market', undefined);
-const language = flagValue('--language', undefined);
-const outdir = flagValue('--outdir', undefined);
-const depth = parseInt(flagValue('--depth', '10'), 10);
-const timeout = parseInt(flagValue('--timeout', '120'), 10);
-
-if (keyword === undefined || market === undefined || language === undefined || outdir === undefined) {
-  console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N]');
-  process.exit(1);
-}
-
-// --- Load API credentials ---
-const envPath = join(__dirname, '..', '..', 'api.env');
-const envContent = readFileSync(envPath, 'utf-8');
-const env = {};
-for (const line of envContent.split('\n')) {
-  const trimmed = line.trim();
-  if (trimmed === '' || trimmed.startsWith('#')) continue;
-  const eqIdx = trimmed.indexOf('=');
-  if (eqIdx === -1) continue;
-  env[trimmed.slice(0, eqIdx)] = trimmed.slice(eqIdx + 1);
-}
-
-const auth = env.DATAFORSEO_AUTH;
-const base = env.DATAFORSEO_BASE;
-if (auth === undefined || auth === '' || base === undefined || base === '') {
-  console.error('Error: DATAFORSEO_AUTH and DATAFORSEO_BASE must be set in api.env');
-  process.exit(1);
-}
-
-// --- Resolve location code ---
-const codes = JSON.parse(readFileSync(join(__dirname, '..', 'utils', 'location-codes.json'), 'utf-8'));
-const locationCode = codes[market.toLowerCase()];
-if (locationCode === undefined) {
-  console.error(`Unknown market: "${market}". Available: ${Object.keys(codes).join(', ')}`);
-  process.exit(1);
-}
-
-// --- Ensure output directory exists ---
-mkdirSync(outdir, { recursive: true });
-
-// --- API helpers ---
-async function postEndpoint(path, body) {
-  const url = `${base}/${path}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30000),
+  const keyword = argv.find(a => {
+    if (a.startsWith('--')) return false;
+    // Skip values that follow a flag
+    const prevIdx = argv.indexOf(a) - 1;
+    if (prevIdx >= 0 && argv[prevIdx].startsWith('--')) return false;
+    return true;
   });
-  if (res.ok === false) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`);
-  }
-  return res.json();
+
+  return {
+    keyword: keyword === undefined ? undefined : keyword,
+    market: flagValue('--market', undefined),
+    language: flagValue('--language', undefined),
+    outdir: flagValue('--outdir', undefined),
+    depth: parseInt(flagValue('--depth', '10'), 10),
+    timeout: parseInt(flagValue('--timeout', '120'), 10),
+  };
 }
 
-async function getEndpoint(path) {
-  const url = `${base}/${path}`;
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Basic ${auth}`,
-    },
-    signal: AbortSignal.timeout(30000),
-  });
-  if (res.ok === false) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`);
-  }
-  return res.json();
-}
-
-// --- Exponential backoff calculator ---
-function calculateBackoff(attempt, initialDelay, factor, maxDelay) {
-  const delay = Math.min(initialDelay * Math.pow(factor, attempt), maxDelay);
-  return delay;
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// --- Step 1: Post task ---
-console.error(`Posting SERP task for "${keyword}" (market=${market}, lang=${language}, depth=${depth})...`);
-
-const taskPostBody = [{
-  keyword,
-  language_code: language,
-  location_code: locationCode,
-  depth,
-}];
-
-const postResponse = await postEndpoint('serp/google/organic/task_post', taskPostBody);
-
-const postTask = postResponse.tasks && postResponse.tasks[0];
-if (postTask === undefined || postTask === null) {
-  throw new Error('task_post returned no tasks in response');
-}
-
-const statusCode = postTask.status_code;
-if (statusCode === undefined || statusCode === null) {
-  throw new Error('task_post returned no status_code');
-}
-if (String(statusCode) === '20100') {
-  // 20100 = Task Created -- expected
-} else {
-  throw new Error(`task_post failed with status ${statusCode}: ${postTask.status_message || 'unknown error'}`);
-}
-
-const taskId = postTask.id;
-if (taskId === undefined || taskId === null) {
-  throw new Error('task_post returned no task ID');
-}
-
-console.error(`Task created: ${taskId}`);
-
-// --- Step 2: Poll tasks_ready with exponential backoff ---
-const INITIAL_DELAY = 5000;  // 5 seconds
-const BACKOFF_FACTOR = 1.5;
-const MAX_DELAY = 30000;     // 30 seconds
-const timeoutMs = timeout * 1000;
-const startTime = Date.now();
-
-let attempt = 0;
-let taskReady = false;
-
-while (taskReady === false) {
-  const elapsed = Date.now() - startTime;
-  if (elapsed >= timeoutMs) {
-    throw new Error(`Task ${taskId} timed out after ${timeout} seconds. Status: pending`);
+/**
+ * Parse an api.env file into { auth, base }.
+ * @param {string} filePath - path to the env file
+ * @returns {{ auth: string, base: string }}
+ */
+function loadEnv(filePath) {
+  const content = readFileSync(filePath, 'utf-8');
+  const env = {};
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed === '' || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    env[trimmed.slice(0, eqIdx)] = trimmed.slice(eqIdx + 1);
   }
 
-  const delay = calculateBackoff(attempt, INITIAL_DELAY, BACKOFF_FACTOR, MAX_DELAY);
-  console.error(`Waiting ${(delay / 1000).toFixed(1)}s before poll attempt ${attempt + 1}...`);
-  await sleep(delay);
+  const auth = env.DATAFORSEO_AUTH;
+  const base = env.DATAFORSEO_BASE;
+  if (auth === undefined || auth === '') {
+    throw new Error('DATAFORSEO_AUTH must be set in api.env');
+  }
+  if (base === undefined || base === '') {
+    throw new Error('DATAFORSEO_BASE must be set in api.env');
+  }
+  return { auth, base };
+}
 
-  console.error(`Polling for task ${taskId}... attempt ${attempt + 1}`);
+/**
+ * Look up a DataForSEO location code for a market.
+ * @param {string} market - two-letter country code
+ * @returns {number} location code
+ */
+function resolveLocation(market) {
+  const codes = JSON.parse(readFileSync(join(__dirname, '..', 'utils', 'location-codes.json'), 'utf-8'));
+  const code = codes[market.toLowerCase()];
+  if (code === undefined) {
+    throw new Error(`Unknown market: "${market}". Available: ${Object.keys(codes).join(', ')}`);
+  }
+  return code;
+}
 
-  const readyResponse = await getEndpoint('serp/google/organic/tasks_ready');
-  const readyTasks = readyResponse.tasks;
+/**
+ * Extract task UUID from a task_post response.
+ * @param {object} response - parsed JSON from task_post
+ * @returns {string} task ID
+ */
+function extractTaskId(response) {
+  const task = response.tasks && response.tasks[0];
+  if (task === undefined || task === null) {
+    throw new Error('task_post returned no tasks in response');
+  }
 
+  const statusCode = task.status_code;
+  if (statusCode === undefined || statusCode === null) {
+    throw new Error('task_post returned no status_code');
+  }
+  if (String(statusCode) === '20100') {
+    // 20100 = Task Created -- expected
+  } else {
+    throw new Error(`task_post failed with status ${statusCode}: ${task.status_message || 'unknown error'}`);
+  }
+
+  const taskId = task.id;
+  if (taskId === undefined || taskId === null) {
+    throw new Error('task_post returned no task ID');
+  }
+  return taskId;
+}
+
+/**
+ * Check if a specific task ID appears in a tasks_ready response.
+ * Returns false if the task is not found, or an object with the endpoint URL if found.
+ * @param {object} response - parsed JSON from tasks_ready
+ * @param {string} taskId - the task ID to look for
+ * @returns {false | { ready: true, endpoint_advanced: string|null }}
+ */
+function isTaskReady(response, taskId) {
+  const readyTasks = response.tasks;
   if (readyTasks && readyTasks.length > 0) {
     for (const t of readyTasks) {
       if (t.result && t.result.length > 0) {
         for (const r of t.result) {
           if (r.id === taskId) {
-            taskReady = true;
-            break;
+            return {
+              ready: true,
+              endpoint_advanced: r.endpoint_advanced || null,
+            };
           }
         }
       }
-      if (taskReady) break;
     }
   }
-
-  attempt += 1;
+  return false;
 }
 
-console.error(`Task ${taskId} is ready. Retrieving results...`);
-
-// --- Step 3: Retrieve results ---
-const getResponse = await getEndpoint(`serp/google/organic/task_get/advanced/${taskId}`);
-
-const getTask = getResponse.tasks && getResponse.tasks[0];
-if (getTask === undefined || getTask === null) {
-  throw new Error('task_get returned no tasks in response');
+/**
+ * Exponential backoff calculator.
+ * @param {number} attempt - zero-based attempt number
+ * @param {{ initialDelay: number, factor: number, maxDelay: number }} opts
+ * @returns {number} delay in milliseconds
+ */
+function calculateBackoff(attempt, opts) {
+  const { initialDelay, factor, maxDelay } = opts;
+  const delay = Math.min(initialDelay * Math.pow(factor, attempt), maxDelay);
+  return delay;
 }
 
-const getStatusCode = getTask.status_code;
-if (getStatusCode !== undefined && getStatusCode !== null) {
-  const code = getStatusCode.toString();
-  if (code === '40401') {
-    throw new Error(`Task ${taskId} not found (40401). The task may have expired.`);
+// --- Export pure functions for testing ---
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff };
+
+// --- Main execution guard ---
+// Only run main logic when executed directly (not when imported as a module)
+const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'));
+if (isMain) {
+  // --- Parse arguments ---
+  const parsed = parseArgs(process.argv.slice(2));
+  const { keyword, market, language, outdir, depth, timeout } = parsed;
+
+  if (keyword === undefined || market === undefined || language === undefined || outdir === undefined) {
+    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N]');
+    process.exit(1);
   }
-  if (code === '40403') {
-    throw new Error(`Task ${taskId} results expired (40403). Results are only available for 3 days.`);
+
+  // --- Load API credentials ---
+  const envPath = join(__dirname, '..', '..', 'api.env');
+  let creds;
+  try {
+    creds = loadEnv(envPath);
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
   }
-  if (code === '20000') {
-    // Success
+  const { auth, base } = creds;
+
+  // --- Resolve location code ---
+  let locationCode;
+  try {
+    locationCode = resolveLocation(market);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+
+  // --- Ensure output directory exists ---
+  mkdirSync(outdir, { recursive: true });
+
+  // --- API helpers ---
+  async function postEndpoint(path, body) {
+    const url = `${base}/${path}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (res.ok === false) {
+      throw new Error(`API error ${res.status}: ${await res.text()}`);
+    }
+    return res.json();
+  }
+
+  async function getEndpoint(path) {
+    const url = `${base}/${path}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+      },
+      signal: AbortSignal.timeout(30000),
+    });
+    if (res.ok === false) {
+      throw new Error(`API error ${res.status}: ${await res.text()}`);
+    }
+    return res.json();
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // --- Step 1: Post task ---
+  console.error(`Posting SERP task for "${keyword}" (market=${market}, lang=${language}, depth=${depth})...`);
+
+  const taskPostBody = [{
+    keyword,
+    language_code: language,
+    location_code: locationCode,
+    depth,
+  }];
+
+  const postResponse = await postEndpoint('serp/google/organic/task_post', taskPostBody);
+  const taskId = extractTaskId(postResponse);
+
+  console.error(`Task created: ${taskId}`);
+
+  // --- Step 2: Poll tasks_ready with exponential backoff ---
+  const INITIAL_DELAY = 5000;  // 5 seconds
+  const BACKOFF_FACTOR = 1.5;
+  const MAX_DELAY = 30000;     // 30 seconds
+  const timeoutMs = timeout * 1000;
+  const startTime = Date.now();
+
+  let attempt = 0;
+  let taskReady = false;
+
+  while (taskReady === false) {
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= timeoutMs) {
+      throw new Error(`Task ${taskId} timed out after ${timeout} seconds. Status: pending`);
+    }
+
+    const delay = calculateBackoff(attempt, { initialDelay: INITIAL_DELAY, factor: BACKOFF_FACTOR, maxDelay: MAX_DELAY });
+    console.error(`Waiting ${(delay / 1000).toFixed(1)}s before poll attempt ${attempt + 1}...`);
+    await sleep(delay);
+
+    console.error(`Polling for task ${taskId}... attempt ${attempt + 1}`);
+
+    const readyResponse = await getEndpoint('serp/google/organic/tasks_ready');
+    const result = isTaskReady(readyResponse, taskId);
+
+    if (result !== false) {
+      taskReady = true;
+    }
+
+    attempt += 1;
+  }
+
+  console.error(`Task ${taskId} is ready. Retrieving results...`);
+
+  // --- Step 3: Retrieve results ---
+  const getResponse = await getEndpoint(`serp/google/organic/task_get/advanced/${taskId}`);
+
+  const getTask = getResponse.tasks && getResponse.tasks[0];
+  if (getTask === undefined || getTask === null) {
+    throw new Error('task_get returned no tasks in response');
+  }
+
+  const getStatusCode = getTask.status_code;
+  if (getStatusCode !== undefined && getStatusCode !== null) {
+    const code = getStatusCode.toString();
+    if (code === '40401') {
+      throw new Error(`Task ${taskId} not found (40401). The task may have expired.`);
+    }
+    if (code === '40403') {
+      throw new Error(`Task ${taskId} results expired (40403). Results are only available for 3 days.`);
+    }
+    if (code === '20000') {
+      // Success
+    } else {
+      throw new Error(`task_get failed with status ${getStatusCode}: ${getTask.status_message || 'unknown error'}`);
+    }
   } else {
-    throw new Error(`task_get failed with status ${getStatusCode}: ${getTask.status_message || 'unknown error'}`);
+    throw new Error('task_get returned no status_code');
   }
-} else {
-  throw new Error('task_get returned no status_code');
+
+  // --- Save raw response ---
+  const rawPath = join(outdir, 'serp-raw.json');
+  const rawJson = JSON.stringify(getResponse, null, 2);
+  writeFileSync(rawPath, rawJson);
+  console.error(`Saved: ${rawPath}`);
+
+  // --- Output to stdout for pipeline chaining ---
+  process.stdout.write(rawJson + '\n');
 }
-
-// --- Save raw response ---
-const rawPath = join(outdir, 'serp-raw.json');
-const rawJson = JSON.stringify(getResponse, null, 2);
-writeFileSync(rawPath, rawJson);
-console.error(`Saved: ${rawPath}`);
-
-// --- Output to stdout for pipeline chaining ---
-process.stdout.write(rawJson + '\n');

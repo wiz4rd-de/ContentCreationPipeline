@@ -1,0 +1,43 @@
+{
+  "version": "0.1.20260223",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0180 sec.",
+  "cost": 0,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "03101504-6886-0139-0000-aaaaaaaaaaaa",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "0.0021 sec.",
+      "cost": 0,
+      "result_count": 2,
+      "path": ["v3", "serp", "google", "organic", "tasks_ready"],
+      "data": null,
+      "result": [
+        {
+          "id": "03101504-6886-0139-0000-bbbbbbbbbbbb",
+          "se": "google",
+          "se_type": "organic",
+          "date_posted": "2026-03-10 12:00:00 +00:00",
+          "tag": null,
+          "endpoint_regular": "/v3/serp/google/organic/task_get/regular/03101504-6886-0139-0000-bbbbbbbbbbbb",
+          "endpoint_advanced": "/v3/serp/google/organic/task_get/advanced/03101504-6886-0139-0000-bbbbbbbbbbbb",
+          "endpoint_html": "/v3/serp/google/organic/task_get/html/03101504-6886-0139-0000-bbbbbbbbbbbb"
+        },
+        {
+          "id": "03101504-6886-0139-0000-3d651db5c686",
+          "se": "google",
+          "se_type": "organic",
+          "date_posted": "2026-03-10 13:04:00 +00:00",
+          "tag": null,
+          "endpoint_regular": "/v3/serp/google/organic/task_get/regular/03101504-6886-0139-0000-3d651db5c686",
+          "endpoint_advanced": "/v3/serp/google/organic/task_get/advanced/03101504-6886-0139-0000-3d651db5c686",
+          "endpoint_html": "/v3/serp/google/organic/task_get/html/03101504-6886-0139-0000-3d651db5c686"
+        }
+      ]
+    }
+  ]
+}
