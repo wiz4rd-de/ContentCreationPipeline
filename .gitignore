@@ -8,6 +8,7 @@
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+.claude/skills/implement-issues/
 
 # Pipeline output (keep directory structure)
 output/*
