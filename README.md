@@ -138,6 +138,18 @@ ClaudeContentCreationPipeline/
       content-strategy/        # Step 3: Content strategy
       content-briefing/        # Step 4: Content briefing
       content-draft/           # Step 5: Content draft
+  src/
+    serp/
+      fetch-serp.mjs             # SERP data fetcher (async task_post/task_get)
+      process-serp.mjs           # Deterministic SERP parser
+      assemble-competitors.mjs   # Competitor data skeleton builder
+    keywords/
+      fetch-keywords.mjs         # Keyword data fetcher (live endpoints)
+      process-keywords.mjs       # Deterministic keyword processor
+    extractor/
+      extract-page.mjs           # Page content extractor
+    utils/
+      resolve-location.mjs       # Market code to location code resolver
   templates/                   # Content structure templates
   output/                      # Generated pipeline outputs
   api.env.example              # API configuration template

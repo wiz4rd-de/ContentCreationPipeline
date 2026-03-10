@@ -37,6 +37,7 @@ Confirm results with the user before proceeding. They may want to adjust the key
 
 Follow the instructions in the `competitor-analysis` skill:
 - Use the primary keywords from Step 1
+- SERP data is fetched via `src/serp/fetch-serp.mjs` (async task_post/task_get workflow -- cheaper than live/advanced)
 - Analyze top-ranking pages
 - Save to `output/YYYY-MM-DD_<seed-keyword-slug>/competitors-<slug>.json`
 
