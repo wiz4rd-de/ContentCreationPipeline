@@ -1,11 +1,11 @@
 ---
 name: content-briefing
-description: Generate a detailed content brief from pre-computed pipeline data. The deterministic pipeline produces briefing-data.json; this skill adds qualitative analysis in a single LLM call and assembles the final briefing document.
+description: Generate a detailed content brief from pre-computed pipeline data. The deterministic pipeline produces briefing-data.json; this skill adds qualitative analysis in six sequential LLM steps and assembles the final briefing document.
 ---
 
 # Content Briefing
 
-Generate a detailed content brief from deterministic pipeline data (`briefing-data.json`) plus a single LLM call for qualitative interpretation.
+Generate a detailed content brief from deterministic pipeline data (`briefing-data.json`) plus six sequential LLM steps for qualitative interpretation.
 
 ## Inputs
 
@@ -66,47 +66,44 @@ node src/analysis/assemble-briefing-data.mjs --dir output/YYYY-MM-DD_<slug>/
 
 ### If `briefing-data.json` already exists, skip to Phase 2.
 
-## Phase 2: Single LLM Call (Qualitative Analysis)
+## Phase 2: Qualitative Analysis (6 Sequential Steps)
 
-Read the following files:
-- `output/YYYY-MM-DD_<slug>/briefing-data.json`
-- The selected template from `templates/` (if any)
-- The tone-of-voice file (if selected)
+### Protocol for all steps
 
-### Prompt Construction
+Each step follows the same protocol:
 
-Build a single prompt containing the full data skeleton from `briefing-data.json`. The prompt MUST include this instruction block at the top:
-
----
-
-**CRITICAL INSTRUCTION: All quantitative data below is pre-computed by deterministic scripts and is authoritative. Do NOT re-count keywords, re-rank clusters, re-compute volumes, or modify any numeric values. Your role is strictly qualitative interpretation and strategic recommendation. Every number, ranking, and classification in the data skeleton must appear unchanged in the final output.**
+1. **Read** `output/YYYY-MM-DD_<slug>/briefing-data.json` from disk
+2. **Check** if `qualitative.<field>` is already non-null → if so, print `"Step N: <field> already complete — skipping."` and move to the next step
+3. **Perform** the analysis described for this step
+4. **Write** the updated JSON back to disk (`JSON.stringify(data, null, 2)` + trailing newline)
+5. **Print** one-line confirmation: `"Step N: <field> complete — saved to briefing-data.json."`
 
 ---
 
-The prompt asks the LLM to fill ONLY the following qualitative fields, then assemble the briefing:
+**CRITICAL INSTRUCTION: All quantitative data in `briefing-data.json` is pre-computed by deterministic scripts and is authoritative. Do NOT re-count keywords, re-rank clusters, re-compute volumes, or modify any numeric values. Your role is strictly qualitative interpretation and strategic recommendation. Every number, ranking, and classification in the data skeleton must appear unchanged in the final output.**
 
-### Qualitative Field 1: Entity Categorization (`qualitative.entity_clusters`)
+---
+
+### Step 2.1: Entity Categorization → `qualitative.entity_clusters`
 
 Input: `content_analysis.entity_candidates` (list of terms with document_frequency, tf_idf_score, prominence)
 
 Task: Group these entity candidates into 3-5 semantic categories (e.g., "Orte & Regionen", "Aktivitaeten & Erlebnisse", "Praktische Infos"). For each category, list the entities and generate a synonym list (useful for entity prominence correction in future runs).
 
-Output format:
+Output format — set `qualitative.entity_clusters` to:
 ```json
-{
-  "entity_clusters": [
-    {
-      "category": "Orte & Regionen",
-      "entities": ["Palma", "Soller", "Valldemossa"],
-      "synonyms": { "Palma": ["Palma de Mallorca", "Hauptstadt Mallorcas"] }
-    }
-  ]
-}
+[
+  {
+    "category": "Orte & Regionen",
+    "entities": ["Palma", "Soller", "Valldemossa"],
+    "synonyms": { "Palma": ["Palma de Mallorca", "Hauptstadt Mallorcas"] }
+  }
+]
 ```
 
-### Qualitative Field 2: GEO Audit (`qualitative.geo_audit`)
+### Step 2.2: GEO Audit → `qualitative.geo_audit`
 
-Input: The seed keyword + all data from `briefing-data.json`
+Input: `meta.seed_keyword` + full `briefing-data.json` for context
 
 Task: Based on your training data (not the pipeline data), assess:
 - **Semantic must-haves:** Topics/entities the article MUST cover to be considered authoritative
@@ -114,83 +111,79 @@ Task: Based on your training data (not the pipeline data), assess:
 - **Hallucination risks:** Facts that are commonly stated incorrectly about this topic
 - **Information gaps:** Topics the competitor data does NOT cover but should
 
-Output format:
+Output format — set `qualitative.geo_audit` to:
 ```json
 {
-  "geo_audit": {
-    "must_haves": ["..."],
-    "hidden_gems": ["..."],
-    "hallucination_risks": ["..."],
-    "information_gaps": ["..."]
-  }
+  "must_haves": ["..."],
+  "hidden_gems": ["..."],
+  "hallucination_risks": ["..."],
+  "information_gaps": ["..."]
 }
 ```
 
-### Qualitative Field 3: Content Format Recommendation (`qualitative.content_format_recommendation`)
+### Step 2.3: Content Format Recommendation → `qualitative.content_format_recommendation`
 
 Input: `content_analysis.content_format_signals` + `competitor_analysis.page_structures`
 
 Task: Given the format signals (list counts, heading patterns, avg word count), recommend one of: Ratgeber, Listicle, or Hybrid. Provide a brief rationale.
 
-Output format:
+Output format — set `qualitative.content_format_recommendation` to:
 ```json
 {
-  "content_format_recommendation": {
-    "format": "Hybrid",
-    "rationale": "..."
-  }
+  "format": "Hybrid",
+  "rationale": "..."
 }
 ```
 
-### Qualitative Field 4: Unique Angles (`qualitative.unique_angles`)
+### Step 2.4: Unique Angles → `qualitative.unique_angles`
 
 Input: All data from `briefing-data.json` (especially `competitor_analysis`, `content_analysis`, `faq_data`)
 
 Task: Identify 3-5 differentiation opportunities beyond what the deterministic data shows. What can this article offer that competitors do not?
 
-Output format:
+Output format — set `qualitative.unique_angles` to:
 ```json
-{
-  "unique_angles": [
-    { "angle": "...", "rationale": "..." }
-  ]
-}
+[
+  { "angle": "...", "rationale": "..." }
+]
 ```
 
-### Qualitative Field 5: AIO Optimization Strategy (`qualitative.aio_strategy`)
+### Step 2.5: AIO Optimization Strategy → `qualitative.aio_strategy`
 
 Input: `serp_data.aio` + `faq_data` + `content_analysis.proof_keywords`
 
 Task: Given the AIO data (presence, citations, text), recommend 3-5 quotable snippet patterns the article should include to maximize AI Overview citation probability. Each snippet should be a concise, factual statement that an AI could cite directly.
 
-Output format:
+Output format — set `qualitative.aio_strategy` to:
 ```json
 {
-  "aio_strategy": {
-    "snippets": [
-      { "topic": "...", "pattern": "...", "target_section": "..." }
-    ]
-  }
+  "snippets": [
+    { "topic": "...", "pattern": "...", "target_section": "..." }
+  ]
 }
 ```
 
-### Qualitative Field 6: Final Briefing Assembly (`qualitative.briefing`)
+### Step 2.6: Final Briefing Assembly → `qualitative.briefing`
 
-Input: ALL of `briefing-data.json` (deterministic + the 5 qualitative fields above) + the selected template
+**Pre-condition:** Before starting, verify that all 5 prior qualitative fields (`entity_clusters`, `geo_audit`, `content_format_recommendation`, `unique_angles`, `aio_strategy`) are non-null. If any are still null, STOP and report which fields are missing — do not proceed.
+
+**Additional inputs:** Read the selected template from `templates/` (if any) and the tone-of-voice file (if selected). These files are only needed for this step.
+
+Input: Entire `briefing-data.json` with all filled qualitative fields + the selected template
 
 Task: Assemble the final content briefing as a structured markdown document. The briefing MUST follow this structure:
 
 #### Briefing Output Structure
 
 **1. Strategische Ausrichtung**
-- Content format recommendation (from qualitative field 3)
+- Content format recommendation (from step 2.3)
 - Target audience and search intent
 - Competitive positioning summary
 
 **2. Keywords & Semantik**
 - Primary keyword cluster (from `keyword_data.clusters[0]`)
 - Top 5 keyword clusters with volumes (from deterministic data -- copy exactly, do NOT re-rank)
-- Entity categories with synonyms (from qualitative field 1)
+- Entity categories with synonyms (from step 2.1)
 - Proof keywords (from `content_analysis.proof_keywords` -- copy exactly)
 
 **3. Seitenaufbau & Pflicht-Module**
@@ -201,12 +194,12 @@ Task: Assemble the final content briefing as a structured markdown document. The
 
 **4. Differenzierungs-Chancen**
 - Rare modules as opportunities (from deterministic data)
-- Unique angles (from qualitative field 4)
-- Information gaps (from qualitative field 2 GEO audit)
+- Unique angles (from step 2.4)
+- Information gaps (from step 2.2 GEO audit)
 
 **5. AI-Overview-Optimierung**
 - Current AIO status (from `serp_data.aio` -- present/absent, cited domains)
-- Quotable snippet recommendations (from qualitative field 5)
+- Quotable snippet recommendations (from step 2.5)
 - AIO-relevant FAQ questions (cross-reference with `faq_data`)
 
 **6. FAQ-Sektion**
@@ -219,9 +212,9 @@ Task: Assemble the final content briefing as a structured markdown document. The
 - If no template: propose a section outline based on competitor section weights and keyword clusters
 
 **8. Informationsluecken**
-- GEO audit must-haves not covered by competitors (from qualitative field 2)
-- Hidden gems (from qualitative field 2)
-- Hallucination risks to avoid (from qualitative field 2)
+- GEO audit must-haves not covered by competitors (from step 2.2)
+- Hidden gems (from step 2.2)
+- Hallucination risks to avoid (from step 2.2)
 
 **9. Keyword-Referenz**
 This section is FULLY DETERMINISTIC. Copy directly from `keyword_data.clusters`. For each cluster:
@@ -234,15 +227,14 @@ This section is FULLY DETERMINISTIC. Copy directly from `keyword_data.clusters`.
 
 Do NOT summarize, re-rank, or omit any clusters. This is a reference table, not an interpretation.
 
-## Phase 3: Save Outputs
+After assembling the briefing markdown, set `qualitative.briefing` to a short summary string (NOT the full markdown). The full markdown is saved as a separate file in Phase 3.
 
-Save two files to the output directory:
+## Phase 3: Save Final Briefing
 
-1. **`briefing-data.json`** -- Update the existing file: fill the `qualitative` object with the 5 qualitative field values (entity_clusters, geo_audit, content_format_recommendation, unique_angles, aio_strategy). Set `qualitative.briefing` to a short summary string (not the full markdown). Write the updated JSON back.
+Since `briefing-data.json` is already updated incrementally during Phase 2 steps, Phase 3 only needs to:
 
-2. **`brief-<seed-keyword-slug>.md`** -- The complete briefing markdown document assembled in qualitative field 6.
-
-Print the final briefing to the conversation so the user can review immediately.
+1. **Save `brief-<seed-keyword-slug>.md`** -- The complete briefing markdown document assembled in Step 2.6.
+2. **Print** the final briefing to the conversation so the user can review immediately.
 
 ## Data Integrity Rules
 
