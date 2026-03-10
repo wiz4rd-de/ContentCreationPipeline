@@ -31,32 +31,30 @@ All data extraction happens through deterministic scripts. No LLM interpretation
 ### 1.1 Load config and prior data
 
 ```sh
-source api.env
+source api.env   # provides $SEO_MARKET and $SEO_LANGUAGE (API credentials are loaded internally by fetch-serp.mjs)
 ```
 
 Check `output/` for existing keyword research files. If one exists for the topic, offer to use it.
 
 ### 1.2 Fetch SERP data
 
-For each primary keyword, retrieve the top 10 search results.
-
-Adapt URL, auth header, and payload to `$SEO_PROVIDER` — see `api.env.example` for provider-specific endpoints and credentials.
+For each primary keyword, retrieve the top 10 search results using the async SERP workflow:
 
 ```sh
-# Example (DataForSEO). Adapt for your provider.
-curl -s -X POST "$DATAFORSEO_BASE/serp/google/organic/live/advanced" \
-  -H "Authorization: Basic $DATAFORSEO_AUTH" \
-  -H "Content-Type: application/json; charset=utf-8" \
-  -d '[{"keyword": "<KEYWORD>", "language_code": "'"$SEO_LANGUAGE"'", "location_code": <LOCATION_CODE>, "depth": 10}]' \
-  > output/YYYY-MM-DD_<slug>/serp-raw.json
+node src/serp/fetch-serp.mjs "<KEYWORD>" \
+  --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
+  --outdir output/YYYY-MM-DD_<slug>/ \
+  --depth 10
 ```
 
-> **Encoding:** Always use `charset=utf-8` in the Content-Type header to support umlauts and special characters in keywords.
+This single command handles everything:
+- Reads API credentials from `api.env` (no need to pass auth headers)
+- Resolves the location code from `$SEO_MARKET` internally (no separate `resolve-location.mjs` call needed)
+- Posts a task to the async `task_post` endpoint, polls for completion, and retrieves results via `task_get/advanced`
+- Saves the raw response to `$outdir/serp-raw.json`
+- Outputs the raw JSON to stdout for pipeline chaining
 
-> `location_code` is derived from `$SEO_MARKET`. Resolve it deterministically:
-> ```sh
-> node src/utils/resolve-location.mjs "$SEO_MARKET"
-> ```
+> **Note:** `resolve-location.mjs` still exists in `src/utils/` and can be used standalone if needed by other parts of the pipeline.
 
 ### 1.3 Process SERP data (deterministic)
 
@@ -156,7 +154,7 @@ Print a concise competitive landscape summary to the conversation, including:
 
 ## SERP Feature Reference
 
-The advanced endpoint can return up to 50 different item types. The deterministic parser (`process-serp.mjs`) handles these automatically. For reference, the categories are:
+The pipeline uses the async `task_post`/`task_get/advanced` workflow (via `fetch-serp.mjs`) instead of the synchronous `live/advanced` endpoint. The response structure is identical -- both nest results at `tasks[0].result[0]`. The async workflow is cheaper and avoids timeout issues on slow queries. The endpoint can return up to 50 different item types. The deterministic parser (`process-serp.mjs`) handles these automatically. For reference, the categories are:
 
 #### Core ranking items
 - **`organic`** — competitor URLs, titles, descriptions, rank positions
