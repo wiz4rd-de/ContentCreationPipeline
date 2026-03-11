@@ -1,0 +1,27 @@
+{
+  "entity_clusters": [
+    {
+      "category_name": "Tools",
+      "entities": [
+        {
+          "entity": "Google",
+          "prominence": "3/3",
+          "prominence_source": "code",
+          "synonyms": [
+            "Google",
+            "google.com"
+          ]
+        },
+        {
+          "entity": "Semrush",
+          "prominence": "2/3",
+          "prominence_source": "code",
+          "synonyms": [
+            "Semrush",
+            "semrush.com"
+          ]
+        }
+      ]
+    }
+  ]
+}

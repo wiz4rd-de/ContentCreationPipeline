@@ -1,0 +1,71 @@
+{
+  "proof_keywords": [
+    {
+      "term": "keyword recherche",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 5.2
+    },
+    {
+      "term": "suchvolumen",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 3.8
+    },
+    {
+      "term": "seo strategie",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 2.1
+    }
+  ],
+  "entity_candidates": [
+    {
+      "term": "google",
+      "document_frequency": 3,
+      "pages": [
+        "example.com",
+        "test.de",
+        "third.com"
+      ]
+    },
+    {
+      "term": "semrush",
+      "document_frequency": 2,
+      "pages": [
+        "example.com",
+        "test.de"
+      ]
+    }
+  ],
+  "section_weights": [
+    {
+      "heading_cluster": "keyword recherche grundlagen",
+      "sample_headings": [
+        "Keyword Recherche Grundlagen",
+        "Grundlagen der Keyword Recherche"
+      ],
+      "occurrence": 3,
+      "avg_word_count": 450,
+      "avg_content_percentage": 18.5,
+      "weight": "medium"
+    },
+    {
+      "heading_cluster": "tools und methoden",
+      "sample_headings": [
+        "Tools und Methoden"
+      ],
+      "occurrence": 2,
+      "avg_word_count": 300,
+      "avg_content_percentage": 12,
+      "weight": "medium"
+    }
+  ],
+  "content_format_signals": {
+    "pages_with_numbered_lists": 1,
+    "pages_with_faq": 1,
+    "pages_with_tables": 2,
+    "avg_h2_count": 4.3,
+    "dominant_pattern": null
+  }
+}

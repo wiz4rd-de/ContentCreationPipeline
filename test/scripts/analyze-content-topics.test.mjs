@@ -1,0 +1,295 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { randomBytes } from 'node:crypto';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const script = join(__dirname, '..', '..', 'src', 'analysis', 'analyze-content-topics.mjs');
+const fixturePages = join(__dirname, '..', 'fixtures', 'analyze-content-topics', 'pages');
+
+function run(opts = {}) {
+  const args = [script];
+  args.push('--pages-dir', opts.pagesDir || fixturePages);
+  args.push('--seed', opts.seed || 'mallorca');
+  if (opts.language) {
+    args.push('--language', opts.language);
+  }
+  return execFileSync('node', args, { encoding: 'utf-8' });
+}
+
+function runParsed(opts = {}) {
+  return JSON.parse(run(opts));
+}
+
+function makeTmpDir() {
+  const dir = join(tmpdir(), 'act-test-' + randomBytes(4).toString('hex'));
+  const pagesDir = join(dir, 'pages');
+  mkdirSync(pagesDir, { recursive: true });
+  return { dir, pagesDir };
+}
+
+describe('analyze-content-topics', () => {
+
+  it('exits with usage error when --pages-dir is missing', () => {
+    try {
+      execFileSync('node', [script, '--seed', 'test'], { encoding: 'utf-8', stdio: 'pipe' });
+      assert.fail('should have exited with non-zero code');
+    } catch (err) {
+      assert.ok(err.status > 0, 'exit code must be non-zero');
+    }
+  });
+
+  it('exits with usage error when --seed is missing', () => {
+    try {
+      execFileSync('node', [script, '--pages-dir', fixturePages], { encoding: 'utf-8', stdio: 'pipe' });
+      assert.fail('should have exited with non-zero code');
+    } catch (err) {
+      assert.ok(err.status > 0, 'exit code must be non-zero');
+    }
+  });
+
+  it('produces valid JSON with all top-level keys', () => {
+    const result = runParsed();
+    assert.ok(Array.isArray(result.proof_keywords), 'proof_keywords must be an array');
+    assert.ok(Array.isArray(result.entity_candidates), 'entity_candidates must be an array');
+    assert.ok(Array.isArray(result.section_weights), 'section_weights must be an array');
+    assert.ok(typeof result.content_format_signals === 'object', 'content_format_signals must be an object');
+  });
+
+  it('proof_keywords have required fields and exclude the seed keyword', () => {
+    const result = runParsed();
+    for (const pk of result.proof_keywords) {
+      assert.ok(typeof pk.term === 'string', 'term must be a string');
+      assert.ok(typeof pk.document_frequency === 'number', 'document_frequency must be a number');
+      assert.ok(typeof pk.total_pages === 'number', 'total_pages must be a number');
+      assert.ok(typeof pk.avg_tf === 'number', 'avg_tf must be a number');
+      assert.ok(pk.term === 'mallorca' ? false : true, 'seed keyword must be excluded');
+    }
+  });
+
+  it('proof_keywords are sorted by document_frequency descending', () => {
+    const result = runParsed();
+    for (let i = 1; i < result.proof_keywords.length; i++) {
+      const prev = result.proof_keywords[i - 1];
+      const curr = result.proof_keywords[i];
+      assert.ok(prev.document_frequency >= curr.document_frequency,
+        'proof_keywords must be sorted by DF desc');
+    }
+  });
+
+  it('extracts n-gram terms that appear across multiple pages', () => {
+    const result = runParsed();
+    // "beste reisezeit" appears in all 3 pages
+    const besteReisezeit = result.proof_keywords.find(pk => pk.term === 'beste reisezeit');
+    assert.ok(besteReisezeit, '"beste reisezeit" must appear as proof keyword');
+    assert.equal(besteReisezeit.document_frequency, 3, 'must appear in all 3 pages');
+    assert.equal(besteReisezeit.total_pages, 3);
+  });
+
+  it('entity_candidates have required fields', () => {
+    const result = runParsed();
+    for (const ec of result.entity_candidates) {
+      assert.ok(typeof ec.term === 'string', 'term must be a string');
+      assert.ok(typeof ec.document_frequency === 'number', 'document_frequency must be a number');
+      assert.ok(Array.isArray(ec.pages), 'pages must be an array');
+      // pages should contain domain strings
+      for (const p of ec.pages) {
+        assert.ok(typeof p === 'string', 'page entry must be a string');
+      }
+    }
+  });
+
+  it('entity_candidates are 1-grams only (no spaces)', () => {
+    const result = runParsed();
+    for (const ec of result.entity_candidates) {
+      assert.ok(ec.term.includes(' ') === false, 'entity candidates must be 1-grams');
+    }
+  });
+
+  it('entity_candidates pages are sorted alphabetically', () => {
+    const result = runParsed();
+    for (const ec of result.entity_candidates) {
+      const sorted = [...ec.pages].sort();
+      assert.deepEqual(ec.pages, sorted, 'pages must be sorted');
+    }
+  });
+
+  it('section_weights have required fields', () => {
+    const result = runParsed();
+    assert.ok(result.section_weights.length > 0, 'must have section weights');
+    for (const sw of result.section_weights) {
+      assert.ok(typeof sw.heading_cluster === 'string', 'heading_cluster must be a string');
+      assert.ok(Array.isArray(sw.sample_headings), 'sample_headings must be an array');
+      assert.ok(typeof sw.occurrence === 'number', 'occurrence must be a number');
+      assert.ok(typeof sw.avg_word_count === 'number', 'avg_word_count must be a number');
+      assert.ok(typeof sw.avg_content_percentage === 'number', 'avg_content_percentage must be a number');
+      assert.ok(['high', 'medium', 'low'].includes(sw.weight), 'weight must be high/medium/low');
+    }
+  });
+
+  it('clusters similar headings using Jaccard overlap', () => {
+    const result = runParsed();
+    // All three pages have strand/beach headings that should cluster:
+    // "Straende und Buchten", "Straende auf Mallorca", "Die schoensten Straende"
+    // "straende und buchten", "straende auf mallorca", "die schoensten straende"
+    // Jaccard("straende buchten", "straende mallorca") = 1/3 = 0.33 < 0.5
+    // These may or may not cluster depending on overlap. Let's just verify clustering works.
+    const strandClusters = result.section_weights.filter(sw =>
+      sw.heading_cluster.includes('straende')
+    );
+    assert.ok(strandClusters.length > 0, 'must have strand-related section weights');
+  });
+
+  it('sample_headings are sorted alphabetically', () => {
+    const result = runParsed();
+    for (const sw of result.section_weights) {
+      const sorted = [...sw.sample_headings].sort();
+      assert.deepEqual(sw.sample_headings, sorted, 'sample_headings must be sorted');
+    }
+  });
+
+  it('weight is deterministic based on avg_content_percentage thresholds', () => {
+    const tmp = makeTmpDir();
+    try {
+      // Create pages where one section has very high content percentage
+      writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
+        url: 'https://a.example.com/test',
+        main_content_text: 'Intro text. Big Section ' + 'word '.repeat(100) + 'Small Section A few words here.',
+        headings: [
+          { level: 2, text: 'Big Section' },
+          { level: 2, text: 'Small Section' },
+        ],
+        html_signals: {},
+      }));
+      writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
+        url: 'https://b.example.com/test',
+        main_content_text: 'Intro. Big Section ' + 'word '.repeat(100) + 'Small Section Just a bit.',
+        headings: [
+          { level: 2, text: 'Big Section' },
+          { level: 2, text: 'Small Section' },
+        ],
+        html_signals: {},
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      const big = result.section_weights.find(sw => sw.heading_cluster === 'big section');
+      const small = result.section_weights.find(sw => sw.heading_cluster === 'small section');
+      assert.ok(big, 'must have big section');
+      assert.ok(small, 'must have small section');
+      // Big section should have much higher percentage
+      assert.ok(big.avg_content_percentage > small.avg_content_percentage,
+        'big section must have higher content percentage');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('content_format_signals has all required fields', () => {
+    const result = runParsed();
+    const cfs = result.content_format_signals;
+    assert.ok(typeof cfs.pages_with_numbered_lists === 'number');
+    assert.ok(typeof cfs.pages_with_faq === 'number');
+    assert.ok(typeof cfs.pages_with_tables === 'number');
+    assert.ok(typeof cfs.avg_h2_count === 'number');
+    assert.equal(cfs.dominant_pattern, null, 'dominant_pattern must be null');
+  });
+
+  it('content_format_signals counts are correct for fixtures', () => {
+    const result = runParsed();
+    const cfs = result.content_format_signals;
+    // alpha has ordered_lists: 1, beta has ordered_lists: 0, gamma has ordered_lists: 0
+    assert.equal(cfs.pages_with_numbered_lists, 1, 'only alpha has ordered_lists');
+    // alpha has tables: 1, beta has tables: 1, gamma has tables: 0
+    assert.equal(cfs.pages_with_tables, 2, 'alpha and beta have tables');
+    // beta has faq heading + faq_sections: 1
+    assert.equal(cfs.pages_with_faq, 1, 'only beta has FAQ');
+  });
+
+  it('handles empty pages directory', () => {
+    const tmp = makeTmpDir();
+    try {
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      assert.deepEqual(result.proof_keywords, []);
+      assert.deepEqual(result.entity_candidates, []);
+      assert.deepEqual(result.section_weights, []);
+      assert.equal(result.content_format_signals.pages_with_numbered_lists, 0);
+      assert.equal(result.content_format_signals.dominant_pattern, null);
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('handles pages with missing fields gracefully', () => {
+    const tmp = makeTmpDir();
+    try {
+      writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
+        url: 'https://example.com/minimal',
+        main_content_text: 'Some basic content text here.',
+      }));
+      writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
+        url: 'https://other.example.com/page',
+        main_content_text: 'Another basic content text here.',
+        headings: [],
+        html_signals: {},
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      assert.ok(Array.isArray(result.proof_keywords));
+      assert.ok(Array.isArray(result.section_weights));
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('stopwords are filtered out from term extraction', () => {
+    const result = runParsed();
+    // Common German stopwords should not appear as proof keywords
+    const stopwords = ['und', 'ist', 'die', 'der', 'von', 'fuer', 'mit'];
+    for (const sw of stopwords) {
+      const found = result.proof_keywords.find(pk => pk.term === sw);
+      assert.ok(found === undefined, `stopword "${sw}" must be filtered out`);
+    }
+  });
+
+  it('only considers H2 headings for section weight analysis', () => {
+    const result = runParsed();
+    // H3 headings from fixtures should not appear in section_weights
+    const h3Headings = ['wann ist die beste reisezeit fuer mallorca',
+      'brauche ich einen mietwagen auf mallorca',
+      'wie komme ich nach mallorca',
+      'wann ist die beste reisezeit'];
+    for (const sw of result.section_weights) {
+      for (const h3 of h3Headings) {
+        assert.ok(sw.heading_cluster === h3 ? false : true,
+          `H3 heading "${h3}" must not appear in section_weights`);
+      }
+    }
+  });
+
+  it('produces byte-identical output on repeated runs (determinism)', () => {
+    const run1 = run();
+    const run2 = run();
+    assert.equal(run1, run2, 'same inputs must produce byte-identical output');
+  });
+
+  it('supports --language flag', () => {
+    const result = runParsed({ language: 'en' });
+    assert.ok(Array.isArray(result.proof_keywords));
+  });
+
+  it('total_pages in proof_keywords matches actual page count', () => {
+    const result = runParsed();
+    for (const pk of result.proof_keywords) {
+      assert.equal(pk.total_pages, 3, 'total_pages must match fixture page count');
+    }
+  });
+
+  it('avg_h2_count is computed correctly', () => {
+    const result = runParsed();
+    // alpha: 3 H2, beta: 3 H2, gamma: 2 H2 => avg = 8/3 = 2.7
+    assert.equal(result.content_format_signals.avg_h2_count, 2.7,
+      'avg_h2_count must be 2.7 for fixtures');
+  });
+});

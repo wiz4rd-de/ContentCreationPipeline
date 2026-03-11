@@ -1,0 +1,163 @@
+{
+  "seed_keyword": "test keyword",
+  "total_keywords": 10,
+  "filtered_keywords": 8,
+  "removed_count": 2,
+  "removal_summary": {
+    "ethics": 0,
+    "brand": 1,
+    "off_topic": 1,
+    "foreign_language": 0
+  },
+  "clusters": [
+    {
+      "cluster_keyword": "test keyword",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 3,
+      "cluster_opportunity": 50,
+      "keywords": [
+        {
+          "keyword": "test keyword",
+          "search_volume": 1000,
+          "cpc": 0.5,
+          "monthly_searches": null,
+          "difficulty": 20,
+          "intent": "informational",
+          "opportunity_score": 47.62,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "test keyword anleitung",
+          "search_volume": 500,
+          "cpc": 0.3,
+          "monthly_searches": null,
+          "difficulty": 15,
+          "intent": "informational",
+          "opportunity_score": 31.25,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "test keyword tipps",
+          "search_volume": 200,
+          "cpc": 0.2,
+          "monthly_searches": null,
+          "difficulty": 10,
+          "intent": "informational",
+          "opportunity_score": 18.18,
+          "filter_status": "keep",
+          "filter_reason": null
+        }
+      ]
+    },
+    {
+      "cluster_keyword": "keyword tool",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 4,
+      "cluster_opportunity": 30,
+      "keywords": [
+        {
+          "keyword": "keyword tool",
+          "search_volume": 800,
+          "cpc": 1,
+          "monthly_searches": null,
+          "difficulty": 30,
+          "intent": "commercial",
+          "opportunity_score": 25.81,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "keyword tool kostenlos",
+          "search_volume": 600,
+          "cpc": 0.8,
+          "monthly_searches": null,
+          "difficulty": 25,
+          "intent": "commercial",
+          "opportunity_score": 23.08,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "keyword tool vergleich",
+          "search_volume": 300,
+          "cpc": 0.6,
+          "monthly_searches": null,
+          "difficulty": 20,
+          "intent": "commercial",
+          "opportunity_score": 14.29,
+          "filter_status": "removed",
+          "filter_reason": "brand"
+        },
+        {
+          "keyword": "keyword tool 2024",
+          "search_volume": 100,
+          "cpc": 0.4,
+          "monthly_searches": null,
+          "difficulty": 15,
+          "intent": "informational",
+          "opportunity_score": 6.25,
+          "filter_status": "keep",
+          "filter_reason": null
+        }
+      ]
+    },
+    {
+      "cluster_keyword": "seo analyse",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 3,
+      "cluster_opportunity": 20,
+      "keywords": [
+        {
+          "keyword": "seo analyse",
+          "search_volume": 400,
+          "cpc": 0.7,
+          "monthly_searches": null,
+          "difficulty": 25,
+          "intent": "informational",
+          "opportunity_score": 15.38,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "seo analyse tool",
+          "search_volume": 200,
+          "cpc": 0.5,
+          "monthly_searches": null,
+          "difficulty": 20,
+          "intent": "commercial",
+          "opportunity_score": 9.52,
+          "filter_status": "keep",
+          "filter_reason": null
+        },
+        {
+          "keyword": "seo analyse kostenlos",
+          "search_volume": 150,
+          "cpc": 0.3,
+          "monthly_searches": null,
+          "difficulty": 18,
+          "intent": "commercial",
+          "opportunity_score": 7.89,
+          "filter_status": "removed",
+          "filter_reason": "off_topic"
+        }
+      ]
+    }
+  ],
+  "faq_selection": [
+    {
+      "question": "Was ist test keyword?",
+      "priority": "pflicht",
+      "relevance_score": 3
+    },
+    {
+      "question": "Wie funktioniert test keyword?",
+      "priority": "empfohlen",
+      "relevance_score": 2
+    }
+  ]
+}

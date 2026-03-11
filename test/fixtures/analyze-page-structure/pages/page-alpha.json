@@ -1,0 +1,20 @@
+{
+  "url": "https://alpha.example.com/guide",
+  "main_content_text": "Reisefuehrer Mallorca Mallorca ist eine wunderschoene Insel im Mittelmeer. Sie bietet vielfaeltige Moeglichkeiten fuer Urlauber. Die Insel hat ueber 300 Sonnentage im Jahr und zaehlt zu den beliebtesten Reisezielen Europas. Strände und Buchten Die Straende von Mallorca sind weltbekannt. Es gibt ueber 200 verschiedene Buchten. Die bekanntesten sind Cala Millor und Cala d'Or. Das Wasser ist kristallklar und ideal zum Schwimmen. Im Sommer erreichen die Temperaturen 35 Grad. Die Nebensaison von Oktober bis April ist ruhiger und guenstiger. Haeufig gestellte Fragen Wie komme ich nach Mallorca? Der Flughafen Palma de Mallorca wird von vielen Airlines angeflogen. Die Flugzeit ab Deutschland betraegt etwa 2 Stunden. Wann ist die beste Reisezeit? Die beste Reisezeit ist von Mai bis Oktober. Im Juli und August ist es am waermsten. Aktivitaeten und Sport Mallorca bietet zahlreiche Sportmoeglichkeiten. Wandern in der Serra de Tramuntana ist besonders beliebt. Radfahren ist eine weitere populaere Aktivitaet. Viele Profiteams trainieren hier im Fruehjahr.",
+  "headings": [
+    { "level": 2, "text": "Strände und Buchten" },
+    { "level": 2, "text": "Haeufig gestellte Fragen" },
+    { "level": 3, "text": "Wie komme ich nach Mallorca?" },
+    { "level": 3, "text": "Wann ist die beste Reisezeit?" },
+    { "level": 2, "text": "Aktivitaeten und Sport" }
+  ],
+  "html_signals": {
+    "faq_sections": 2,
+    "tables": 1,
+    "ordered_lists": 0,
+    "unordered_lists": 2,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 5
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "url": "https://beta.example.com/mallorca-tipps",
+  "main_content_text": "Mallorca Reisetipps Mallorca ist eines der beliebtesten Reiseziele in Europa. Die beste Reisezeit ist im Fruehling und Herbst. Straende auf Mallorca Die Straende sind das Highlight der Insel. Playa de Muro und Es Trenc sind besonders empfehlenswert. Kristallklares Wasser und feiner Sand laden zum Baden ein. Familien mit Kindern finden flache Straende. Haeufig gestellte Fragen Wann ist die beste Reisezeit fuer Mallorca? Die beste Reisezeit ist von April bis Oktober. Im Sommer kann es sehr heiss werden. Brauche ich einen Mietwagen auf Mallorca? Ein Mietwagen ist empfehlenswert um die Insel zu erkunden. Die oeffentlichen Busse fahren regelmaessig. Essen und Trinken Die mallorquinische Kueche ist vielfaeltig und lecker. Probieren Sie unbedingt Pa amb oli und Ensaimada. Die lokalen Weine aus Binissalem sind ausgezeichnet.",
+  "headings": [
+    { "level": 2, "text": "Straende auf Mallorca" },
+    { "level": 2, "text": "Haeufig gestellte Fragen" },
+    { "level": 3, "text": "Wann ist die beste Reisezeit fuer Mallorca?" },
+    { "level": 3, "text": "Brauche ich einen Mietwagen auf Mallorca?" },
+    { "level": 2, "text": "Essen und Trinken" }
+  ],
+  "html_signals": {
+    "faq_sections": 1,
+    "tables": 1,
+    "ordered_lists": 0,
+    "unordered_lists": 1,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 3
+  }
+}

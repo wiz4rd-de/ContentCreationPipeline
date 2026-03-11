@@ -1,0 +1,64 @@
+{
+  "target_keyword": "seo reporting",
+  "se_results_count": 123000,
+  "location_code": 2276,
+  "language_code": "de",
+  "item_types_present": ["organic", "people_also_ask", "video"],
+  "serp_features": {
+    "ai_overview": { "present": false },
+    "featured_snippet": { "present": false },
+    "people_also_ask": [
+      {"question": "Was ist SEO Reporting?", "answer": "SEO Reporting ist die systematische Erfassung und Auswertung von SEO-Kennzahlen.", "url": "https://example.com/seo-reporting-explained", "domain": "example.com"},
+      {"question": "How to create an SEO report?", "answer": null, "url": null, "domain": null},
+      {"question": "Welche KPIs gehören in einen SEO Report?", "answer": "Wichtige KPIs sind organischer Traffic, Rankings, und Conversion Rate.", "url": "https://example.org/seo-kpis", "domain": "example.org"}
+    ],
+    "people_also_search": [],
+    "related_searches": ["seo dashboard", "seo kpi tracking"],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": { "present": false },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://example.com/seo-reporting-guide",
+      "domain": "example.com",
+      "title": "SEO Reporting: Der ultimative Leitfaden 2025",
+      "description": "Lernen Sie alles ueber SEO Reporting mit unserer Anleitung.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": false
+    },
+    {
+      "rank": 2,
+      "rank_absolute": 2,
+      "url": "https://example.org/seo-reports",
+      "domain": "example.org",
+      "title": "Best SEO Reporting Tools",
+      "description": "Compare the top SEO reporting tools for your business.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": true,
+      "rating": { "value": 4.5, "votes_count": 120, "rating_max": 5 },
+      "timestamp": null,
+      "cited_in_ai_overview": false
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "tasks": [{
+    "result": [{
+      "keyword": "obscure query",
+      "se_results_count": 100,
+      "location_code": 2840,
+      "language_code": "en",
+      "item_types": ["organic"],
+      "items": [
+        {
+          "type": "organic",
+          "rank_group": 1,
+          "rank_absolute": 1,
+          "url": "https://example.com/page",
+          "domain": "example.com",
+          "title": "Some Page",
+          "description": "A description.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        }
+      ]
+    }]
+  }]
+}

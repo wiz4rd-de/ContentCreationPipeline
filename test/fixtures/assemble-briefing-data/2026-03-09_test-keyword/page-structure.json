@@ -1,0 +1,91 @@
+{
+  "competitors": [
+    {
+      "url": "https://example.com/page",
+      "domain": "example.com",
+      "total_word_count": 2500,
+      "section_count": 5,
+      "detected_modules": [
+        "faq",
+        "list",
+        "table"
+      ],
+      "sections": [
+        {
+          "heading": "Intro",
+          "level": 0,
+          "word_count": 200,
+          "sentence_count": 8,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "detailed"
+        },
+        {
+          "heading": "Section 1",
+          "level": 2,
+          "word_count": 800,
+          "sentence_count": 30,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    },
+    {
+      "url": "https://test.de/page",
+      "domain": "test.de",
+      "total_word_count": 1800,
+      "section_count": 4,
+      "detected_modules": [
+        "list",
+        "table"
+      ],
+      "sections": [
+        {
+          "heading": "Section 1",
+          "level": 2,
+          "word_count": 600,
+          "sentence_count": 20,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    },
+    {
+      "url": "https://third.com/page",
+      "domain": "third.com",
+      "total_word_count": 2000,
+      "section_count": 3,
+      "detected_modules": [
+        "list"
+      ],
+      "sections": [
+        {
+          "heading": "Section 1",
+          "level": 2,
+          "word_count": 700,
+          "sentence_count": 25,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    }
+  ],
+  "cross_competitor": {
+    "common_modules": [
+      "list"
+    ],
+    "rare_modules": [
+      "faq"
+    ],
+    "module_frequency": {
+      "faq": 1,
+      "list": 3,
+      "table": 2
+    },
+    "avg_word_count": 2100,
+    "avg_sections": 4
+  }
+}

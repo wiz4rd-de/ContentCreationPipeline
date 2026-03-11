@@ -1,0 +1,121 @@
+{
+  "tasks": [{
+    "result": [{
+      "keyword": "best seo tools",
+      "se_results_count": 500000,
+      "location_code": 2840,
+      "language_code": "en",
+      "item_types": ["organic", "ai_overview", "people_also_ask"],
+      "items": [
+        {
+          "type": "ai_overview",
+          "title": "Best SEO Tools for 2026",
+          "items": [
+            {
+              "type": "ai_overview_element",
+              "description": "Here are the top SEO tools recommended by experts.",
+              "items": [
+                {
+                  "type": "ai_overview_element",
+                  "description": "Ahrefs is widely considered one of the best all-around SEO tools."
+                },
+                {
+                  "type": "ai_overview_element",
+                  "content": "Semrush offers comprehensive keyword research and site audit features."
+                }
+              ],
+              "references": [
+                {
+                  "domain": "ahrefs.com",
+                  "url": "https://ahrefs.com/blog/best-seo-tools",
+                  "title": "Best SEO Tools - Ahrefs"
+                },
+                {
+                  "domain": "semrush.com",
+                  "url": "https://semrush.com/blog/seo-tools",
+                  "title": "Top SEO Tools - Semrush"
+                }
+              ]
+            },
+            {
+              "type": "ai_overview_element",
+              "text": "Google Search Console is a free tool every SEO professional should use.",
+              "references": [
+                {
+                  "domain": "google.com",
+                  "url": "https://search.google.com/search-console",
+                  "title": "Google Search Console"
+                },
+                {
+                  "domain": "ahrefs.com",
+                  "url": "https://ahrefs.com/blog/best-seo-tools",
+                  "title": "Best SEO Tools - Ahrefs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "people_also_ask",
+          "items": [
+            {
+              "type": "people_also_ask_element",
+              "title": "What is the best free SEO tool?",
+              "expanded_element": [
+                {
+                  "type": "people_also_ask_expanded_element",
+                  "description": "Google Search Console is widely considered the best free SEO tool.",
+                  "url": "https://example.com/free-seo-tools",
+                  "domain": "example.com"
+                }
+              ]
+            },
+            {
+              "type": "people_also_ask_element",
+              "title": "How much do SEO tools cost?",
+              "expanded_element": [
+                {
+                  "type": "people_also_ask_expanded_element",
+                  "description": "SEO tools range from free to $999/month for enterprise plans.",
+                  "url": "https://example.org/seo-pricing",
+                  "domain": "example.org"
+                }
+              ]
+            },
+            {
+              "type": "people_also_ask_element",
+              "title": "Is Ahrefs better than Semrush?",
+              "expanded_element": []
+            }
+          ]
+        },
+        {
+          "type": "organic",
+          "rank_group": 1,
+          "rank_absolute": 1,
+          "url": "https://ahrefs.com/blog/best-seo-tools",
+          "domain": "ahrefs.com",
+          "title": "Best SEO Tools",
+          "description": "A comprehensive list of the best SEO tools.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        },
+        {
+          "type": "organic",
+          "rank_group": 2,
+          "rank_absolute": 2,
+          "url": "https://semrush.com/blog/seo-tools",
+          "domain": "semrush.com",
+          "title": "Top SEO Tools",
+          "description": "Compare the top SEO tools on the market.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        }
+      ]
+    }]
+  }]
+}

@@ -1,0 +1,17 @@
+{
+  "url": "https://gamma.example.com/mallorca-info",
+  "main_content_text": "Mallorca Informationen Allgemeine Infos zu Mallorca fuer Reisende. Anreise nach Mallorca Der Flughafen Palma ist der drittgroesste Spaniens. Es gibt Direktfluege aus ueber 100 Staedten. Die Faehrverbindung von Barcelona dauert etwa 7 Stunden. Sehenswuerdigkeiten Die Kathedrale La Seu ist das Wahrzeichen Palmas. Das Castell de Bellver bietet einen tollen Ausblick. Die Drachhoehlen in Porto Cristo sind beeindruckend.",
+  "headings": [
+    { "level": 2, "text": "Anreise nach Mallorca" },
+    { "level": 2, "text": "Sehenswuerdigkeiten" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 1,
+    "video_embeds": 0,
+    "forms": 1,
+    "images_in_content": 1
+  }
+}

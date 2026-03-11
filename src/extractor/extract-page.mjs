@@ -61,7 +61,24 @@ try {
   const article = reader.parse();
   const mainText = article?.textContent || '';
   const word_count = mainText.split(/\s+/).filter(Boolean).length;
-  const main_content_preview = mainText.replace(/\s+/g, ' ').trim().slice(0, 300);
+  const main_content_text = mainText.replace(/\s+/g, ' ').trim();
+  const main_content_preview = main_content_text.slice(0, 300);
+  const readability_title = article?.title || '';
+
+  // HTML signals from Readability-parsed content
+  const html_signals = { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 };
+  const articleHtml = article?.content || '';
+  if (articleHtml.length > 0) {
+    const contentDOM = new JSDOM(articleHtml);
+    const contentDoc = contentDOM.window.document;
+    html_signals.faq_sections = contentDoc.querySelectorAll('details, summary').length;
+    html_signals.tables = contentDoc.querySelectorAll('table').length;
+    html_signals.ordered_lists = contentDoc.querySelectorAll('ol').length;
+    html_signals.unordered_lists = contentDoc.querySelectorAll('ul').length;
+    html_signals.video_embeds = contentDoc.querySelectorAll('iframe, video').length;
+    html_signals.forms = contentDoc.querySelectorAll('form').length;
+    html_signals.images_in_content = contentDoc.querySelectorAll('img').length;
+  }
 
   console.log(JSON.stringify({
     url,
@@ -74,7 +91,10 @@ try {
     headings,
     word_count,
     link_count: { internal, external },
+    main_content_text,
     main_content_preview,
+    readability_title,
+    html_signals,
   }, null, 2));
 } catch (err) {
   console.log(JSON.stringify({ error: err.message, url }));
