@@ -153,12 +153,13 @@ function calculateBackoff(attempt, opts) {
 }
 
 /**
- * Check whether a cached serp-raw.json file exists and contains valid, complete data.
- * Returns { hit: true, data } when usable, { hit: false, reason } otherwise.
+ * Check whether a cached serp-raw.json file exists and contains valid, complete data
+ * for the given keyword. Returns { hit: true, data } when usable, { hit: false, reason } otherwise.
  * @param {string} filePath - absolute path to serp-raw.json
+ * @param {string} [keyword] - the keyword being requested; if provided, cache is rejected on mismatch
  * @returns {{ hit: true, data: object } | { hit: false, reason: string }}
  */
-function checkCache(filePath) {
+function checkCache(filePath, keyword) {
   if (existsSync(filePath) === false) {
     return { hit: false, reason: 'file not found' };
   }
@@ -186,6 +187,14 @@ function checkCache(filePath) {
     return { hit: false, reason: 'missing or empty items array' };
   }
 
+  // Reject cache when the stored keyword does not match the requested keyword
+  if (keyword !== undefined) {
+    const cachedKeyword = tasks[0].data && tasks[0].data.keyword;
+    if (cachedKeyword !== keyword) {
+      return { hit: false, reason: `keyword mismatch: cached "${cachedKeyword}", requested "${keyword}"` };
+    }
+  }
+
   return { hit: true, data };
 }
 
@@ -208,7 +217,7 @@ if (isMain) {
   // --- Cache check ---
   if (parsed.force === false) {
     const cachePath = join(outdir, 'serp-raw.json');
-    const cached = checkCache(cachePath);
+    const cached = checkCache(cachePath, keyword);
     if (cached.hit === true) {
       const kw = cached.data.tasks[0].data.keyword;
       const dt = cached.data.tasks[0].result[0].datetime;

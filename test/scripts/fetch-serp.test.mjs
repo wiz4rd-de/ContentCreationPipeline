@@ -335,6 +335,27 @@ describe('fetch-serp', () => {
       const keyword = result.data.tasks[0].data.keyword;
       assert.equal(keyword, 'Urlaub Mallorca');
     });
+
+    it('returns hit:true when keyword parameter matches cached keyword', () => {
+      const fixturePath = join(fixtures, 'task-get-success.json');
+      const result = checkCache(fixturePath, 'Urlaub Mallorca');
+      assert.equal(result.hit, true);
+    });
+
+    it('returns hit:false with keyword mismatch reason when keywords differ', () => {
+      const fixturePath = join(fixtures, 'task-get-success.json');
+      const result = checkCache(fixturePath, 'schönste strände thailand');
+      assert.equal(result.hit, false);
+      assert.ok(result.reason.includes('keyword mismatch'));
+      assert.ok(result.reason.includes('Urlaub Mallorca'));
+      assert.ok(result.reason.includes('schönste strände thailand'));
+    });
+
+    it('returns hit:true when keyword parameter is omitted (backwards compat)', () => {
+      const fixturePath = join(fixtures, 'task-get-success.json');
+      const result = checkCache(fixturePath);
+      assert.equal(result.hit, true);
+    });
   });
 
 });
