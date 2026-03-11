@@ -2,11 +2,11 @@
 // Fetches SERP data via DataForSEO async workflow (task_post / tasks_ready / task_get).
 // Saves raw response as audit trail and outputs to stdout for pipeline chaining.
 //
-// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N]
+// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N] [--force]
 //
 // Requires api.env with DATAFORSEO_AUTH and DATAFORSEO_BASE.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -41,6 +41,7 @@ function parseArgs(argv) {
     outdir: flagValue('--outdir', undefined),
     depth: parseInt(flagValue('--depth', '10'), 10),
     timeout: parseInt(flagValue('--timeout', '120'), 10),
+    force: argv.includes('--force'),
   };
 }
 
@@ -151,8 +152,45 @@ function calculateBackoff(attempt, opts) {
   return delay;
 }
 
+/**
+ * Check whether a cached serp-raw.json file exists and contains valid, complete data.
+ * Returns { hit: true, data } when usable, { hit: false, reason } otherwise.
+ * @param {string} filePath - absolute path to serp-raw.json
+ * @returns {{ hit: true, data: object } | { hit: false, reason: string }}
+ */
+function checkCache(filePath) {
+  if (existsSync(filePath) === false) {
+    return { hit: false, reason: 'file not found' };
+  }
+
+  let data;
+  try {
+    data = JSON.parse(readFileSync(filePath, 'utf-8'));
+  } catch (_err) {
+    return { hit: false, reason: 'invalid JSON' };
+  }
+
+  // Validate shape: tasks[0].result[0].items must exist and have length > 0
+  const tasks = data.tasks;
+  if (tasks === undefined || tasks === null || Array.isArray(tasks) === false || tasks.length === 0) {
+    return { hit: false, reason: 'missing or empty tasks array' };
+  }
+
+  const result = tasks[0].result;
+  if (result === undefined || result === null || Array.isArray(result) === false || result.length === 0) {
+    return { hit: false, reason: 'missing or empty result array' };
+  }
+
+  const items = result[0].items;
+  if (items === undefined || items === null || Array.isArray(items) === false || items.length === 0) {
+    return { hit: false, reason: 'missing or empty items array' };
+  }
+
+  return { hit: true, data };
+}
+
 // --- Export pure functions for testing ---
-export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff };
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache };
 
 // --- Main execution guard ---
 // Only run main logic when executed directly (not when imported as a module)
@@ -163,8 +201,26 @@ if (isMain) {
   const { keyword, market, language, outdir, depth, timeout } = parsed;
 
   if (keyword === undefined || market === undefined || language === undefined || outdir === undefined) {
-    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N]');
+    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N] [--force]');
     process.exit(1);
+  }
+
+  // --- Cache check ---
+  if (parsed.force === false) {
+    const cachePath = join(outdir, 'serp-raw.json');
+    const cached = checkCache(cachePath);
+    if (cached.hit === true) {
+      const kw = cached.data.tasks[0].data.keyword;
+      const dt = cached.data.tasks[0].result[0].datetime;
+      console.error(`Cache hit: ${cachePath}`);
+      console.error(`Keyword: ${kw} | Retrieved: ${dt}`);
+      console.error('To fetch fresh data, re-run with --force');
+      process.stdout.write(JSON.stringify(cached.data, null, 2) + '\n');
+      process.exit(0);
+    }
+    if (cached.hit === false) {
+      console.error(`No valid cache (${cached.reason}), fetching from API...`);
+    }
   }
 
   // --- Load API credentials ---
