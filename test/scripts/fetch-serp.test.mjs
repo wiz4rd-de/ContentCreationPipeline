@@ -13,6 +13,7 @@ import {
   extractTaskId,
   isTaskReady,
   calculateBackoff,
+  checkCache,
 } from '../../src/serp/fetch-serp.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -63,6 +64,16 @@ describe('fetch-serp', () => {
     it('returns custom timeout when --timeout is provided', () => {
       const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--outdir', '/tmp/o', '--timeout', '300']);
       assert.equal(result.timeout, 300);
+    });
+
+    it('sets force to false when --force is not present', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--outdir', '/tmp/o']);
+      assert.equal(result.force, false);
+    });
+
+    it('sets force to true when --force is included', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--outdir', '/tmp/o', '--force']);
+      assert.equal(result.force, true);
     });
   });
 
@@ -248,6 +259,81 @@ describe('fetch-serp', () => {
       const run5 = calculateBackoff(100, opts);
       const run6 = calculateBackoff(100, opts);
       assert.equal(run5, run6, 'same input must produce identical output');
+    });
+  });
+
+  // --- checkCache ---
+
+  describe('checkCache', () => {
+    it('returns hit:false with reason when file does not exist', () => {
+      const dir = makeTmpDir();
+      try {
+        const result = checkCache(join(dir, 'nonexistent.json'));
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'file not found');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:false with reason when file contains malformed JSON', () => {
+      const dir = makeTmpDir();
+      try {
+        writeFileSync(join(dir, 'serp-raw.json'), '{broken');
+        const result = checkCache(join(dir, 'serp-raw.json'));
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'invalid JSON');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:false when tasks array is empty', () => {
+      const dir = makeTmpDir();
+      try {
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify({ tasks: [] }));
+        const result = checkCache(join(dir, 'serp-raw.json'));
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'missing or empty tasks array');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:false when result key is missing from first task', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = { tasks: [{ id: 'abc', status_code: 20000 }] };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'));
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'missing or empty result array');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:false when items array is empty', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = { tasks: [{ result: [{ items: [] }] }] };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'));
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'missing or empty items array');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:true with data for a valid fixture', () => {
+      const fixturePath = join(fixtures, 'task-get-success.json');
+      const result = checkCache(fixturePath);
+      assert.equal(result.hit, true);
+      assert.ok(result.data !== undefined && result.data !== null);
+      // Verify the keyword is accessible in the returned data
+      const keyword = result.data.tasks[0].data.keyword;
+      assert.equal(keyword, 'Urlaub Mallorca');
     });
   });
 
