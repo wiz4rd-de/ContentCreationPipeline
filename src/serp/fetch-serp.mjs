@@ -2,13 +2,14 @@
 // Fetches SERP data via DataForSEO async workflow (task_post / tasks_ready / task_get).
 // Saves raw response as audit trail and outputs to stdout for pipeline chaining.
 //
-// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N] [--force]
+// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force]
 //
 // Requires api.env with DATAFORSEO_AUTH and DATAFORSEO_BASE.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { slugify } from '../utils/slugify.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -198,8 +199,25 @@ function checkCache(filePath, keyword) {
   return { hit: true, data };
 }
 
+/**
+ * Derive the output directory path from a keyword and base directory.
+ * Uses today's date (YYYY-MM-DD) and slugified keyword.
+ * @param {string} keyword - the search keyword
+ * @param {string} baseDir - parent directory for output folders
+ * @returns {string} e.g. baseDir/2026-03-11_thailand-urlaub
+ */
+function deriveOutdir(keyword, baseDir) {
+  const today = new Date();
+  const yyyy = String(today.getFullYear());
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+  const slug = slugify(keyword);
+  return join(baseDir, `${dateStr}_${slug}`);
+}
+
 // --- Export pure functions for testing ---
-export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache };
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir };
 
 // --- Main execution guard ---
 // Only run main logic when executed directly (not when imported as a module)
@@ -207,11 +225,19 @@ const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].repla
 if (isMain) {
   // --- Parse arguments ---
   const parsed = parseArgs(process.argv.slice(2));
-  const { keyword, market, language, outdir, depth, timeout } = parsed;
+  const { keyword, market, language, depth, timeout } = parsed;
 
-  if (keyword === undefined || market === undefined || language === undefined || outdir === undefined) {
-    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> --outdir <dir> [--depth N] [--timeout N] [--force]');
+  if (keyword === undefined || market === undefined || language === undefined) {
+    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force]');
     process.exit(1);
+  }
+
+  // Auto-derive outdir when not provided
+  const projectRoot = join(__dirname, '..', '..');
+  let outdir = parsed.outdir;
+  if (outdir === undefined) {
+    outdir = deriveOutdir(keyword, join(projectRoot, 'output'));
+    console.error(`Auto-derived outdir: ${outdir}`);
   }
 
   // --- Cache check ---

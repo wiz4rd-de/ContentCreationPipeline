@@ -14,6 +14,7 @@ import {
   isTaskReady,
   calculateBackoff,
   checkCache,
+  deriveOutdir,
 } from '../../src/serp/fetch-serp.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -74,6 +75,11 @@ describe('fetch-serp', () => {
     it('sets force to true when --force is included', () => {
       const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--outdir', '/tmp/o', '--force']);
       assert.equal(result.force, true);
+    });
+
+    it('returns undefined for outdir when --outdir is omitted', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de']);
+      assert.equal(result.outdir, undefined);
     });
   });
 
@@ -355,6 +361,51 @@ describe('fetch-serp', () => {
       const fixturePath = join(fixtures, 'task-get-success.json');
       const result = checkCache(fixturePath);
       assert.equal(result.hit, true);
+    });
+  });
+
+  // --- deriveOutdir ---
+
+  describe('deriveOutdir', () => {
+    it('produces path matching YYYY-MM-DD_<slug> pattern', () => {
+      const result = deriveOutdir('thailand urlaub', '/base');
+      const dirName = result.split('/').pop();
+      assert.ok(/^\d{4}-\d{2}-\d{2}_[a-z0-9]+(-[a-z0-9]+)*$/.test(dirName),
+        `Expected YYYY-MM-DD_<slug> pattern, got: ${dirName}`);
+    });
+
+    it('slugifies umlauts correctly (ae, oe, ue, ss)', () => {
+      const result = deriveOutdir('schönste strände für übernachtung mit straße', '/base');
+      const dirName = result.split('/').pop();
+      // Extract the slug part after the date
+      const slug = dirName.replace(/^\d{4}-\d{2}-\d{2}_/, '');
+      assert.ok(slug.includes('schoenste'), `Expected "schoenste" in slug, got: ${slug}`);
+      assert.ok(slug.includes('straende'), `Expected "straende" in slug, got: ${slug}`);
+      assert.ok(slug.includes('uebernachtung'), `Expected "uebernachtung" in slug, got: ${slug}`);
+      assert.ok(slug.includes('strasse'), `Expected "strasse" in slug, got: ${slug}`);
+    });
+
+    it('is deterministic: same input produces identical output', () => {
+      const run1 = deriveOutdir('thailand urlaub', '/output');
+      const run2 = deriveOutdir('thailand urlaub', '/output');
+      assert.equal(run1, run2, 'same input must produce identical output');
+    });
+
+    it('uses the provided baseDir as parent', () => {
+      const result = deriveOutdir('test keyword', '/my/base/dir');
+      assert.ok(result.startsWith('/my/base/dir/'),
+        `Expected path to start with /my/base/dir/, got: ${result}`);
+    });
+
+    it('includes today date in the path', () => {
+      const today = new Date();
+      const yyyy = String(today.getFullYear());
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const expected = `${yyyy}-${mm}-${dd}`;
+      const result = deriveOutdir('some keyword', '/base');
+      assert.ok(result.includes(expected),
+        `Expected date ${expected} in path, got: ${result}`);
     });
   });
 
