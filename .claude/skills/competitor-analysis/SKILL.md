@@ -44,8 +44,10 @@ For each primary keyword, retrieve the top 10 search results using the async SER
 node src/serp/fetch-serp.mjs "<KEYWORD>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
   --outdir output/YYYY-MM-DD_<slug>/ \
-  --depth 10
+  --depth 10 [--force]
 ```
+
+> **Caching:** If `serp-raw.json` already exists in the output directory and contains valid data, the script reuses it without making an API call. Use `--force` to bypass the cache and fetch fresh data.
 
 This single command handles everything:
 - Reads API credentials from `api.env` (no need to pass auth headers)
