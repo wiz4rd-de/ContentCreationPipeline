@@ -1,0 +1,99 @@
+{
+  "version": "0.1.20260223",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "4.4710 sec.",
+  "cost": 0.002,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "03101504-6886-0139-0000-3d651db5c686",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "2.7434 sec.",
+      "cost": 0.002,
+      "result_count": 1,
+      "path": ["v3", "serp", "google", "organic", "task_get", "advanced"],
+      "data": {
+        "api": "serp",
+        "function": "task_get",
+        "se": "google",
+        "se_type": "organic",
+        "keyword": "Urlaub Mallorca",
+        "language_code": "de",
+        "location_code": 2276,
+        "depth": 10,
+        "device": "desktop",
+        "os": "windows"
+      },
+      "result": [
+        {
+          "keyword": "Urlaub Mallorca",
+          "type": "organic",
+          "se_domain": "google.com",
+          "location_code": 2276,
+          "language_code": "de",
+          "check_url": "https://www.google.com/search?q=Urlaub%20Mallorca&hl=de&gl=DE",
+          "datetime": "2026-03-10 13:04:05 +00:00",
+          "item_types": ["organic", "people_also_ask", "related_searches"],
+          "se_results_count": 22800000,
+          "items_count": 5,
+          "items": [
+            {
+              "type": "organic",
+              "rank_group": 1,
+              "rank_absolute": 1,
+              "domain": "www.schauinsland-reisen.de",
+              "title": "Mallorca Urlaub guenstig buchen | Pauschalreise mit Flug",
+              "url": "https://www.schauinsland-reisen.de/urlaubsziele/spanien/balearen/mallorca",
+              "description": "Entdecke Mallorca: Strandurlaub, Familienurlaub und All Inclusive-Urlaub."
+            },
+            {
+              "type": "organic",
+              "rank_group": 2,
+              "rank_absolute": 2,
+              "domain": "www.holidaycheck.de",
+              "title": "Mallorca Urlaub 2026/2027 - Guenstig buchen",
+              "url": "https://www.holidaycheck.de/urlaub/spanien/balearen/mallorca",
+              "description": "Mallorca ist weit mehr als nur Sonne und Strand."
+            },
+            {
+              "type": "organic",
+              "rank_group": 3,
+              "rank_absolute": 3,
+              "domain": "www.tui.com",
+              "title": "Pauschalreise Mallorca - Hotel inkl. Flug buchen | TUI",
+              "url": "https://www.tui.com/pauschalreisen/spanien/mallorca/",
+              "description": "Mallorca Pauschalreisen bei TUI buchen!"
+            },
+            {
+              "type": "people_also_ask",
+              "rank_group": 1,
+              "rank_absolute": 4,
+              "items": [
+                {
+                  "type": "people_also_ask_element",
+                  "title": "Wo ist es am schoensten auf Mallorca?"
+                },
+                {
+                  "type": "people_also_ask_element",
+                  "title": "Was kosten 5 Tage Malle?"
+                }
+              ]
+            },
+            {
+              "type": "related_searches",
+              "rank_group": 1,
+              "rank_absolute": 5,
+              "items": [
+                "Mallorca Urlaub All Inclusive",
+                "Urlaub Mallorca Last Minute"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

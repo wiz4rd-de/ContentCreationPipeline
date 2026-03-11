@@ -1,0 +1,31 @@
+{
+  "version": "0.1.20260223",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "0.0721 sec.",
+  "cost": 0,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "03101504-6886-0139-0000-3d651db5c686",
+      "status_code": 20100,
+      "status_message": "Task Created.",
+      "time": "0.0042 sec.",
+      "cost": 0,
+      "result_count": 0,
+      "path": ["v3", "serp", "google", "organic", "task_post"],
+      "data": {
+        "api": "serp",
+        "function": "task_post",
+        "se": "google",
+        "se_type": "organic",
+        "keyword": "Urlaub Mallorca",
+        "language_code": "de",
+        "location_code": 2276,
+        "depth": 10
+      },
+      "result": null
+    }
+  ]
+}

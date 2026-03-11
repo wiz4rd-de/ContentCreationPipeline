@@ -257,6 +257,23 @@ function buildContentFormatSignals() {
   return data.contentTopics.content_format_signals || {};
 }
 
+// --- 12. Stats summary -- quick-glance pipeline coverage metrics ---
+function buildStatsSummary() {
+  const source = data.keywordsFiltered || data.keywordsProcessed;
+  const totalKeywords = source?.total_keywords ?? 0;
+  const filteredCount = data.keywordsFiltered?.filtered_keywords ?? totalKeywords;
+  const clusterCount = Array.isArray(source?.clusters) ? source.clusters.length : 0;
+  const competitorCount = (data.competitorsData?.competitors || data.serp?.competitors || []).length;
+
+  return {
+    total_keywords: totalKeywords,
+    filtered_keywords: filteredCount,
+    total_clusters: clusterCount,
+    competitor_count: competitorCount,
+  };
+}
+
+
 // --- Keyword data ---
 function buildKeywordData() {
   const clusters = buildClusterRanking();
@@ -283,6 +300,7 @@ const output = {
     current_year: currentYear,
     pipeline_version: PIPELINE_VERSION,
   },
+  stats: buildStatsSummary(),
   keyword_data: buildKeywordData(),
   serp_data: {
     competitors: buildCompetitors(),

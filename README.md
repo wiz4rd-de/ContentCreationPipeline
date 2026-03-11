@@ -390,6 +390,7 @@ output/2026-03-09_thailand-urlaub/
 src/
   utils/
     resolve-location.mjs          # Market code -> DataForSEO location code
+    slugify.mjs                    # URL-safe slug generator
     location-codes.json            # ISO -> numeric location mapping
     stopwords.json                 # Stopword lists for TF-IDF filtering
   keywords/
@@ -401,6 +402,7 @@ src/
     prepare-strategist-data.mjs    # Data skeleton for content-strategy skill
     blocklist-default.json         # Default keyword blocklist
   serp/
+    fetch-serp.mjs                 # SERP data fetcher (async task_post/task_get)
     process-serp.mjs               # SERP feature extraction from raw API response
     assemble-competitors.mjs       # Merge SERP data + page extractions
   extractor/
@@ -421,6 +423,8 @@ test/
     filter-keywords.test.mjs
     extract-page.test.mjs
     process-serp.test.mjs
+    fetch-serp.test.mjs
+    slugify.test.mjs
     analyze-page-structure.test.mjs
     analyze-content-topics.test.mjs
     compute-entity-prominence.test.mjs

@@ -41,6 +41,7 @@ describe('assemble-briefing-data', () => {
   it('produces valid JSON with all top-level keys', () => {
     const result = runParsed();
     assert.ok(typeof result.meta === 'object', 'meta must be an object');
+    assert.ok(typeof result.stats === 'object', 'stats must be an object');
     assert.ok(typeof result.keyword_data === 'object', 'keyword_data must be an object');
     assert.ok(typeof result.serp_data === 'object', 'serp_data must be an object');
     assert.ok(typeof result.content_analysis === 'object', 'content_analysis must be an object');
@@ -94,9 +95,6 @@ describe('assemble-briefing-data', () => {
 
   it('cluster ranking uses filtered keywords when available', () => {
     const result = runParsed();
-    // The first cluster should be "test keyword" with volume 1000+500+200=1700
-    // Second should be "keyword tool" with 800+600+300+100=1800
-    // Actually keyword tool has higher total volume, so it should be rank 1
     const clusters = result.keyword_data.clusters;
     assert.equal(clusters[0].cluster_keyword, 'keyword tool');
     assert.equal(clusters[0].total_search_volume, 1800);
@@ -153,6 +151,89 @@ describe('assemble-briefing-data', () => {
     assert.equal(google.prominence_source, 'code');
   });
 
+  // --- Stats summary tests ---
+
+  it('stats has correct fields with full fixture data', () => {
+    const result = runParsed();
+    assert.ok(typeof result.stats === 'object', 'stats must be an object');
+    assert.equal(result.stats.total_keywords, 10);
+    assert.equal(result.stats.filtered_keywords, 8);
+    assert.equal(result.stats.total_clusters, 3);
+    assert.equal(result.stats.competitor_count, 3);
+  });
+
+  it('stats uses competitors-data count over serp count when available', () => {
+    const dir = makeTmpDir();
+    try {
+      writeFileSync(join(dir, 'serp-processed.json'), JSON.stringify({
+        target_keyword: 'stats test',
+        competitors: [{ rank: 1 }, { rank: 2 }],
+        serp_features: {},
+        item_types_present: []
+      }));
+      writeFileSync(join(dir, 'competitors-data.json'), JSON.stringify({
+        competitors: [{ rank: 1 }, { rank: 2 }, { rank: 3 }, { rank: 4 }, { rank: 5 }]
+      }));
+      const result = runParsed({ dir });
+      assert.equal(result.stats.competitor_count, 5);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('stats falls back to serp competitors when competitors-data is absent', () => {
+    const dir = makeTmpDir();
+    try {
+      writeFileSync(join(dir, 'serp-processed.json'), JSON.stringify({
+        target_keyword: 'stats test',
+        competitors: [{ rank: 1 }, { rank: 2 }],
+        serp_features: {},
+        item_types_present: []
+      }));
+      const result = runParsed({ dir });
+      assert.equal(result.stats.competitor_count, 2);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('stats has zero values when no input files exist', () => {
+    const dir = makeTmpDir();
+    try {
+      const result = runParsed({ dir });
+      assert.equal(result.stats.total_keywords, 0);
+      assert.equal(result.stats.filtered_keywords, 0);
+      assert.equal(result.stats.total_clusters, 0);
+      assert.equal(result.stats.competitor_count, 0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('stats prefers keywords-filtered over keywords-processed', () => {
+    const dir = makeTmpDir();
+    try {
+      writeFileSync(join(dir, 'keywords-processed.json'), JSON.stringify({
+        seed_keyword: 'stats pref test',
+        total_keywords: 20,
+        clusters: [{ cluster_keyword: 'a' }, { cluster_keyword: 'b' }]
+      }));
+      writeFileSync(join(dir, 'keywords-filtered.json'), JSON.stringify({
+        seed_keyword: 'stats pref test',
+        total_keywords: 20,
+        filtered_keywords: 15,
+        clusters: [{ cluster_keyword: 'a' }, { cluster_keyword: 'b' }, { cluster_keyword: 'c' }]
+      }));
+      const result = runParsed({ dir });
+      assert.equal(result.stats.total_keywords, 20);
+      assert.equal(result.stats.filtered_keywords, 15);
+      assert.equal(result.stats.total_clusters, 3);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+
   it('missing input files handled gracefully with null fields', () => {
     const dir = makeTmpDir();
     try {
@@ -172,6 +253,11 @@ describe('assemble-briefing-data', () => {
       assert.equal(result.competitor_analysis.rare_modules, null);
       assert.equal(result.competitor_analysis.avg_word_count, null);
       assert.equal(result.faq_data, null);
+      // Stats should have zeros
+      assert.equal(result.stats.total_keywords, 0);
+      assert.equal(result.stats.filtered_keywords, 0);
+      assert.equal(result.stats.total_clusters, 0);
+      assert.equal(result.stats.competitor_count, 0);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -295,6 +381,9 @@ describe('assemble-briefing-data', () => {
       assert.ok(Array.isArray(result.serp_data.competitors));
       assert.equal(result.content_analysis.proof_keywords, null);
       assert.equal(result.faq_data, null);
+      // Stats should reflect serp-only state
+      assert.equal(result.stats.total_keywords, 0);
+      assert.equal(result.stats.competitor_count, 1);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -320,6 +409,10 @@ describe('assemble-briefing-data', () => {
       assert.equal(result.keyword_data.clusters.length, 1);
       assert.equal(result.keyword_data.clusters[0].total_search_volume, 150);
       assert.equal(result.serp_data.competitors, null);
+      // Stats should reflect keywords-only state
+      assert.equal(result.stats.total_keywords, 2);
+      assert.equal(result.stats.total_clusters, 1);
+      assert.equal(result.stats.competitor_count, 0);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

@@ -48,6 +48,8 @@ node src/extractor/extract-page.mjs "<competitor-url>" > output/YYYY-MM-DD_<slug
 ```
 Input: positional URL arg. Outputs JSON to stdout. Redirect each to `pages/<slug>.json`.
 
+**SERP fetching:** SERP data is fetched via `src/serp/fetch-serp.mjs` (async task_post/task_get workflow -- cheaper than live/advanced). Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to fetch fresh data.
+
 #### Step 3: Keyword Processing
 ```bash
 node src/keywords/process-keywords.mjs \
