@@ -233,7 +233,6 @@ describe('assemble-briefing-data', () => {
     }
   });
 
-  // --- Existing tests ---
 
   it('missing input files handled gracefully with null fields', () => {
     const dir = makeTmpDir();

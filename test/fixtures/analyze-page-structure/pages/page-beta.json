@@ -1,0 +1,19 @@
+{
+  "url": "https://beta.example.com/mallorca-tipps",
+  "main_content_text": "Mallorca Reisetipps Hier finden Sie die besten Tipps fuer Ihren Mallorca Urlaub. Unterkunft waehlen Hotels und Ferienwohnungen gibt es in allen Preisklassen. Die guenstigsten Optionen finden Sie im Landesinneren. Fincas bieten besonderen Charme. FAQ zu Mallorca Brauche ich einen Mietwagen? Ein Mietwagen ist empfehlenswert um die Insel zu erkunden. Die oeffentlichen Busse fahren aber auch regelmaessig. Essen und Trinken Die mallorquinische Kueche ist vielfaeltig. Probieren Sie unbedingt Pa amb oli und Ensaimada. Die lokalen Weine aus Binissalem sind ausgezeichnet.",
+  "headings": [
+    { "level": 2, "text": "Unterkunft waehlen" },
+    { "level": 2, "text": "FAQ zu Mallorca" },
+    { "level": 3, "text": "Brauche ich einen Mietwagen?" },
+    { "level": 2, "text": "Essen und Trinken" }
+  ],
+  "html_signals": {
+    "faq_sections": 1,
+    "tables": 1,
+    "ordered_lists": 1,
+    "unordered_lists": 0,
+    "video_embeds": 1,
+    "forms": 0,
+    "images_in_content": 2
+  }
+}

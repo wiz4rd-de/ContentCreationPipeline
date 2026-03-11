@@ -1,0 +1,37 @@
+{
+  "target_keyword": "thailand urlaub",
+  "se_results_count": 50000,
+  "location_code": 2276,
+  "language_code": "de",
+  "item_types_present": ["organic", "people_also_ask"],
+  "serp_features": {
+    "ai_overview": { "present": false },
+    "featured_snippet": { "present": false },
+    "people_also_ask": [
+      {"question": "Wann ist die beste Reisezeit Thailand?", "answer": "Die beste Reisezeit ist November bis Februar.", "url": "https://example.com/reisezeit", "domain": "example.com"},
+      {"question": "Was kostet ein Urlaub in Thailand?", "answer": "Ein Thailand Urlaub kostet ca. 1500 Euro.", "url": "https://example.com/kosten", "domain": "example.com"},
+      {"question": "Welche Inseln in Thailand sind empfehlenswert?", "answer": null, "url": null, "domain": null},
+      {"question": "Braucht man ein Visum Thailand?", "answer": "Nein, bis 30 Tage visumfrei.", "url": "https://example.org/visum", "domain": "example.org"},
+      {"question": "Wie ist das Wetter in Thailand im Januar?", "answer": "Trocken und warm, ca. 30 Grad.", "url": "https://example.com/wetter", "domain": "example.com"}
+    ],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": { "present": false },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": []
+}

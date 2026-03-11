@@ -1,0 +1,42 @@
+{
+  "tasks": [{
+    "result": [{
+      "keyword": "empty aio text",
+      "se_results_count": 1000,
+      "location_code": 2840,
+      "language_code": "en",
+      "item_types": ["organic", "ai_overview"],
+      "items": [
+        {
+          "type": "ai_overview",
+          "title": "About this topic",
+          "items": [
+            {
+              "type": "ai_overview_element",
+              "references": [
+                {
+                  "domain": "example.com",
+                  "url": "https://example.com/article",
+                  "title": "Example Article"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "organic",
+          "rank_group": 1,
+          "rank_absolute": 1,
+          "url": "https://example.com/article",
+          "domain": "example.com",
+          "title": "Article",
+          "description": "An article.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        }
+      ]
+    }]
+  }]
+}

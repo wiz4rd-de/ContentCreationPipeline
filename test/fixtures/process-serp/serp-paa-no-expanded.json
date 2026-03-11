@@ -1,0 +1,44 @@
+{
+  "tasks": [{
+    "result": [{
+      "keyword": "simple query",
+      "se_results_count": 5000,
+      "location_code": 2840,
+      "language_code": "en",
+      "item_types": ["organic", "people_also_ask"],
+      "items": [
+        {
+          "type": "people_also_ask",
+          "items": [
+            {
+              "type": "people_also_ask_element",
+              "title": "What is SEO?",
+              "expanded_element": null
+            },
+            {
+              "type": "people_also_ask_element",
+              "title": "How does SEO work?"
+            },
+            {
+              "type": "people_also_ask_element",
+              "title": null
+            }
+          ]
+        },
+        {
+          "type": "organic",
+          "rank_group": 1,
+          "rank_absolute": 1,
+          "url": "https://example.com/seo",
+          "domain": "example.com",
+          "title": "SEO Guide",
+          "description": "Learn about SEO.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        }
+      ]
+    }]
+  }]
+}

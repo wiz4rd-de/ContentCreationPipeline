@@ -33,19 +33,45 @@ function itemsByType(type) {
 // --- Extract AI Overview ---
 function extractAiOverview() {
   const aiItems = itemsByType('ai_overview');
-  if (aiItems.length === 0) return { present: false };
+  if (aiItems.length === 0) {
+    return {
+      present: false,
+      title: null,
+      text: null,
+      cited_domains: [],
+      cited_urls: [],
+      cited_sources: [],
+      references_count: 0,
+    };
+  }
 
   const item = aiItems[0];
+  const title = item.title || null;
+
+  // Collect text from sub-items: try description, content, text fields
+  const textParts = [];
   // Collect all unique references from ai_overview_element sub-items
-  const seen = new Set();
+  const seenRefs = new Set();
   const references = [];
+
   if (item.items) {
     for (const element of item.items) {
+      // Gather text from nested sub-items
+      if (element.items) {
+        for (const sub of element.items) {
+          const txt = sub.description || sub.content || sub.text;
+          if (txt) textParts.push(txt);
+        }
+      }
+      // Also check the element itself for text
+      const elemTxt = element.description || element.content || element.text;
+      if (elemTxt) textParts.push(elemTxt);
+
       if (element.references) {
         for (const ref of element.references) {
           const key = ref.url || ref.domain;
-          if (key && !seen.has(key)) {
-            seen.add(key);
+          if (key && (seenRefs.has(key) === false)) {
+            seenRefs.add(key);
             references.push({
               domain: ref.domain || null,
               url: ref.url || null,
@@ -56,7 +82,29 @@ function extractAiOverview() {
       }
     }
   }
-  return { present: true, references };
+
+  const text = textParts.length > 0 ? textParts.join('\n') : null;
+
+  // Deduplicated cited domains, urls, sources
+  const domainSet = new Set();
+  const citedUrls = [];
+  const citedSources = [];
+  for (const ref of references) {
+    if (ref.domain) domainSet.add(ref.domain);
+    if (ref.url) citedUrls.push(ref.url);
+    if (ref.title) citedSources.push(ref.title);
+  }
+
+  return {
+    present: true,
+    references,
+    title,
+    text,
+    cited_domains: [...domainSet].sort(),
+    cited_urls: citedUrls,
+    cited_sources: citedSources,
+    references_count: references.length,
+  };
 }
 
 // --- Extract Featured Snippet ---
@@ -90,7 +138,17 @@ function extractPeopleAlsoAsk() {
   for (const paa of paaItems) {
     if (paa.items) {
       for (const q of paa.items) {
-        if (q.title) questions.push(q.title);
+        if (q.title == null) continue;
+        // Extract answer, url, domain from expanded_element if available
+        const expanded = (Array.isArray(q.expanded_element) && q.expanded_element.length > 0)
+          ? q.expanded_element[0]
+          : null;
+        questions.push({
+          question: q.title,
+          answer: expanded ? (expanded.description || null) : null,
+          url: expanded ? (expanded.url || null) : null,
+          domain: expanded ? (expanded.domain || null) : null,
+        });
       }
     }
   }

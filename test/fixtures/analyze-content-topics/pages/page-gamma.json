@@ -1,0 +1,17 @@
+{
+  "url": "https://gamma.example.com/mallorca-reise",
+  "main_content_text": "Mallorca Reisefuehrer Mallorca ist die groesste Insel der Balearen. Die beste Reisezeit haengt von den persoenlichen Vorlieben ab. Die schoensten Straende Die Straende von Mallorca bieten fuer jeden etwas. Von ruhigen Buchten bis zu lebhaften Strandpromenaden ist alles dabei. Cala Millor ist besonders bei Familien beliebt. Kultur und Geschichte Mallorca hat eine reiche Geschichte die bis in die Roemerzeit zurueckreicht. Die Kathedrale La Seu ist ein Meisterwerk gotischer Architektur. In Palma finden Sie zahlreiche Museen und Galerien.",
+  "headings": [
+    { "level": 2, "text": "Die schoensten Straende" },
+    { "level": 2, "text": "Kultur und Geschichte" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 1,
+    "video_embeds": 0,
+    "forms": 1,
+    "images_in_content": 2
+  }
+}
