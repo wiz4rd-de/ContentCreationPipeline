@@ -29,7 +29,9 @@ Ask the user for:
 
 ## Pipeline
 
-All output goes to `output/YYYY-MM-DD_<seed-keyword-slug>/`.
+`$OUT` = `output/YYYY-MM-DD_<seed-keyword-slug>/` (the run-specific output directory)
+
+All output goes to `$OUT`.
 
 ### Phase 1: Deterministic Data Pipeline
 
@@ -37,14 +39,14 @@ Run each script in order. If `briefing-data.json` already exists in the output d
 
 #### Step 1: SERP Processing
 ```bash
-node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top 10 > output/YYYY-MM-DD_<slug>/serp-processed.json
+node src/serp/process-serp.mjs $OUT/serp-raw.json --top 10 > $OUT/serp-processed.json
 ```
 Input: raw DataForSEO SERP JSON (positional arg). `--top N` limits organic results (default 10). Outputs structured JSON to stdout. Redirect to `serp-processed.json`.
 
 #### Step 2: Page Extraction
 ```bash
 # For each competitor URL from serp-processed.json:
-node src/extractor/extract-page.mjs "<competitor-url>" > output/YYYY-MM-DD_<slug>/pages/<competitor-slug>.json
+node src/extractor/extract-page.mjs "<competitor-url>" > $OUT/pages/<competitor-slug>.json
 ```
 Input: positional URL arg. Outputs JSON to stdout. Redirect each to `pages/<slug>.json`.
 
@@ -53,42 +55,42 @@ Input: positional URL arg. Outputs JSON to stdout. Redirect each to `pages/<slug
 #### Step 3: Keyword Processing
 ```bash
 node src/keywords/process-keywords.mjs \
-  --related output/YYYY-MM-DD_<slug>/keywords-related-raw.json \
-  --suggestions output/YYYY-MM-DD_<slug>/keywords-suggestions-raw.json \
+  --related $OUT/keywords-related-raw.json \
+  --suggestions $OUT/keywords-suggestions-raw.json \
   --seed "<seed-keyword>" \
-  [--volume output/YYYY-MM-DD_<slug>/keywords-volume-raw.json] \
+  [--volume $OUT/keywords-volume-raw.json] \
   [--brands "brand1,brand2"] \
-  > output/YYYY-MM-DD_<slug>/keywords-processed.json
+  > $OUT/keywords-processed.json
 ```
 Merges raw DataForSEO responses, clusters related keywords, computes difficulty and opportunity scores. Outputs JSON to stdout.
 
 #### Step 4: Keyword Filtering
 ```bash
 node src/keywords/filter-keywords.mjs \
-  --keywords output/YYYY-MM-DD_<slug>/keywords-processed.json \
-  --serp output/YYYY-MM-DD_<slug>/serp-processed.json \
+  --keywords $OUT/keywords-processed.json \
+  --serp $OUT/serp-processed.json \
   --seed "<seed-keyword>" \
   [--blocklist blocklist.json] \
   [--brands "brand1,brand2"] \
-  > output/YYYY-MM-DD_<slug>/keywords-filtered.json
+  > $OUT/keywords-filtered.json
 ```
 Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with token overlap scoring. Outputs JSON to stdout.
 
 #### Step 5: Page Structure Analysis
 ```bash
-node src/analysis/analyze-page-structure.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ > output/YYYY-MM-DD_<slug>/page-structure.json
+node src/analysis/analyze-page-structure.mjs --pages-dir $OUT/pages/ > $OUT/page-structure.json
 ```
 Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Outputs JSON to stdout.
 
 #### Step 6: Content Topic Analysis
 ```bash
-node src/analysis/analyze-content-topics.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ --seed "<seed-keyword>" > output/YYYY-MM-DD_<slug>/content-topics.json
+node src/analysis/analyze-content-topics.mjs --pages-dir $OUT/pages/ --seed "<seed-keyword>" > $OUT/content-topics.json
 ```
 TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Outputs JSON to stdout.
 
 #### Step 7: Briefing Data Assembly
 ```bash
-node src/analysis/assemble-briefing-data.mjs --dir output/YYYY-MM-DD_<slug>/
+node src/analysis/assemble-briefing-data.mjs --dir $OUT/
 ```
 Consolidates all pipeline outputs into a single `briefing-data.json` with:
 - Ranked keyword clusters (by total search volume)
@@ -121,7 +123,7 @@ If yes, follow the instructions in the `content-draft` skill:
 - Use the brief from Phase 2 as input
 - Load keyword and competitor data for SEO and differentiation
 - Write the complete article
-- Save to `output/YYYY-MM-DD_<slug>/draft-<slug>.md`
+- Save to `$OUT/draft-<slug>.md`
 
 Present the finished draft for review.
 
@@ -141,7 +143,7 @@ At the end of the pipeline, the user has:
 | `brief-<slug>.md` | Final content briefing document | LLM (Phase 2) |
 | `draft-<slug>.md` | Article draft (if requested) | LLM (Step 3) |
 
-All files in `output/YYYY-MM-DD_<seed-keyword-slug>/`.
+All files in `$OUT`.
 
 ## Data Flow
 

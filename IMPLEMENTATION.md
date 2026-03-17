@@ -44,6 +44,66 @@ The deterministic keyword pipeline (issues #3-#12) is complete and merged to `ma
 
 ---
 
+## Phase 6: Skill Token Optimization
+
+Branch: `feat/skill-token-optimization` — strict linear chain, all issues modify `.claude/skills/content-briefing/SKILL.md`.
+
+| Issue | Title | Parallel | Notes |
+|-------|-------|----------|-------|
+| #60   | 1/4: Remove duplicated Phase 1 instructions from content-briefing skill | DONE (2026-03-17) | Commit 66fc919. Phase 1 section removed, pre-condition guard added, Inputs trimmed to Phase 2-only, frontmatter updated; 337 tests pass. |
+| #61   | 2/4: Batch Phase 2 qualitative steps 2.1-2.5 into single read-compute-write | DONE (2026-03-17) | Commit 910c85c. Collapsed steps 2.1-2.5 into single batched Step 2.1 (subsections 2.1A-2.1E); single Read + Write cycle; Step 2.6 renumbered to 2.2; 337 tests pass. |
+| #62   | 3/4: Replace repeated output path pattern with single placeholder definition | DONE (2026-03-17) | Commit fd5518d. `$OUT` defined once near top of both skill files; all subsequent uses replaced; full path appears only in definition line; 337 tests pass. |
+| #63   | 4/4: Consolidate redundant data integrity rules in content-briefing skill | DONE (2026-03-17) | Commit 77d04ed. Removed standalone "Data Integrity Rules" section; CRITICAL INSTRUCTION block and inline "copy exactly" annotations intact; 337 tests pass. |
+
+### Task Checklists
+
+**#60 — Remove duplicated Phase 1 instructions** ✓ DONE (2026-03-17)
+- [x] Delete the entire "Phase 1: Deterministic Pipeline" section (lines 20-67) from `content-briefing/SKILL.md`
+- [x] Add a pre-condition guard before Phase 2: check for `briefing-data.json`; STOP with a message if missing
+- [x] Update frontmatter `description` to reflect Phase 2-only scope
+- [x] Update the Inputs section: remove seed keyword and domain; keep template, tone-of-voice, requirements, output directory
+- [x] Verify `seo-content-pipeline/SKILL.md` is unchanged
+- [x] `npm test` passes
+
+**#61 — Batch Phase 2 qualitative steps 2.1-2.5** DONE (2026-03-17)
+- [x] Replace the "Protocol for all steps" section and steps 2.1-2.5 with a single batched step
+- [x] New step: read `briefing-data.json` once, check which qualitative fields are null, compute all remaining fields in reasoning, write back once
+- [x] Preserve all 5 field task descriptions and output format specs under labeled subsections
+- [x] Preserve the critical instruction block about not modifying deterministic data
+- [x] Keep Step 2.6 (briefing assembly) as a separate step (renumber to 2.2 or 2B)
+- [x] Preserve per-field skip-if-non-null guard (applied within the single read)
+- [x] `npm test` passes
+
+**#62 — Replace repeated output path pattern with `$OUT`** DONE (2026-03-17)
+- [x] Add `$OUT` definition near the top of `seo-content-pipeline/SKILL.md` (convert existing line 32 definition)
+- [x] Add `$OUT` definition near the top of `content-briefing/SKILL.md`
+- [x] Replace all subsequent occurrences of `output/YYYY-MM-DD_<slug>/` and variants with `$OUT` in both files
+- [x] Full path pattern appears only in the definition line in each file
+- [x] Bash code blocks remain syntactically valid with `$OUT`
+- [x] `npm test` passes
+
+**#63 — Consolidate redundant data integrity rules** DONE (2026-03-17)
+- [x] Remove the standalone "Data Integrity Rules" section from `content-briefing/SKILL.md`
+- [x] Verify the horizontal-rule-delimited critical instruction block is still present
+- [x] Verify "copy exactly" / "do NOT re-rank" inline annotations in Step 2.6 are still present
+- [x] No new duplicate text introduced
+- [x] `npm test` passes
+
+## Phase 7: Pipeline Token Optimization
+
+Branch: `feat/skill-token-optimization` (continues from Phase 6) — sequenced by impact, touches deterministic scripts and skill files.
+
+| Issue | Title | Parallel | Notes |
+|-------|-------|----------|-------|
+| #64   | 1/6: Patch-write briefing-data.json — output only qualitative fields | — | ~32K output token savings |
+| #65   | 2/6: Filter stopwords from proof_keywords — fix umlaut gap | — | ~1-2KB input savings |
+| #66   | 3/6: Drop redundant AIO arrays — keep only references | — | ~2KB input savings |
+| #67   | 4/6: Filter blocked/error pages from page_structures | — | ~1-3KB input savings |
+| #68   | 5/6: Clean AIO text encoding artifacts in process-serp.mjs | — | ~0.5KB + quality |
+| #69   | 6/6: Remove Phase 2 summary duplication from seo-content-pipeline SKILL.md | — | ~1KB instruction savings |
+
+---
+
 ## Dependency Graph
 
 - #14 -> #16 (entity prominence needs full page text from extract-page.mjs)
@@ -52,6 +112,16 @@ The deterministic keyword pipeline (issues #3-#12) is complete and merged to `ma
 - #17 -> #21 (keyword filtering uses enriched PAA data for FAQ prioritization)
 - #14, #15, #16, #17, #19, #20, #21 -> #22 (consolidation reads all pipeline outputs)
 - #22 -> #23 (briefing skill consumes consolidated `briefing-data.json`)
+- #23 -> #60 (Phase 1 removal builds on the skill structure established in #23)
+- #60 -> #61 (batching restructures the section that Phase 1 removal exposes)
+- #61 -> #62 (path placeholder replacement works on the post-batch file structure)
+- #62 -> #63 (integrity-rule consolidation avoids merge conflicts after #62 edits both files)
+- #63 -> #64 (patch-write builds on the batched skill structure from Phase 6)
+- #64 -> #65 (stopword fix changes briefing-data.json content that #64's merge script handles)
+- #65 -> #66 (AIO array removal changes briefing-data.json structure)
+- #66 -> #67 (page_structures filtering changes briefing-data.json content)
+- #67 -> #68 (AIO text cleanup changes process-serp.mjs output consumed by briefing-data)
+- #68 -> #69 (skill text removal is the final cleanup step)
 
 ## Architecture Notes
 
