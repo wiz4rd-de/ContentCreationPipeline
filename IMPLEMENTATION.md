@@ -89,6 +89,19 @@ Branch: `feat/skill-token-optimization` — strict linear chain, all issues modi
 - [x] No new duplicate text introduced
 - [x] `npm test` passes
 
+## Phase 7: Pipeline Token Optimization
+
+Branch: `feat/skill-token-optimization` (continues from Phase 6) — sequenced by impact, touches deterministic scripts and skill files.
+
+| Issue | Title | Parallel | Notes |
+|-------|-------|----------|-------|
+| #64   | 1/6: Patch-write briefing-data.json — output only qualitative fields | — | ~32K output token savings |
+| #65   | 2/6: Filter stopwords from proof_keywords — fix umlaut gap | — | ~1-2KB input savings |
+| #66   | 3/6: Drop redundant AIO arrays — keep only references | — | ~2KB input savings |
+| #67   | 4/6: Filter blocked/error pages from page_structures | — | ~1-3KB input savings |
+| #68   | 5/6: Clean AIO text encoding artifacts in process-serp.mjs | — | ~0.5KB + quality |
+| #69   | 6/6: Remove Phase 2 summary duplication from seo-content-pipeline SKILL.md | — | ~1KB instruction savings |
+
 ---
 
 ## Dependency Graph
@@ -103,6 +116,12 @@ Branch: `feat/skill-token-optimization` — strict linear chain, all issues modi
 - #60 -> #61 (batching restructures the section that Phase 1 removal exposes)
 - #61 -> #62 (path placeholder replacement works on the post-batch file structure)
 - #62 -> #63 (integrity-rule consolidation avoids merge conflicts after #62 edits both files)
+- #63 -> #64 (patch-write builds on the batched skill structure from Phase 6)
+- #64 -> #65 (stopword fix changes briefing-data.json content that #64's merge script handles)
+- #65 -> #66 (AIO array removal changes briefing-data.json structure)
+- #66 -> #67 (page_structures filtering changes briefing-data.json content)
+- #67 -> #68 (AIO text cleanup changes process-serp.mjs output consumed by briefing-data)
+- #68 -> #69 (skill text removal is the final cleanup step)
 
 ## Architecture Notes
 
