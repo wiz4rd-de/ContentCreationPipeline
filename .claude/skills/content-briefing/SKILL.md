@@ -196,15 +196,3 @@ Since `briefing-data.json` is already updated incrementally during Phase 2 steps
 
 1. **Save `brief-<seed-keyword-slug>.md`** -- The complete briefing markdown document assembled in Step 2.2.
 2. **Print** the final briefing to the conversation so the user can review immediately.
-
-## Data Integrity Rules
-
-These rules are non-negotiable:
-
-1. **Keyword clusters** appear in the briefing exactly as they appear in `keyword_data.clusters`. Same order, same volumes, same opportunity scores.
-2. **FAQ questions** appear in the briefing in the same priority order as `faq_data.questions`. The priority scores are pre-computed and authoritative.
-3. **Common/rare module classification** is copied from `competitor_analysis.common_modules` and `competitor_analysis.rare_modules` without modification.
-4. **Proof keywords** are copied from `content_analysis.proof_keywords` without modification.
-5. **Section weights** are copied from `content_analysis.section_weights` without modification.
-6. **AIO data** (presence, citations, text) is copied from `serp_data.aio` without modification.
-7. If any deterministic field is `null` (data was unavailable), state "Daten nicht verfuegbar" rather than inventing values.
