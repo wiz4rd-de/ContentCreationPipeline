@@ -9,11 +9,13 @@ Generate a detailed content brief from deterministic pipeline data (`briefing-da
 
 ## Inputs
 
+`$OUT` = `output/YYYY-MM-DD_<seed-keyword-slug>/` (the run-specific output directory)
+
 Ask the user for:
 1. **Content template** -- scan the `templates/` directory for available `template-*.md` files and present them as options. Also offer "Kein Template (generisches Briefing)" as a fallback. Show each template with its name and the content type definition from its first lines.
 2. **Brand voice / tone guidelines** (optional) -- scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive) and offer matches as options; let the user pick one, provide their own, or skip.
 3. **Any specific requirements** -- word count, CTA, internal links, etc.
-4. **Output directory** -- path to the `output/YYYY-MM-DD_<slug>/` directory containing `briefing-data.json`
+4. **Output directory** -- path to the `$OUT` directory containing `briefing-data.json`
 
 ## Pre-condition
 
@@ -37,7 +39,7 @@ Do not proceed further until the file exists.
 
 **Protocol:**
 
-1. **Read** `output/YYYY-MM-DD_<slug>/briefing-data.json` once using the Read tool.
+1. **Read** `$OUT/briefing-data.json` once using the Read tool.
 2. **Check** which of the 5 qualitative fields are still null. For each non-null field, print `"Step 2.1<X>: <field> already complete — skipping."` and skip that subsection.
 3. **Perform** the analysis for all remaining null fields in your reasoning (not in a script).
 4. **Write** the updated JSON back to disk once using the Write tool — update all computed fields in a single write. Do NOT create temp scripts in `/tmp/` or anywhere else. No Node scripts, no heredocs — just read JSON, update in your reasoning, write JSON.
