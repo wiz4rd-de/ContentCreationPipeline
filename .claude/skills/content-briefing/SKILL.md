@@ -10,61 +10,20 @@ Generate a detailed content brief from deterministic pipeline data (`briefing-da
 ## Inputs
 
 Ask the user for:
-1. **Seed keyword or topic** (required)
-2. **Content template** -- scan the `templates/` directory for available `template-*.md` files and present them as options. Also offer "Kein Template (generisches Briefing)" as a fallback. Show each template with its name and the content type definition from its first lines.
-3. **Your domain** (optional -- excluded from competitor analysis)
-4. **Target audience** (if not already defined in strategy)
-5. **Brand voice / tone guidelines** (optional) -- scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive) and offer matches as options; let the user pick one, provide their own, or skip.
-6. **Any specific requirements** -- word count, CTA, internal links, etc.
+1. **Content template** -- scan the `templates/` directory for available `template-*.md` files and present them as options. Also offer "Kein Template (generisches Briefing)" as a fallback. Show each template with its name and the content type definition from its first lines.
+2. **Brand voice / tone guidelines** (optional) -- scan `templates/` for files matching `*ToneOfVoice*` or `*tov*` (case-insensitive) and offer matches as options; let the user pick one, provide their own, or skip.
+3. **Any specific requirements** -- word count, CTA, internal links, etc.
+4. **Output directory** -- path to the `output/YYYY-MM-DD_<slug>/` directory containing `briefing-data.json`
 
-## Phase 1: Deterministic Pipeline
+## Pre-condition
 
-Check if `briefing-data.json` already exists in the output directory (`output/YYYY-MM-DD_<seed-keyword-slug>/`).
+Check that `briefing-data.json` exists in the specified output directory.
 
-### If `briefing-data.json` does NOT exist, run the pipeline:
+**If `briefing-data.json` does NOT exist:** STOP immediately and print:
 
-Execute each script in order. All scripts are deterministic -- same inputs produce byte-identical output.
+> `briefing-data.json` not found in `<output-dir>`. Phase 1 (deterministic pipeline) has not been run yet. Please run the `seo-content-pipeline` skill first to generate the pipeline data, then re-invoke this skill.
 
-```bash
-# 1. SERP processing
-# Input: raw SERP JSON from DataForSEO. Output: stdout JSON, redirect to serp-processed.json.
-node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top 10 > output/YYYY-MM-DD_<slug>/serp-processed.json
-
-# 2. Extract each competitor page
-# Read competitors from serp-processed.json, then for each URL:
-# Input: positional URL arg. Output: stdout JSON, redirect to pages/<slug>.json.
-node src/extractor/extract-page.mjs "<competitor-url>" > output/YYYY-MM-DD_<slug>/pages/<competitor-slug>.json
-
-# 3. Process keywords (clustering, difficulty, opportunity scores)
-# Input: raw DataForSEO response files. Output: stdout JSON, redirect to keywords-processed.json.
-node src/keywords/process-keywords.mjs \
-  --related output/YYYY-MM-DD_<slug>/keywords-related-raw.json \
-  --suggestions output/YYYY-MM-DD_<slug>/keywords-suggestions-raw.json \
-  --seed "<seed-keyword>" \
-  [--volume output/YYYY-MM-DD_<slug>/keywords-volume-raw.json] \
-  [--brands "brand1,brand2"] \
-  > output/YYYY-MM-DD_<slug>/keywords-processed.json
-
-# 4. Filter keywords (ethics, brand, off-topic filtering + FAQ prioritization)
-node src/keywords/filter-keywords.mjs \
-  --keywords output/YYYY-MM-DD_<slug>/keywords-processed.json \
-  --serp output/YYYY-MM-DD_<slug>/serp-processed.json \
-  --seed "<seed-keyword>" \
-  [--blocklist blocklist.json] \
-  [--brands "brand1,brand2"] \
-  > output/YYYY-MM-DD_<slug>/keywords-filtered.json
-
-# 5. Analyze page structure (module detection, content depth)
-node src/analysis/analyze-page-structure.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ > output/YYYY-MM-DD_<slug>/page-structure.json
-
-# 6. Analyze content topics (TF-IDF entity extraction, section weights)
-node src/analysis/analyze-content-topics.mjs --pages-dir output/YYYY-MM-DD_<slug>/pages/ --seed "<seed-keyword>" > output/YYYY-MM-DD_<slug>/content-topics.json
-
-# 7. Assemble briefing data (consolidate all outputs)
-node src/analysis/assemble-briefing-data.mjs --dir output/YYYY-MM-DD_<slug>/
-```
-
-### If `briefing-data.json` already exists, skip to Phase 2.
+Do not proceed further until the file exists.
 
 ## Phase 2: Qualitative Analysis (6 Sequential Steps)
 
@@ -72,10 +31,10 @@ node src/analysis/assemble-briefing-data.mjs --dir output/YYYY-MM-DD_<slug>/
 
 Each step follows the same protocol:
 
-1. **Read** `output/YYYY-MM-DD_<slug>/briefing-data.json` from disk
+1. **Read** `output/YYYY-MM-DD_<slug>/briefing-data.json` using the Read tool
 2. **Check** if `qualitative.<field>` is already non-null → if so, print `"Step N: <field> already complete — skipping."` and move to the next step
-3. **Perform** the analysis described for this step
-4. **Write** the updated JSON back to disk (`JSON.stringify(data, null, 2)` + trailing newline)
+3. **Perform** the analysis described for this step (in your reasoning, not in a script)
+4. **Write** the updated JSON back to disk using the **Write tool** directly on `briefing-data.json`. You already have the full file content from step 1 — update the `qualitative.<field>` value in the JSON and write the complete file back. **Do NOT create temp scripts** in `/tmp/` or anywhere else. No Node scripts, no heredocs — just read JSON, update in your reasoning, write JSON.
 5. **Print** one-line confirmation: `"Step N: <field> complete — saved to briefing-data.json."`
 
 ---
