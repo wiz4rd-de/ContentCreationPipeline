@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, cpSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -11,9 +11,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const script = join(__dirname, '..', '..', 'src', 'analysis', 'assemble-briefing-data.mjs');
 const fixtureDir = join(__dirname, '..', 'fixtures', 'assemble-briefing-data', '2026-03-09_test-keyword');
 
+function copyFixtureToTmp() {
+  const dir = join(tmpdir(), '2026-03-09_fixture-copy-' + randomBytes(4).toString('hex'));
+  cpSync(fixtureDir, dir, { recursive: true });
+  return dir;
+}
+
 function run(opts = {}) {
   const extraArgs = opts.extraArgs || [];
-  const args = [script, '--dir', opts.dir || fixtureDir, ...extraArgs];
+  // When using the default fixture dir, copy to tmp so the script's writeFileSync
+  // does not mutate the committed fixture (phase1_completed_at is a live timestamp).
+  const dir = opts.dir || copyFixtureToTmp();
+  const args = [script, '--dir', dir, ...extraArgs];
   return execFileSync('node', args, { encoding: 'utf-8' });
 }
 
