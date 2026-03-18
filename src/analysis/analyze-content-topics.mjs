@@ -9,6 +9,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tokenize, removeStopwords, loadStopwordSet } from '../utils/tokenizer.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -30,12 +31,7 @@ if (pagesDir === undefined || seed === undefined) {
 }
 
 // --- Load stopwords ---
-const stopwordsPath = join(__dirname, '..', 'utils', 'stopwords.json');
-const stopwordsData = JSON.parse(readFileSync(stopwordsPath, 'utf-8'));
-const stopwordSet = new Set([
-  ...(stopwordsData[language] || []),
-  ...(language === 'de' ? (stopwordsData.en || []) : []),
-]);
+const stopwordSet = loadStopwordSet(language);
 
 // --- Load page files (sorted for determinism) ---
 const pageFiles = readdirSync(pagesDir)
@@ -103,22 +99,6 @@ const pages = pageFiles.map(f => {
 
 const totalPages = pages.length;
 
-// --- Tokenizer ---
-// Lowercase, remove punctuation (keep umlauts and word chars), split on whitespace.
-function tokenize(text) {
-  // Replace punctuation with spaces, keeping letters (including umlauts), digits
-  const cleaned = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\u00e4\u00f6\u00fc\u00df\u00e0-\u00ff]+/g, ' ')
-    .trim();
-  if (cleaned.length === 0) return [];
-  return cleaned.split(/\s+/).filter(w => w.length > 1);
-}
-
-function removeStopwords(tokens) {
-  return tokens.filter(t => stopwordSet.has(t) === false);
-}
-
 // --- N-gram extraction ---
 function extractNgrams(tokens, n) {
   const ngrams = [];
@@ -148,7 +128,7 @@ function isAllStopwords(ngram) {
 // but filter out n-grams where ALL tokens are stopwords.
 function extractPageTerms(page) {
   const allTokens = tokenize(page.mainText);
-  const filteredTokens = removeStopwords(allTokens);
+  const filteredTokens = removeStopwords(allTokens, stopwordSet);
   const allTerms = [
     ...extractNgrams(filteredTokens, 1),
     ...extractNgrams(allTokens, 2).filter(ng => isAllStopwords(ng) === false),
