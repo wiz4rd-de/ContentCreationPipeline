@@ -253,6 +253,38 @@ describe('analyze-content-topics', () => {
     }
   });
 
+  it('umlaut stopwords are filtered from proof_keywords', () => {
+    const tmp = makeTmpDir();
+    try {
+      // Both pages share a topic keyword ("wandern") but also contain many umlaut stopwords
+      // that should never surface in proof_keywords regardless of document frequency.
+      const sharedText = 'wandern für über im als auf mit und ist die der';
+      writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
+        url: 'https://a.example.com/test',
+        main_content_text: `${sharedText} wandern für über im als`,
+        headings: [],
+        html_signals: {},
+      }));
+      writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
+        url: 'https://b.example.com/test',
+        main_content_text: `${sharedText} wandern für über im als`,
+        headings: [],
+        html_signals: {},
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      const umlautStopwords = ['für', 'über', 'im', 'als'];
+      for (const sw of umlautStopwords) {
+        const found = result.proof_keywords.find(pk => pk.term === sw);
+        assert.ok(found === undefined, `umlaut stopword "${sw}" must be filtered from proof_keywords`);
+      }
+      // The shared non-stopword term must still appear
+      const wandern = result.proof_keywords.find(pk => pk.term === 'wandern');
+      assert.ok(wandern !== undefined, '"wandern" must appear as proof keyword');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
   it('only considers H2 headings for section weight analysis', () => {
     const result = runParsed();
     // H3 headings from fixtures should not appear in section_weights
