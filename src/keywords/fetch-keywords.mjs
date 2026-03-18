@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { loadEnv } from '../utils/load-api-config.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -34,22 +35,7 @@ if (!seedKeyword || !market || !language || !outdir) {
 
 // --- Load API credentials ---
 const envPath = join(__dirname, '..', '..', 'api.env');
-const envContent = readFileSync(envPath, 'utf-8');
-const env = {};
-for (const line of envContent.split('\n')) {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.startsWith('#')) continue;
-  const eqIdx = trimmed.indexOf('=');
-  if (eqIdx === -1) continue;
-  env[trimmed.slice(0, eqIdx)] = trimmed.slice(eqIdx + 1);
-}
-
-const auth = env.DATAFORSEO_AUTH;
-const base = env.DATAFORSEO_BASE;
-if (!auth || !base) {
-  console.error('Error: DATAFORSEO_AUTH and DATAFORSEO_BASE must be set in api.env');
-  process.exit(1);
-}
+const { auth, base } = loadEnv(envPath);
 
 // --- Resolve location code ---
 const codes = JSON.parse(readFileSync(join(__dirname, '..', 'utils', 'location-codes.json'), 'utf-8'));
