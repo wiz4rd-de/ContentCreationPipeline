@@ -179,6 +179,56 @@ describe('extractPeopleAlsoAsk enriched format', () => {
 });
 
 // =============================================================================
+// cleanAioText — encoding artifact cleaning (via fixture end-to-end)
+// =============================================================================
+
+describe('cleanAioText encoding artifact cleaning', () => {
+
+  it('normalizes ring-operator degree notation "23 ∘ C" to "23 °C"', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('23 °C'), `expected "23 °C" in: ${text}`);
+    assert.ok(!text.includes('∘'), `unexpected ring operator in: ${text}`);
+  });
+
+  it('normalizes ring-operator degree notation "18 ∘ F" to "18 °F"', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('18 °F'), `expected "18 °F" in: ${text}`);
+  });
+
+  it('removes zero-width characters (U+200B, U+200D)', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(!text.includes('\u200B'), 'U+200B zero-width space should be removed');
+    assert.ok(!text.includes('\u200D'), 'U+200D zero-width joiner should be removed');
+  });
+
+  it('decodes &amp; HTML entity to &', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('&'), `expected & in: ${text}`);
+    assert.ok(!text.includes('&amp;'), 'raw &amp; entity should be decoded');
+  });
+
+  it('collapses multiple consecutive spaces to single space', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(!/  /.test(text), `expected no double spaces in: ${text}`);
+  });
+
+  it('leaves clean input unchanged (no false positives)', () => {
+    // serp-with-aio.json has clean text — verify it still passes through correctly
+    const result = run('serp-with-aio.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('Ahrefs is widely considered'));
+    assert.ok(text.includes('Semrush offers comprehensive'));
+    assert.ok(text.includes('Google Search Console is a free tool'));
+    assert.ok(text.includes('Here are the top SEO tools'));
+  });
+});
+
+// =============================================================================
 // Backward compatibility
 // =============================================================================
 

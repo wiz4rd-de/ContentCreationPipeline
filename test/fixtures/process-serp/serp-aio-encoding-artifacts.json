@@ -1,0 +1,53 @@
+{
+  "tasks": [{
+    "result": [{
+      "keyword": "weather today",
+      "se_results_count": 1000000,
+      "location_code": 2276,
+      "language_code": "de",
+      "item_types": ["organic", "ai_overview"],
+      "items": [
+        {
+          "type": "ai_overview",
+          "title": "Wetter heute",
+          "items": [
+            {
+              "type": "ai_overview_element",
+              "description": "Die Temperatur beträgt  heute  23 ∘ C in Berlin.",
+              "items": [
+                {
+                  "type": "ai_overview_element",
+                  "description": "Morgen werden 18 ∘ F erwartet.\u200bEin weiterer\u200d schöner Tag."
+                },
+                {
+                  "type": "ai_overview_element",
+                  "content": "Kein Niederschlag  erwartet  &amp; sonnig den ganzen Tag."
+                }
+              ],
+              "references": [
+                {
+                  "domain": "wetter.de",
+                  "url": "https://www.wetter.de/berlin",
+                  "title": "Wetter Berlin"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "organic",
+          "rank_group": 1,
+          "rank_absolute": 1,
+          "url": "https://www.wetter.de/berlin",
+          "domain": "wetter.de",
+          "title": "Wetter Berlin",
+          "description": "Aktuelles Wetter für Berlin.",
+          "is_featured_snippet": false,
+          "is_video": false,
+          "rating": null,
+          "timestamp": null
+        }
+      ]
+    }]
+  }]
+}
