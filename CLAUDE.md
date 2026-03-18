@@ -1,5 +1,16 @@
 # Rules
 
+## CRITICAL: GitHub CLI Multi-line Text
+
+When passing multi-line text to `gh` commands (e.g., `--comment`, `--body`), **ALWAYS** use the Write tool to save the text to `/tmp/gh-body.md` first, then reference it:
+
+```bash
+gh issue close 32 --comment "$(cat /tmp/gh-body.md)"
+gh pr create --title "Title" --body "$(cat /tmp/gh-body.md)"
+```
+
+**NEVER** inline multi-line text containing `#` characters directly in the command string. The security hook will block it.
+
 ## Data Access
 
 - Never guess at a file's structure (property names, nesting). Always read the file first to inspect the actual structure before writing code that accesses specific fields.

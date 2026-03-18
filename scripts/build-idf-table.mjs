@@ -63,10 +63,13 @@ export async function computeIdf(lines, { language, corpusName, minDf, maxTerms 
     }
   }
 
-  // Filter by min-df
+  // Filter by min-df; also drop pure-digit tokens (years, numbers) since they
+  // cause V8 to hoist integer-indexed keys before alphabetic ones in Object.keys(),
+  // breaking the alphabetical-sort guarantee for the idf object.
+  const pureDigit = /^[0-9]+$/;
   const eligible = [];
   for (const [term, df] of dfMap) {
-    if (df >= minDf) {
+    if (df >= minDf && pureDigit.test(term) === false) {
       eligible.push([term, df]);
     }
   }
