@@ -59,6 +59,25 @@ if (pageFiles.length === 0) {
   process.exit(0);
 }
 
+// --- Page quality filter ---
+// Exclude blocked/error/thin pages from all analysis to prevent noise in proof keywords,
+// section weights, and content format signals.
+const BLOCK_HEADING_RE_ACT = /why have i been blocked|access denied|403 forbidden|please verify|checking your browser|just a moment|enable javascript and cookies|attention required/i;
+const MIN_WORD_COUNT_ACT = 200;
+
+function countWordsRaw(text) {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+function isBlockedPage(mainText, headings) {
+  if (mainText.length === 0) return 'missing main_content_text';
+  const wc = countWordsRaw(mainText);
+  if (wc < MIN_WORD_COUNT_ACT) return `too few words (${wc} < ${MIN_WORD_COUNT_ACT})`;
+  const blocked = headings.find(h => BLOCK_HEADING_RE_ACT.test(h.text || ''));
+  if (blocked) return `block/error heading: "${blocked.text}"`;
+  return null;
+}
+
 // --- Load all pages ---
 const pages = pageFiles.map(f => {
   const raw = JSON.parse(readFileSync(join(pagesDir, f), 'utf-8'));
@@ -72,6 +91,13 @@ const pages = pageFiles.map(f => {
     headings: raw.headings || [],
     signals: raw.html_signals || {},
   };
+}).filter(page => {
+  const reason = isBlockedPage(page.mainText, page.headings);
+  if (reason !== null) {
+    process.stderr.write(`Skipping ${page.domain || page.file}: ${reason}\n`);
+    return false;
+  }
+  return true;
 });
 
 const totalPages = pages.length;

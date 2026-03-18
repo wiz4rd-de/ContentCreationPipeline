@@ -158,7 +158,7 @@ describe('analyze-content-topics', () => {
       // Create pages where one section has very high content percentage
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://a.example.com/test',
-        main_content_text: 'Intro text. Big Section ' + 'word '.repeat(100) + 'Small Section A few words here.',
+        main_content_text: 'Intro text. Big Section ' + 'word '.repeat(200) + 'Small Section A few words here.',
         headings: [
           { level: 2, text: 'Big Section' },
           { level: 2, text: 'Small Section' },
@@ -167,7 +167,7 @@ describe('analyze-content-topics', () => {
       }));
       writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
         url: 'https://b.example.com/test',
-        main_content_text: 'Intro. Big Section ' + 'word '.repeat(100) + 'Small Section Just a bit.',
+        main_content_text: 'Intro. Big Section ' + 'word '.repeat(200) + 'Small Section Just a bit.',
         headings: [
           { level: 2, text: 'Big Section' },
           { level: 2, text: 'Small Section' },
@@ -258,16 +258,18 @@ describe('analyze-content-topics', () => {
     try {
       // Both pages share a topic keyword ("wandern") but also contain many umlaut stopwords
       // that should never surface in proof_keywords regardless of document frequency.
+      // Pad to 200+ words so the quality filter does not exclude these pages.
+      const filler = 'thema '.repeat(185);
       const sharedText = 'wandern für über im als auf mit und ist die der';
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://a.example.com/test',
-        main_content_text: `${sharedText} wandern für über im als`,
+        main_content_text: `${sharedText} wandern für über im als ${filler}`,
         headings: [],
         html_signals: {},
       }));
       writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
         url: 'https://b.example.com/test',
-        main_content_text: `${sharedText} wandern für über im als`,
+        main_content_text: `${sharedText} wandern für über im als ${filler}`,
         headings: [],
         html_signals: {},
       }));
@@ -315,6 +317,47 @@ describe('analyze-content-topics', () => {
     const result = runParsed();
     for (const pk of result.proof_keywords) {
       assert.equal(pk.total_pages, 3, 'total_pages must match fixture page count');
+    }
+  });
+
+  it('filters thin/blocked pages from topic analysis', () => {
+    const tmp = makeTmpDir();
+    try {
+      // Substantive page with unique term "schnorcheln" that should appear in proof_keywords
+      const text1 = ('schnorcheln tauchen strand ' + 'wort '.repeat(70)).trim();
+      writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
+        url: 'https://a.example.com/page',
+        main_content_text: text1,
+        headings: [{ level: 2, text: 'Aktivitaeten' }],
+        html_signals: { ordered_lists: 0, tables: 0, faq_sections: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      writeFileSync(join(tmp.pagesDir, 'p2.json'), JSON.stringify({
+        url: 'https://b.example.com/page',
+        main_content_text: text1,
+        headings: [{ level: 2, text: 'Sport' }],
+        html_signals: { ordered_lists: 0, tables: 0, faq_sections: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      // Blocked/thin page — must not contaminate proof_keywords or format signals
+      writeFileSync(join(tmp.pagesDir, 'p-blocked.json'), JSON.stringify({
+        url: 'https://blocked.example.com/page',
+        main_content_text: 'Access denied. You do not have permission to access this page.',
+        headings: [{ level: 1, text: 'Access denied' }],
+        html_signals: { ordered_lists: 1, tables: 1, faq_sections: 1, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      // total_pages reflects only the 2 valid pages
+      for (const pk of result.proof_keywords) {
+        assert.equal(pk.total_pages, 2, 'total_pages must count only valid (non-filtered) pages');
+      }
+      // The blocked page's html_signals (ordered_lists:1, tables:1, faq:1) must not be counted
+      assert.equal(result.content_format_signals.pages_with_numbered_lists, 0,
+        'ordered_lists from blocked page must not count');
+      assert.equal(result.content_format_signals.pages_with_tables, 0,
+        'tables from blocked page must not count');
+      assert.equal(result.content_format_signals.pages_with_faq, 0,
+        'faq from blocked page must not count');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
     }
   });
 
