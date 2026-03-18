@@ -12,6 +12,8 @@ if (!url) {
   process.exit(1);
 }
 
+console.error(`Extracting: ${url} ...`);
+
 try {
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentExtractor/1.0)' },

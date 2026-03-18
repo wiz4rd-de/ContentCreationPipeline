@@ -145,6 +145,7 @@ function splitSections(mainText, headings) {
 }
 
 // --- Process each page ---
+console.error(`Analyzing page structure for ${pageFiles.length} competitors...`);
 const competitors = [];
 
 for (const file of pageFiles) {
