@@ -81,6 +81,16 @@ describe('fetch-serp', () => {
       const result = parseArgs(['kw', '--market', 'de', '--language', 'de']);
       assert.equal(result.outdir, undefined);
     });
+
+    it('returns default maxAge of 7 when --max-age is not provided', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de']);
+      assert.equal(result.maxAge, 7);
+    });
+
+    it('returns custom maxAge when --max-age is provided', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--max-age', '14']);
+      assert.equal(result.maxAge, 14);
+    });
   });
 
   // --- loadEnv ---
@@ -360,6 +370,77 @@ describe('fetch-serp', () => {
     it('returns hit:true when keyword parameter is omitted (backwards compat)', () => {
       const fixturePath = join(fixtures, 'task-get-success.json');
       const result = checkCache(fixturePath);
+      assert.equal(result.hit, true);
+    });
+
+    it('returns hit:true when _pipeline_fetched_at is 3 days ago and TTL is 7 days', () => {
+      const dir = makeTmpDir();
+      try {
+        const fetchedAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+        const data = {
+          _pipeline_fetched_at: fetchedAt,
+          tasks: [{ data: { keyword: 'test' }, result: [{ datetime: fetchedAt, items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), undefined, 7);
+        assert.equal(result.hit, true);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns hit:false with reason "expired" when _pipeline_fetched_at is 10 days ago and TTL is 7 days', () => {
+      const dir = makeTmpDir();
+      try {
+        const fetchedAt = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+        const data = {
+          _pipeline_fetched_at: fetchedAt,
+          tasks: [{ data: { keyword: 'test' }, result: [{ datetime: fetchedAt, items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), undefined, 7);
+        assert.equal(result.hit, false);
+        assert.equal(result.reason, 'expired');
+        assert.ok(typeof result.ageDays === 'number', 'ageDays should be a number');
+        assert.ok(result.ageDays >= 10, `Expected ageDays >= 10, got ${result.ageDays}`);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('falls back to tasks[0].result[0].datetime when _pipeline_fetched_at is absent and entry is fresh', () => {
+      const dir = makeTmpDir();
+      try {
+        const datetime = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').replace('Z', ' +00:00');
+        const data = {
+          tasks: [{ data: { keyword: 'test' }, result: [{ datetime, items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), undefined, 7);
+        assert.equal(result.hit, true);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('treats cache as valid when no timestamp is present (backward compatibility)', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = {
+          tasks: [{ data: { keyword: 'test' }, result: [{ items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), undefined, 7);
+        assert.equal(result.hit, true);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('TTL validation is skipped when maxAgeDays is not provided', () => {
+      // Use the fixture with a known old timestamp — should still be a hit without TTL arg
+      const fixturePath = join(fixtures, 'serp-raw-with-timestamp.json');
+      const result = checkCache(fixturePath, 'Urlaub Mallorca');
       assert.equal(result.hit, true);
     });
   });
