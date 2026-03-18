@@ -102,14 +102,9 @@ Consolidates all pipeline outputs into a single `briefing-data.json` with:
 
 Show the user a summary of what was discovered: number of keywords, clusters, competitors analyzed, SERP features detected. Confirm before proceeding.
 
-### Phase 2: Content Briefing (Single LLM Call)
+### Phase 2: Content Briefing
 
-Follow the instructions in the `content-briefing` skill. This skill:
-1. Reads `briefing-data.json` and the selected template
-2. Constructs a single LLM prompt with the full data skeleton
-3. Fills ONLY qualitative fields (entity categorization, GEO audit, unique angles, format recommendation, AIO strategy)
-4. Assembles the final briefing markdown following the template structure
-5. Saves `briefing-data.json` (updated) + `brief-<slug>.md`
+Follow the instructions in the `content-briefing` skill to fill qualitative fields and assemble the final briefing document.
 
 **Key constraint:** The LLM does NOT re-count, re-rank, or modify any deterministic data. All quantitative values are pre-computed and authoritative.
 

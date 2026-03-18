@@ -44,28 +44,28 @@ describe('extractAiOverview enriched fields', () => {
     assert.ok(aio.text.includes('Here are the top SEO tools'));
   });
 
-  it('returns deduplicated cited_domains sorted alphabetically', () => {
+  it('does not include cited_domains, cited_urls, cited_sources fields (removed as redundant)', () => {
     const result = run('serp-with-aio.json');
     const aio = result.serp_features.ai_overview;
-    // ahrefs.com appears twice in references but should be deduplicated
-    assert.deepEqual(aio.cited_domains, ['ahrefs.com', 'google.com', 'semrush.com']);
+    assert.ok(!('cited_domains' in aio), 'cited_domains should be absent');
+    assert.ok(!('cited_urls' in aio), 'cited_urls should be absent');
+    assert.ok(!('cited_sources' in aio), 'cited_sources should be absent');
   });
 
-  it('returns cited_urls from all references', () => {
+  it('references array contains all domain/url/title data derivable from the dropped fields', () => {
     const result = run('serp-with-aio.json');
     const aio = result.serp_features.ai_overview;
-    assert.equal(aio.cited_urls.length, 3);
-    assert.ok(aio.cited_urls.includes('https://ahrefs.com/blog/best-seo-tools'));
-    assert.ok(aio.cited_urls.includes('https://semrush.com/blog/seo-tools'));
-    assert.ok(aio.cited_urls.includes('https://search.google.com/search-console'));
-  });
-
-  it('returns cited_sources from all references', () => {
-    const result = run('serp-with-aio.json');
-    const aio = result.serp_features.ai_overview;
-    assert.equal(aio.cited_sources.length, 3);
-    assert.ok(aio.cited_sources.includes('Best SEO Tools - Ahrefs'));
-    assert.ok(aio.cited_sources.includes('Google Search Console'));
+    const domains = aio.references.map(r => r.domain);
+    const urls = aio.references.map(r => r.url);
+    const titles = aio.references.map(r => r.title);
+    assert.ok(domains.includes('ahrefs.com'));
+    assert.ok(domains.includes('semrush.com'));
+    assert.ok(domains.includes('google.com'));
+    assert.ok(urls.includes('https://ahrefs.com/blog/best-seo-tools'));
+    assert.ok(urls.includes('https://semrush.com/blog/seo-tools'));
+    assert.ok(urls.includes('https://search.google.com/search-console'));
+    assert.ok(titles.includes('Best SEO Tools - Ahrefs'));
+    assert.ok(titles.includes('Google Search Console'));
   });
 
   it('returns references_count as count of unique references', () => {
@@ -105,16 +105,17 @@ describe('extractAiOverview enriched fields', () => {
 
 describe('extractAiOverview when absent', () => {
 
-  it('returns present: false with null/empty enriched fields', () => {
+  it('returns present: false with null fields and empty references', () => {
     const result = run('serp-no-aio-no-paa.json');
     const aio = result.serp_features.ai_overview;
     assert.equal(aio.present, false);
     assert.equal(aio.title, null);
     assert.equal(aio.text, null);
-    assert.deepEqual(aio.cited_domains, []);
-    assert.deepEqual(aio.cited_urls, []);
-    assert.deepEqual(aio.cited_sources, []);
+    assert.deepEqual(aio.references, []);
     assert.equal(aio.references_count, 0);
+    assert.ok(!('cited_domains' in aio), 'cited_domains should be absent');
+    assert.ok(!('cited_urls' in aio), 'cited_urls should be absent');
+    assert.ok(!('cited_sources' in aio), 'cited_sources should be absent');
   });
 });
 
@@ -174,6 +175,56 @@ describe('extractPeopleAlsoAsk enriched format', () => {
     const result = run('serp-no-aio-no-paa.json');
     const paa = result.serp_features.people_also_ask;
     assert.deepEqual(paa, []);
+  });
+});
+
+// =============================================================================
+// cleanAioText — encoding artifact cleaning (via fixture end-to-end)
+// =============================================================================
+
+describe('cleanAioText encoding artifact cleaning', () => {
+
+  it('normalizes ring-operator degree notation "23 ∘ C" to "23 °C"', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('23 °C'), `expected "23 °C" in: ${text}`);
+    assert.ok(!text.includes('∘'), `unexpected ring operator in: ${text}`);
+  });
+
+  it('normalizes ring-operator degree notation "18 ∘ F" to "18 °F"', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('18 °F'), `expected "18 °F" in: ${text}`);
+  });
+
+  it('removes zero-width characters (U+200B, U+200D)', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(!text.includes('\u200B'), 'U+200B zero-width space should be removed');
+    assert.ok(!text.includes('\u200D'), 'U+200D zero-width joiner should be removed');
+  });
+
+  it('decodes &amp; HTML entity to &', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('&'), `expected & in: ${text}`);
+    assert.ok(!text.includes('&amp;'), 'raw &amp; entity should be decoded');
+  });
+
+  it('collapses multiple consecutive spaces to single space', () => {
+    const result = run('serp-aio-encoding-artifacts.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(!/  /.test(text), `expected no double spaces in: ${text}`);
+  });
+
+  it('leaves clean input unchanged (no false positives)', () => {
+    // serp-with-aio.json has clean text — verify it still passes through correctly
+    const result = run('serp-with-aio.json');
+    const text = result.serp_features.ai_overview.text;
+    assert.ok(text.includes('Ahrefs is widely considered'));
+    assert.ok(text.includes('Semrush offers comprehensive'));
+    assert.ok(text.includes('Google Search Console is a free tool'));
+    assert.ok(text.includes('Here are the top SEO tools'));
   });
 });
 

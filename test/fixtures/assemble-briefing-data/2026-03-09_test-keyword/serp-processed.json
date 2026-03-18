@@ -13,18 +13,6 @@
       "present": true,
       "title": "AI Overview for test keyword",
       "text": "Some AI overview text from 2024 about test keyword.",
-      "cited_domains": [
-        "example.com",
-        "test.de"
-      ],
-      "cited_urls": [
-        "https://example.com/page",
-        "https://test.de/page"
-      ],
-      "cited_sources": [
-        "Example",
-        "Test"
-      ],
       "references_count": 2,
       "references": [
         {

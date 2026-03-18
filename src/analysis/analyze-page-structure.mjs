@@ -64,6 +64,21 @@ function computeDepthScore(sentenceCount) {
 // FAQ heading patterns (German + English)
 const FAQ_HEADING_RE = /\b(faq|fragen|haeufig|frequently\s+asked|h.ufig)\b/i;
 
+// Block/error page heading patterns — conservative: only clear bot-wall and error pages
+const BLOCK_HEADING_RE = /why have i been blocked|access denied|403 forbidden|please verify|checking your browser|just a moment|enable javascript and cookies|attention required/i;
+
+const MIN_WORD_COUNT = 200;
+
+// Returns a string reason if the page should be excluded, or null if it's acceptable.
+function blockReason(mainText, headingTexts) {
+  if (mainText.length === 0) return 'missing main_content_text';
+  const wc = countWords(mainText);
+  if (wc < MIN_WORD_COUNT) return `too few words (${wc} < ${MIN_WORD_COUNT})`;
+  const blockedHeading = headingTexts.find(t => BLOCK_HEADING_RE.test(t));
+  if (blockedHeading) return `block/error heading: "${blockedHeading}"`;
+  return null;
+}
+
 function detectModules(signals, headingTexts) {
   const modules = [];
 
@@ -164,6 +179,13 @@ for (const file of pageFiles) {
   try {
     domain = new URL(page.url).hostname;
   } catch { /* skip */ }
+
+  // Quality filter: skip blocked/error/thin pages
+  const reason = blockReason(mainText, headingTexts);
+  if (reason !== null) {
+    process.stderr.write(`Skipping ${domain || file}: ${reason}\n`);
+    continue;
+  }
 
   competitors.push({
     url: page.url || '',

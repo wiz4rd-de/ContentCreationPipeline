@@ -1,0 +1,16 @@
+{
+  "url": "https://blocked.example.com/page",
+  "main_content_text": "Why have I been blocked? You have been blocked from accessing this website. This security service was enabled to protect websites from online attacks.",
+  "headings": [
+    { "level": 1, "text": "Why have I been blocked?" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 0,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 0
+  }
+}

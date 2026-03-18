@@ -146,18 +146,6 @@
       "other_features_present": false
     },
     "aio": {
-      "cited_domains": [
-        "example.com",
-        "test.de"
-      ],
-      "cited_sources": [
-        "Example",
-        "Test"
-      ],
-      "cited_urls": [
-        "https://example.com/page",
-        "https://test.de/page"
-      ],
       "present": true,
       "references": [
         {

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -80,7 +80,7 @@ describe('analyze-page-structure', () => {
     try {
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://example.com/test',
-        main_content_text: 'Some content without FAQ heading. Answer to a question here.',
+        main_content_text: 'Some content without FAQ heading. Answer to a question here. ' + 'content '.repeat(190),
         headings: [{ level: 2, text: 'Introduction' }],
         html_signals: { faq_sections: 3, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
       }));
@@ -154,7 +154,8 @@ describe('analyze-page-structure', () => {
       // Create a page with known sections of varying depth
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://example.com/depth',
-        main_content_text: 'Intro Section One Short text. Section Two This is a medium section. It has three sentences. And a third one here. Section Three First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence. Sixth sentence. Seventh sentence.',
+        // Pad intro with 175 filler words so total >= 200; section content is preserved for depth scoring
+        main_content_text: ('filler '.repeat(175)) + 'Intro Section One Short text. Section Two This is a medium section. It has three sentences. And a third one here. Section Three First sentence. Second sentence. Third sentence. Fourth sentence. Fifth sentence. Sixth sentence. Seventh sentence.',
         headings: [
           { level: 2, text: 'Section One' },
           { level: 2, text: 'Section Two' },
@@ -248,7 +249,7 @@ describe('analyze-page-structure', () => {
     try {
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://example.com/minimal',
-        main_content_text: 'Just some text without any signals.',
+        main_content_text: 'Just some text without any signals. ' + 'word '.repeat(195),
         headings: [],
       }));
       const result = runParsed({ pagesDir: tmp.pagesDir });
@@ -264,7 +265,7 @@ describe('analyze-page-structure', () => {
     try {
       writeFileSync(join(tmp.pagesDir, 'p1.json'), JSON.stringify({
         url: 'https://example.com/noheadings',
-        main_content_text: 'All the content is in one big block without any headings at all.',
+        main_content_text: 'All the content is in one big block without any headings at all. ' + 'word '.repeat(195),
         html_signals: { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
       }));
       const result = runParsed({ pagesDir: tmp.pagesDir });
@@ -298,5 +299,84 @@ describe('analyze-page-structure', () => {
     // "Strände und Buchten" section mentions "200", "35" etc.
     const strandSection = alpha.sections.find(s => s.heading === 'Strände und Buchten');
     assert.equal(strandSection.has_numbers, true, 'section with numbers must have has_numbers true');
+  });
+
+  it('filters out blocked pages with block/error heading patterns', () => {
+    const result = runParsed();
+    // page-blocked.json has heading "Why have I been blocked?" and must be excluded
+    const blocked = result.competitors.find(c => c.domain === 'blocked.example.com');
+    assert.equal(blocked, undefined, 'blocked page must not appear in competitors');
+    // The 3 valid fixture pages must still be present
+    assert.equal(result.competitors.length, 3, 'only the 3 valid fixture pages must be in output');
+  });
+
+  it('filters out pages with fewer than 200 words', () => {
+    const tmp = makeTmpDir();
+    try {
+      writeFileSync(join(tmp.pagesDir, 'p-thin.json'), JSON.stringify({
+        url: 'https://thin.example.com/page',
+        main_content_text: 'Short content. Only a few words here.',
+        headings: [{ level: 2, text: 'Short Section' }],
+        html_signals: { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      // 200-word page that must not be filtered
+      const substantialText = 'word '.repeat(200).trim();
+      writeFileSync(join(tmp.pagesDir, 'p-substantial.json'), JSON.stringify({
+        url: 'https://substantial.example.com/page',
+        main_content_text: substantialText,
+        headings: [],
+        html_signals: { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir });
+      assert.equal(result.competitors.length, 1, 'only the substantial page must pass the filter');
+      assert.equal(result.competitors[0].domain, 'substantial.example.com');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('cross-competitor aggregates exclude filtered pages', () => {
+    const tmp = makeTmpDir();
+    try {
+      // One valid page and one blocked page
+      const validText = 'word '.repeat(300).trim();
+      writeFileSync(join(tmp.pagesDir, 'p-valid.json'), JSON.stringify({
+        url: 'https://valid.example.com/page',
+        main_content_text: validText,
+        headings: [{ level: 2, text: 'Main Section' }],
+        html_signals: { faq_sections: 0, tables: 1, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      writeFileSync(join(tmp.pagesDir, 'p-blocked.json'), JSON.stringify({
+        url: 'https://errored.example.com/page',
+        main_content_text: 'Just a moment... please wait while we check your browser.',
+        headings: [{ level: 1, text: 'Just a moment' }],
+        html_signals: { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      const result = runParsed({ pagesDir: tmp.pagesDir });
+      assert.equal(result.competitors.length, 1, 'blocked page excluded from competitors');
+      // avg_word_count should be based only on the valid page (300 words), not the blocked one
+      assert.equal(result.cross_competitor.avg_word_count, 300, 'avg_word_count computed from valid pages only');
+      // table module is only in the valid page; blocked page has no modules
+      assert.equal(result.cross_competitor.module_frequency.table, 1, 'module_frequency based on valid pages only');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('logs excluded pages to stderr', () => {
+    const tmp = makeTmpDir();
+    try {
+      writeFileSync(join(tmp.pagesDir, 'p-blocked.json'), JSON.stringify({
+        url: 'https://captcha.example.com/page',
+        main_content_text: 'Please verify you are a human to continue.',
+        headings: [{ level: 1, text: 'Please verify' }],
+        html_signals: { faq_sections: 0, tables: 0, ordered_lists: 0, unordered_lists: 0, video_embeds: 0, forms: 0, images_in_content: 0 },
+      }));
+      const proc = spawnSync('node', [script, '--pages-dir', tmp.pagesDir], { encoding: 'utf-8' });
+      assert.ok(proc.stderr.includes('Skipping'), 'must log "Skipping" to stderr for excluded page');
+      assert.ok(proc.stderr.includes('captcha.example.com'), 'must include domain in stderr message');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
   });
 });

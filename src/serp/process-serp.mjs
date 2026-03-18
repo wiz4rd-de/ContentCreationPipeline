@@ -30,6 +30,36 @@ function itemsByType(type) {
   return items.filter(i => i.type === type);
 }
 
+// --- Clean AIO text encoding artifacts ---
+// Conservative: only fix known patterns, does not strip intentional characters.
+function cleanAioText(text) {
+  // 1. Remove zero-width characters: U+200B (zero-width space), U+200C (ZWNJ),
+  //    U+200D (ZWJ), U+FEFF (BOM / zero-width no-break space)
+  text = text.replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+
+  // 2. Degree symbol normalization: "23 ∘ C" / "23 ∘C" → "23 °C"
+  //    U+2218 (ring operator) or U+00B0 (degree sign) followed optionally by
+  //    a space, then C or F.
+  text = text.replace(/\s*[\u2218\u00B0]\s*([CF])\b/g, ' °$1');
+
+  // 3. HTML entity leftovers
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+
+  // 4. Collapse multiple spaces (but preserve newlines)
+  text = text.replace(/[^\S\n]+/g, ' ');
+
+  // 5. Trim leading/trailing whitespace per line
+  text = text.split('\n').map(line => line.trim()).join('\n');
+
+  // 6. Collapse consecutive blank lines (more than one empty line → single empty line)
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  return text;
+}
+
 // --- Extract AI Overview ---
 function extractAiOverview() {
   const aiItems = itemsByType('ai_overview');
@@ -38,9 +68,7 @@ function extractAiOverview() {
       present: false,
       title: null,
       text: null,
-      cited_domains: [],
-      cited_urls: [],
-      cited_sources: [],
+      references: [],
       references_count: 0,
     };
   }
@@ -83,26 +111,13 @@ function extractAiOverview() {
     }
   }
 
-  const text = textParts.length > 0 ? textParts.join('\n') : null;
-
-  // Deduplicated cited domains, urls, sources
-  const domainSet = new Set();
-  const citedUrls = [];
-  const citedSources = [];
-  for (const ref of references) {
-    if (ref.domain) domainSet.add(ref.domain);
-    if (ref.url) citedUrls.push(ref.url);
-    if (ref.title) citedSources.push(ref.title);
-  }
+  const text = textParts.length > 0 ? cleanAioText(textParts.join('\n')) : null;
 
   return {
     present: true,
     references,
     title,
     text,
-    cited_domains: [...domainSet].sort(),
-    cited_urls: citedUrls,
-    cited_sources: citedSources,
     references_count: references.length,
   };
 }
