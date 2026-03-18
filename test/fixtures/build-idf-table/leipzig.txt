@@ -1,0 +1,8 @@
+1	hund katze maus vogel
+2	hund katze maus
+3	hund katze
+4	hund katze
+5	hund baum
+6	hund
+7	hund
+8	hund
