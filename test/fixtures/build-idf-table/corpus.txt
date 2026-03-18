@@ -1,0 +1,5 @@
+1	Die Katze sitzt auf der Matte und schaut aus dem Fenster
+2	Der Hund liegt neben der Katze auf dem Sofa
+3	Die Matte vor der Tuer ist alt und schmutzig
+4	Eine Katze jagt eine Maus durch den Garten
+5	Der Garten hat einen Zaun und viele Blumen
