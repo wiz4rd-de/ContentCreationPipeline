@@ -38,9 +38,7 @@ function extractAiOverview() {
       present: false,
       title: null,
       text: null,
-      cited_domains: [],
-      cited_urls: [],
-      cited_sources: [],
+      references: [],
       references_count: 0,
     };
   }
@@ -85,24 +83,11 @@ function extractAiOverview() {
 
   const text = textParts.length > 0 ? textParts.join('\n') : null;
 
-  // Deduplicated cited domains, urls, sources
-  const domainSet = new Set();
-  const citedUrls = [];
-  const citedSources = [];
-  for (const ref of references) {
-    if (ref.domain) domainSet.add(ref.domain);
-    if (ref.url) citedUrls.push(ref.url);
-    if (ref.title) citedSources.push(ref.title);
-  }
-
   return {
     present: true,
     references,
     title,
     text,
-    cited_domains: [...domainSet].sort(),
-    cited_urls: citedUrls,
-    cited_sources: citedSources,
     references_count: references.length,
   };
 }

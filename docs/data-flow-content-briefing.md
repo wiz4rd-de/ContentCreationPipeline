@@ -140,7 +140,7 @@ briefing-data.json
 ├── serp_data
 │   ├── competitors[] — {rank, url, domain, title, description, word_count, headings, ...}
 │   ├── serp_features — {ai_overview, featured_snippet, people_also_ask, ...} (booleans)
-│   └── aio — {present, title, text, cited_domains[], cited_urls[], references_count}
+│   └── aio — {present, title, text, references[], references_count}
 ├── content_analysis
 │   ├── proof_keywords[] — {term, document_frequency, total_pages, avg_tf}
 │   ├── entity_candidates[] — {term, document_frequency, pages[], prominence}
