@@ -1,0 +1,16 @@
+{
+  "url": "https://b.example.com/wandern",
+  "main_content_text": "Wandern in der Natur ist entspannend und gesund. Die Berge locken viele Wanderer an. Schoene Wanderwege fuehren durch Waelder und Wiesen. Gute Schuhe sind beim Wandern wichtig. Wandern bietet Erholung vom Alltag. Die frische Luft in den Bergen ist herrlich. Ausruestung sollte gut gewaehlt werden. Proviant fuer den Tag einpacken.",
+  "headings": [
+    { "level": 2, "text": "Vorbereitung" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 0,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 0
+  }
+}

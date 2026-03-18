@@ -1,0 +1,17 @@
+{
+  "url": "https://a.example.com/wandern",
+  "main_content_text": "Wandern ist eine beliebte Freizeitaktivitaet in den Bergen. Viele Menschen wandern gerne in den Alpen. Die Berge bieten schoene Aussichten und frische Luft. Wanderwege sind gut markiert und sicher. Ausruestung ist wichtig beim Wandern. Gute Schuhe sind unbedingt notwendig. Wasser und Proviant nicht vergessen. Wandern staerkt die Gesundheit und den Geist. Die Natur erleben macht Freude.",
+  "headings": [
+    { "level": 2, "text": "Ausruestung" },
+    { "level": 2, "text": "Tipps" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 0,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 0
+  }
+}
