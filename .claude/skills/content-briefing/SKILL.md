@@ -42,8 +42,12 @@ Do not proceed further until the file exists.
 1. **Read** `$OUT/briefing-data.json` once using the Read tool.
 2. **Check** which of the 5 qualitative fields are still null. For each non-null field, print `"Step 2.1<X>: <field> already complete — skipping."` and skip that subsection.
 3. **Perform** the analysis for all remaining null fields in your reasoning (not in a script).
-4. **Write** the updated JSON back to disk once using the Write tool — update all computed fields in a single write. Do NOT create temp scripts in `/tmp/` or anywhere else. No Node scripts, no heredocs — just read JSON, update in your reasoning, write JSON.
-5. **Print** one confirmation line per completed field: `"Step 2.1<X>: <field> complete."` followed by `"Step 2.1: all qualitative fields saved to briefing-data.json."`
+4. **Write** ONLY the qualitative fields to `$OUT/qualitative.json` using the Write tool — output a JSON object containing only the 5 analysis fields (`entity_clusters`, `geo_audit`, `content_format_recommendation`, `unique_angles`, `aio_strategy`). Set any fields that were already non-null to `null` (they will be preserved by the merge). Do NOT rewrite the full `briefing-data.json`. Do NOT create temp scripts in `/tmp/` or anywhere else. No Node scripts, no heredocs.
+5. **Run** the merge script to patch the qualitative fields into `briefing-data.json`:
+   ```
+   node src/analysis/merge-qualitative.mjs --dir $OUT/
+   ```
+6. **Print** one confirmation line per completed field: `"Step 2.1<X>: <field> complete."` followed by `"Step 2.1: all qualitative fields merged into briefing-data.json."`
 
 #### 2.1A: Entity Categorization → `qualitative.entity_clusters`
 
