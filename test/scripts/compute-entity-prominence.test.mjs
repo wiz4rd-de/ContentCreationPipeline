@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -259,6 +259,12 @@ describe('compute-entity-prominence', () => {
     } finally {
       rmSync(tmp.dir, { recursive: true, force: true });
     }
+  });
+
+  it('logs page count to stderr before processing', () => {
+    const proc = spawnSync('node', [script, '--entities', entitiesFixture, '--pages-dir', pagesFixture], { encoding: 'utf-8' });
+    assert.ok(proc.stderr.includes('Computing entity prominence across'), 'stderr must include progress message');
+    assert.ok(proc.stderr.includes('pages'), 'stderr must mention pages');
   });
 
   it('case-insensitive matching works for mixed case text', () => {

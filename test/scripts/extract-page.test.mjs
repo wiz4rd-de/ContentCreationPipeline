@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, spawnSync } from 'node:child_process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -195,6 +195,17 @@ is long enough for Readability to parse it as the main article content area.</p>
     } catch (err) {
       const output = JSON.parse(err.stdout);
       assert.ok(output.error, 'error field must be present');
+    }
+  });
+
+  it('logs the URL being extracted to stderr', async () => {
+    const { server, url } = await createFixtureServer(FIXTURE_HTML);
+    try {
+      const proc = spawnSync('node', [scriptPath, url], { encoding: 'utf-8', timeout: 15000 });
+      assert.ok(proc.stderr.includes('Extracting:'), 'stderr must include "Extracting:"');
+      assert.ok(proc.stderr.includes(url), 'stderr must include the URL being extracted');
+    } finally {
+      server.close();
     }
   });
 });

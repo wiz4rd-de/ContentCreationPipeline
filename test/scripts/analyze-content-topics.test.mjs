@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -366,5 +366,12 @@ describe('analyze-content-topics', () => {
     // alpha: 3 H2, beta: 3 H2, gamma: 2 H2 => avg = 8/3 = 2.7
     assert.equal(result.content_format_signals.avg_h2_count, 2.7,
       'avg_h2_count must be 2.7 for fixtures');
+  });
+
+  it('logs competitor count and seed to stderr before processing', () => {
+    const proc = spawnSync('node', [script, '--pages-dir', fixturePages, '--seed', 'mallorca'], { encoding: 'utf-8' });
+    assert.ok(proc.stderr.includes('Analyzing content topics for'), 'stderr must include progress message');
+    assert.ok(proc.stderr.includes('competitors'), 'stderr must mention competitors');
+    assert.ok(proc.stderr.includes('mallorca'), 'stderr must include the seed keyword');
   });
 });

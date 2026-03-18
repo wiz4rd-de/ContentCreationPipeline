@@ -2,7 +2,7 @@
 // Fetches SERP data via DataForSEO async workflow (task_post / tasks_ready / task_get).
 // Saves raw response as audit trail and outputs to stdout for pipeline chaining.
 //
-// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force]
+// Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force] [--max-age N]
 //
 // Requires api.env with DATAFORSEO_AUTH and DATAFORSEO_BASE.
 
@@ -44,6 +44,7 @@ function parseArgs(argv) {
     depth: parseInt(flagValue('--depth', '10'), 10),
     timeout: parseInt(flagValue('--timeout', '120'), 10),
     force: argv.includes('--force'),
+    maxAge: parseInt(flagValue('--max-age', '7'), 10),
   };
 }
 
@@ -132,9 +133,10 @@ function calculateBackoff(attempt, opts) {
  * for the given keyword. Returns { hit: true, data } when usable, { hit: false, reason } otherwise.
  * @param {string} filePath - absolute path to serp-raw.json
  * @param {string} [keyword] - the keyword being requested; if provided, cache is rejected on mismatch
- * @returns {{ hit: true, data: object } | { hit: false, reason: string }}
+ * @param {number} [maxAgeDays] - maximum cache age in days; if provided, expired entries are rejected
+ * @returns {{ hit: true, data: object } | { hit: false, reason: string, ageDays?: number }}
  */
-function checkCache(filePath, keyword) {
+function checkCache(filePath, keyword, maxAgeDays) {
   if (existsSync(filePath) === false) {
     return { hit: false, reason: 'file not found' };
   }
@@ -170,6 +172,25 @@ function checkCache(filePath, keyword) {
     }
   }
 
+  // TTL validation: check cache age if maxAgeDays is provided
+  if (maxAgeDays !== undefined) {
+    // Prefer our own timestamp; fall back to DataForSEO's datetime field
+    const rawTimestamp = data._pipeline_fetched_at
+      || (tasks[0].result && tasks[0].result[0] && tasks[0].result[0].datetime)
+      || null;
+
+    if (rawTimestamp !== null) {
+      const fetchDate = new Date(rawTimestamp);
+      if (Number.isNaN(fetchDate.getTime()) === false) {
+        const ageDays = (Date.now() - fetchDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (ageDays > maxAgeDays) {
+          return { hit: false, reason: 'expired', ageDays: Math.floor(ageDays) };
+        }
+      }
+    }
+    // No parseable timestamp → treat as valid (backward compatibility)
+  }
+
   return { hit: true, data };
 }
 
@@ -199,10 +220,10 @@ const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].repla
 if (isMain) {
   // --- Parse arguments ---
   const parsed = parseArgs(process.argv.slice(2));
-  const { keyword, market, language, depth, timeout } = parsed;
+  const { keyword, market, language, depth, timeout, maxAge } = parsed;
 
   if (keyword === undefined || market === undefined || language === undefined) {
-    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force]');
+    console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force] [--max-age N]');
     process.exit(1);
   }
 
@@ -217,7 +238,7 @@ if (isMain) {
   // --- Cache check ---
   if (parsed.force === false) {
     const cachePath = join(outdir, 'serp-raw.json');
-    const cached = checkCache(cachePath, keyword);
+    const cached = checkCache(cachePath, keyword, maxAge);
     if (cached.hit === true) {
       const kw = cached.data.tasks[0].data.keyword;
       const dt = cached.data.tasks[0].result[0].datetime;
@@ -228,7 +249,11 @@ if (isMain) {
       process.exit(0);
     }
     if (cached.hit === false) {
-      console.error(`No valid cache (${cached.reason}), fetching from API...`);
+      if (cached.reason === 'expired') {
+        console.error(`Cache expired (${cached.ageDays} days old, TTL: ${maxAge} days). Fetching fresh data...`);
+      } else {
+        console.error(`No valid cache (${cached.reason}), fetching from API...`);
+      }
     }
   }
 
@@ -369,7 +394,8 @@ if (isMain) {
 
   // --- Save raw response ---
   const rawPath = join(outdir, 'serp-raw.json');
-  const rawJson = JSON.stringify(getResponse, null, 2);
+  const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), ...getResponse };
+  const rawJson = JSON.stringify(responseWithTimestamp, null, 2);
   writeFileSync(rawPath, rawJson);
   console.error(`Saved: ${rawPath}`);
 

@@ -58,6 +58,7 @@ function parseProminenceCount(promStr) {
 }
 
 // --- Process entity clusters ---
+console.error(`Computing entity prominence across ${pageFiles.length} pages...`);
 const corrections = [];
 
 const outputClusters = entitiesData.entity_clusters.map(cluster => {

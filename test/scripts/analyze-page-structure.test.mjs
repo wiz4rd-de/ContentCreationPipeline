@@ -363,6 +363,12 @@ describe('analyze-page-structure', () => {
     }
   });
 
+  it('logs competitor count to stderr before processing', () => {
+    const proc = spawnSync('node', [script, '--pages-dir', fixturePages], { encoding: 'utf-8' });
+    assert.ok(proc.stderr.includes('Analyzing page structure for'), 'stderr must include progress message');
+    assert.ok(proc.stderr.includes('competitors'), 'stderr must mention competitors');
+  });
+
   it('logs excluded pages to stderr', () => {
     const tmp = makeTmpDir();
     try {

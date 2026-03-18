@@ -3,7 +3,20 @@
     "seed_keyword": "test keyword",
     "date": "2026-03-09",
     "current_year": 2026,
-    "pipeline_version": "0.2.0"
+    "pipeline_version": "0.2.0",
+    "market": null,
+    "language": null,
+    "user_domain": null,
+    "business_context": null,
+    "phase1_completed_at": "2026-03-18T11:02:23.214Z",
+    "data_sources": {
+      "competitor_urls": [
+        "https://example.com/page",
+        "https://test.de/page",
+        "https://third.com/page"
+      ],
+      "location_code": 2276
+    }
   },
   "stats": {
     "total_keywords": 10,

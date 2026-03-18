@@ -79,6 +79,7 @@ function isBlockedPage(mainText, headings) {
 }
 
 // --- Load all pages ---
+console.error(`Analyzing content topics for ${pageFiles.length} competitors (seed: "${seed}")...`);
 const pages = pageFiles.map(f => {
   const raw = JSON.parse(readFileSync(join(pagesDir, f), 'utf-8'));
   let domain = '';
