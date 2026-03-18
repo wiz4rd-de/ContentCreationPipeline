@@ -20,6 +20,10 @@ function flag(name) {
 }
 
 const dir = flag('--dir');
+const marketFlag = flag('--market') || null;
+const languageFlag = flag('--language') || null;
+const userDomainFlag = flag('--user-domain') || null;
+const businessContextFlag = flag('--business-context') || null;
 
 if (dir === undefined) {
   console.error('Usage: node assemble-briefing-data.mjs --dir <output/YYYY-MM-DD_slug/>');
@@ -29,6 +33,7 @@ if (dir === undefined) {
 // --- File discovery ---
 const INPUT_FILES = {
   serp: 'serp-processed.json',
+  serpRaw: 'serp-raw.json',
   keywordsProcessed: 'keywords-processed.json',
   keywordsFiltered: 'keywords-filtered.json',
   pageStructure: 'page-structure.json',
@@ -299,6 +304,17 @@ const output = {
     date: dateStr,
     current_year: currentYear,
     pipeline_version: PIPELINE_VERSION,
+    market: marketFlag,
+    language: languageFlag,
+    user_domain: userDomainFlag,
+    business_context: businessContextFlag,
+    // phase1_completed_at marks the end of the deterministic Phase 1 pipeline.
+    // Phase 2 (content-briefing skill) may add meta.phase2_completed_at when it finishes.
+    phase1_completed_at: new Date().toISOString(),
+    data_sources: {
+      competitor_urls: (data.serp?.competitors || []).map(c => c.url),
+      location_code: data.serpRaw?.tasks?.[0]?.data?.location_code || null,
+    },
   },
   stats: buildStatsSummary(),
   keyword_data: buildKeywordData(),

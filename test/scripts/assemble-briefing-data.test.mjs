@@ -12,7 +12,8 @@ const script = join(__dirname, '..', '..', 'src', 'analysis', 'assemble-briefing
 const fixtureDir = join(__dirname, '..', 'fixtures', 'assemble-briefing-data', '2026-03-09_test-keyword');
 
 function run(opts = {}) {
-  const args = [script, '--dir', opts.dir || fixtureDir];
+  const extraArgs = opts.extraArgs || [];
+  const args = [script, '--dir', opts.dir || fixtureDir, ...extraArgs];
   return execFileSync('node', args, { encoding: 'utf-8' });
 }
 
@@ -49,12 +50,76 @@ describe('assemble-briefing-data', () => {
     assert.ok(typeof result.qualitative === 'object', 'qualitative must be an object');
   });
 
-  it('meta has correct fields', () => {
+  it('meta has correct base fields', () => {
     const result = runParsed();
     assert.equal(result.meta.seed_keyword, 'test keyword');
     assert.equal(result.meta.date, '2026-03-09');
     assert.equal(result.meta.current_year, 2026);
     assert.equal(result.meta.pipeline_version, '0.2.0');
+  });
+
+  it('meta new fields default to null when flags are omitted', () => {
+    const result = runParsed();
+    assert.equal(result.meta.market, null);
+    assert.equal(result.meta.language, null);
+    assert.equal(result.meta.user_domain, null);
+    assert.equal(result.meta.business_context, null);
+  });
+
+  it('meta new flags are reflected in output when provided', () => {
+    const result = runParsed({ extraArgs: [
+      '--market', 'de',
+      '--language', 'de',
+      '--user-domain', 'example.com',
+      '--business-context', 'Travel agency',
+    ] });
+    assert.equal(result.meta.market, 'de');
+    assert.equal(result.meta.language, 'de');
+    assert.equal(result.meta.user_domain, 'example.com');
+    assert.equal(result.meta.business_context, 'Travel agency');
+  });
+
+  it('meta phase1_completed_at is a valid ISO timestamp', () => {
+    const result = runParsed();
+    assert.ok(typeof result.meta.phase1_completed_at === 'string', 'phase1_completed_at must be a string');
+    const parsed = new Date(result.meta.phase1_completed_at);
+    assert.ok(isNaN(parsed.getTime()) === false, 'phase1_completed_at must be a valid date');
+    assert.ok(result.meta.phase1_completed_at.endsWith('Z'), 'phase1_completed_at must be UTC ISO string');
+  });
+
+  it('meta data_sources.competitor_urls populated from serp-processed.json', () => {
+    const result = runParsed();
+    assert.ok(Array.isArray(result.meta.data_sources.competitor_urls), 'competitor_urls must be an array');
+    assert.deepEqual(result.meta.data_sources.competitor_urls, [
+      'https://example.com/page',
+      'https://test.de/page',
+      'https://third.com/page',
+    ]);
+  });
+
+  it('meta data_sources.location_code populated from serp-raw.json', () => {
+    const result = runParsed();
+    assert.equal(result.meta.data_sources.location_code, 2276);
+  });
+
+  it('meta data_sources.location_code is null when serp-raw.json is absent', () => {
+    const dir = makeTmpDir();
+    try {
+      const result = runParsed({ dir });
+      assert.equal(result.meta.data_sources.location_code, null);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('meta data_sources.competitor_urls is empty when no serp data', () => {
+    const dir = makeTmpDir();
+    try {
+      const result = runParsed({ dir });
+      assert.deepEqual(result.meta.data_sources.competitor_urls, []);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('extracts date from directory name pattern', () => {
@@ -349,10 +414,13 @@ describe('assemble-briefing-data', () => {
     assert.equal(cfs.dominant_pattern, null);
   });
 
-  it('produces byte-identical output on repeated runs (determinism)', () => {
-    const run1 = run();
-    const run2 = run();
-    assert.equal(run1, run2, 'same inputs must produce byte-identical output');
+  it('produces identical output on repeated runs except for phase1_completed_at (determinism)', () => {
+    const result1 = runParsed();
+    const result2 = runParsed();
+    // phase1_completed_at is a live timestamp and will differ between runs; exclude it
+    delete result1.meta.phase1_completed_at;
+    delete result2.meta.phase1_completed_at;
+    assert.deepEqual(result1, result2, 'same inputs must produce identical output (excluding timestamp)');
   });
 
   it('works with only serp-processed.json present', () => {

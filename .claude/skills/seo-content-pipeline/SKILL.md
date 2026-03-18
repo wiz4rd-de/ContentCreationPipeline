@@ -90,7 +90,9 @@ TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, p
 
 #### Step 7: Briefing Data Assembly
 ```bash
-node src/analysis/assemble-briefing-data.mjs --dir $OUT/
+node src/analysis/assemble-briefing-data.mjs --dir $OUT/ \
+  --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
+  --user-domain "$USER_DOMAIN" --business-context "$BUSINESS_CONTEXT"
 ```
 Consolidates all pipeline outputs into a single `briefing-data.json` with:
 - Ranked keyword clusters (by total search volume)
