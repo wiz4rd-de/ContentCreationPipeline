@@ -5,10 +5,15 @@
 
 import { JSDOM } from 'jsdom';
 import { Readability } from '@mozilla/readability';
+import { writeFileSync } from 'node:fs';
 
-const url = process.argv[2];
+const args = process.argv.slice(2);
+const url = args.find(a => !a.startsWith('--'));
+const outputFlag = args.indexOf('--output');
+const outputPath = outputFlag !== -1 ? args[outputFlag + 1] : null;
+
 if (!url) {
-  console.log(JSON.stringify({ error: 'Usage: node extract-page.mjs <URL>' }));
+  console.log(JSON.stringify({ error: 'Usage: node extract-page.mjs <URL> [--output <path>]' }));
   process.exit(1);
 }
 
@@ -82,7 +87,7 @@ try {
     html_signals.images_in_content = contentDoc.querySelectorAll('img').length;
   }
 
-  console.log(JSON.stringify({
+  const json = JSON.stringify({
     url,
     title,
     meta_description,
@@ -97,8 +102,18 @@ try {
     main_content_preview,
     readability_title,
     html_signals,
-  }, null, 2));
+  }, null, 2);
+  if (outputPath) {
+    writeFileSync(outputPath, json);
+  } else {
+    console.log(json);
+  }
 } catch (err) {
-  console.log(JSON.stringify({ error: err.message, url }));
+  const errJson = JSON.stringify({ error: err.message, url });
+  if (outputPath) {
+    writeFileSync(outputPath, errJson);
+  } else {
+    console.log(errJson);
+  }
   process.exit(1);
 }

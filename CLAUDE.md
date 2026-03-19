@@ -21,6 +21,10 @@ gh pr create --title "Title" --body "$(cat /tmp/gh-body.md)"
 - **Never create temp scripts to read/modify JSON files.** Use the Read tool to load JSON, update values in your reasoning, and write back with the Write tool. No `/tmp/*.mjs` files, no heredocs, no `node -e`.
 - **Reserve Bash exclusively for running project scripts** (`node src/...`) and git commands. Everything else should use dedicated tools.
 
+## Skill Files
+
+- **Never use `>` redirections in `.claude/skills/` files.** Always use `--output <path>` flags instead. Shell redirections with variables (e.g. `> $OUT/file.json`) trigger Claude Code's security hook. This rule must be preserved when refactoring — introducing `$OUT` shorthand or any other change must not revert `--output` back to `>`.
+
 ## Shell
 
 - Never use `!` in `node -e` commands. Zsh escapes `!` to `\!` even inside quotes, breaking JS syntax. Use `=== null`, `=== undefined`, or negate with `!(x == null)` style workarounds. For complex scripts, write to a temp `.mjs` file instead.

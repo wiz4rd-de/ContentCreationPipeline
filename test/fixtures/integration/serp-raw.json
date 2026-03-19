@@ -1,0 +1,96 @@
+{
+  "tasks": [
+    {
+      "data": {
+        "location_code": 2276
+      },
+      "result": [
+        {
+          "keyword": "mallorca urlaub",
+          "se_results_count": 5000000,
+          "location_code": 2276,
+          "language_code": "de",
+          "item_types": ["organic", "people_also_ask"],
+          "items": [
+            {
+              "type": "organic",
+              "rank_group": 1,
+              "rank_absolute": 1,
+              "url": "https://alpha.example.com/mallorca",
+              "domain": "alpha.example.com",
+              "title": "Mallorca Urlaub 2025 - Tipps und Reisefuehrer",
+              "description": "Alles fuer Ihren Mallorca Urlaub.",
+              "is_featured_snippet": false,
+              "is_video": false,
+              "rating": null,
+              "timestamp": "2025-06-01"
+            },
+            {
+              "type": "organic",
+              "rank_group": 2,
+              "rank_absolute": 2,
+              "url": "https://beta.example.com/mallorca-guide",
+              "domain": "beta.example.com",
+              "title": "Mallorca Reisefuehrer 2025",
+              "description": "Ihr Reisefuehrer fuer Mallorca.",
+              "is_featured_snippet": false,
+              "is_video": false,
+              "rating": null,
+              "timestamp": "2025-05-15"
+            },
+            {
+              "type": "organic",
+              "rank_group": 3,
+              "rank_absolute": 3,
+              "url": "https://gamma.example.com/mallorca-tipps",
+              "domain": "gamma.example.com",
+              "title": "Mallorca Tipps fuer Urlauber",
+              "description": "Die besten Tipps fuer Mallorca.",
+              "is_featured_snippet": false,
+              "is_video": false,
+              "rating": null,
+              "timestamp": null
+            },
+            {
+              "type": "people_also_ask",
+              "rank_group": 4,
+              "rank_absolute": 4,
+              "items": [
+                {
+                  "title": "Was kostet ein Urlaub auf Mallorca?",
+                  "expanded_element": [
+                    {
+                      "description": "Ein Mallorca Urlaub kostet durchschnittlich 800 bis 1500 Euro pro Person.",
+                      "url": "https://alpha.example.com/kosten",
+                      "domain": "alpha.example.com"
+                    }
+                  ]
+                },
+                {
+                  "title": "Wann ist die beste Reisezeit fuer Mallorca?",
+                  "expanded_element": [
+                    {
+                      "description": "Die beste Reisezeit ist von Mai bis Oktober.",
+                      "url": "https://beta.example.com/reisezeit",
+                      "domain": "beta.example.com"
+                    }
+                  ]
+                },
+                {
+                  "title": "Welche Straende auf Mallorca sind am schoensten?",
+                  "expanded_element": [
+                    {
+                      "description": "Cala Millor und Cala d'Or gehoeren zu den schoensten.",
+                      "url": "https://gamma.example.com/straende",
+                      "domain": "gamma.example.com"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

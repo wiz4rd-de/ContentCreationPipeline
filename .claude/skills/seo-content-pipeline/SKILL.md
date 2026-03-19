@@ -29,7 +29,7 @@ Ask the user for:
 
 ## Pipeline
 
-`$OUT` = `output/YYYY-MM-DD_<seed-keyword-slug>/` (the run-specific output directory)
+`$OUT` = the run-specific output directory (derived by `fetch-serp.mjs`, **never constructed manually**).
 
 All output goes to `$OUT`.
 
@@ -37,20 +37,35 @@ All output goes to `$OUT`.
 
 Run each script in order. If `briefing-data.json` already exists in the output directory, skip the entire Phase 1.
 
+#### Step 0: Fetch SERP (determines $OUT)
+
+**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`. Omit `--outdir` so the script auto-derives the path and prints it to stderr.
+
+```bash
+node src/serp/fetch-serp.mjs "<seed-keyword>" --market "$SEO_MARKET" --language "$SEO_LANGUAGE" 2>&1 | tee /tmp/fetch-serp.log
+```
+
+After the script completes, extract `$OUT` from the log:
+```bash
+grep "Auto-derived outdir:" /tmp/fetch-serp.log | sed 's/.*Auto-derived outdir: //'
+```
+
+Use that path as `$OUT` for all subsequent steps.
+
+**Note:** Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to fetch fresh data. `--language` is required (e.g. `de` for German).
+
 #### Step 1: SERP Processing
 ```bash
-node src/serp/process-serp.mjs $OUT/serp-raw.json --top 10 > $OUT/serp-processed.json
+node src/serp/process-serp.mjs $OUT/serp-raw.json --top 10 --output $OUT/serp-processed.json
 ```
-Input: raw DataForSEO SERP JSON (positional arg). `--top N` limits organic results (default 10). Outputs structured JSON to stdout. Redirect to `serp-processed.json`.
+Input: raw DataForSEO SERP JSON (positional arg). `--top N` limits organic results (default 10). Writes structured JSON to the specified file via `--output`.
 
 #### Step 2: Page Extraction
 ```bash
 # For each competitor URL from serp-processed.json:
-node src/extractor/extract-page.mjs "<competitor-url>" > $OUT/pages/<competitor-slug>.json
+node src/extractor/extract-page.mjs "<competitor-url>" --output $OUT/pages/<competitor-slug>.json
 ```
-Input: positional URL arg. Outputs JSON to stdout. Redirect each to `pages/<slug>.json`.
-
-**SERP fetching:** SERP data is fetched via `src/serp/fetch-serp.mjs` (async task_post/task_get workflow -- cheaper than live/advanced). Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to fetch fresh data.
+Input: positional URL arg. Writes JSON to the specified file via `--output`.
 
 #### Step 3: Keyword Processing
 ```bash
@@ -60,9 +75,9 @@ node src/keywords/process-keywords.mjs \
   --seed "<seed-keyword>" \
   [--volume $OUT/keywords-volume-raw.json] \
   [--brands "brand1,brand2"] \
-  > $OUT/keywords-processed.json
+  --output $OUT/keywords-processed.json
 ```
-Merges raw DataForSEO responses, clusters related keywords, computes difficulty and opportunity scores. Outputs JSON to stdout.
+Merges raw DataForSEO responses, clusters related keywords, computes difficulty and opportunity scores. Writes JSON to the specified file via `--output`.
 
 #### Step 4: Keyword Filtering
 ```bash
@@ -72,21 +87,21 @@ node src/keywords/filter-keywords.mjs \
   --seed "<seed-keyword>" \
   [--blocklist blocklist.json] \
   [--brands "brand1,brand2"] \
-  > $OUT/keywords-filtered.json
+  --output $OUT/keywords-filtered.json
 ```
-Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with token overlap scoring. Outputs JSON to stdout.
+Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with token overlap scoring. Writes JSON to the specified file via `--output`.
 
 #### Step 5: Page Structure Analysis
 ```bash
-node src/analysis/analyze-page-structure.mjs --pages-dir $OUT/pages/ > $OUT/page-structure.json
+node src/analysis/analyze-page-structure.mjs --pages-dir $OUT/pages/ --output $OUT/page-structure.json
 ```
-Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Outputs JSON to stdout.
+Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Writes JSON to the specified file via `--output`.
 
 #### Step 6: Content Topic Analysis
 ```bash
-node src/analysis/analyze-content-topics.mjs --pages-dir $OUT/pages/ --seed "<seed-keyword>" > $OUT/content-topics.json
+node src/analysis/analyze-content-topics.mjs --pages-dir $OUT/pages/ --seed "<seed-keyword>" --output $OUT/content-topics.json
 ```
-TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Outputs JSON to stdout.
+TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Writes JSON to the specified file via `--output`.
 
 #### Step 7: Briefing Data Assembly
 ```bash

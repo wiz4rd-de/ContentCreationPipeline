@@ -1,0 +1,37 @@
+{
+  "tasks": [
+    {
+      "result": [
+        {
+          "seed_keyword": "mallorca urlaub",
+          "items": [
+            {
+              "se_type": "google",
+              "keyword": "mallorca sehenswuerdigkeiten",
+              "keyword_info": {
+                "search_volume": 1200,
+                "cpc": 0.7,
+                "monthly_searches": []
+              },
+              "keyword_properties": {
+                "keyword_difficulty": 30
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "mallorca urlaub tipps",
+              "keyword_info": {
+                "search_volume": 900,
+                "cpc": 1.0,
+                "monthly_searches": []
+              },
+              "keyword_properties": {
+                "keyword_difficulty": 22
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

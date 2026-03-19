@@ -3,7 +3,7 @@
 // Qualitative fields are set to null for LLM to fill in Phase 2.
 // Usage: node assemble-competitors.mjs <serp-processed.json> <pages-dir/> [--date YYYY-MM-DD]
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -12,6 +12,8 @@ const serpFile = positional[0];
 const pagesDir = positional[1];
 const dateFlag = args.indexOf('--date');
 const date = dateFlag !== -1 ? args[dateFlag + 1] : new Date().toISOString().slice(0, 10);
+const outputFlag = args.indexOf('--output');
+const outputPath = outputFlag !== -1 ? args[outputFlag + 1] : null;
 
 if (!serpFile || !pagesDir) {
   console.error('Usage: node assemble-competitors.mjs <serp-processed.json> <pages-dir/> [--date YYYY-MM-DD]');
@@ -104,4 +106,9 @@ const output = {
   opportunities: null,
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

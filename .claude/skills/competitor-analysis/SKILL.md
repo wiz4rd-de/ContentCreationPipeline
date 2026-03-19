@@ -43,9 +43,15 @@ For each primary keyword, retrieve the top 10 search results using the async SER
 ```sh
 node src/serp/fetch-serp.mjs "<KEYWORD>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
-  --outdir output/YYYY-MM-DD_<slug>/ \
-  --depth 10 [--force]
+  [--outdir output/YYYY-MM-DD_<slug>/] \
+  [--depth 10] [--force] [--max-age N]
 ```
+
+**Parameters:**
+- `--outdir` (optional) — Directory to save `serp-raw.json`. If omitted, the script auto-derives a directory based on today's date and the slugified keyword: `output/YYYY-MM-DD_<slug>/`. Useful when you want to organize results in a specific location.
+- `--depth` (optional, default: 10) — Number of organic results to fetch.
+- `--force` (optional) — Bypass cache and fetch fresh data from the API.
+- `--max-age` (optional, default: 7) — Maximum cache age in days. Cache older than this is treated as expired and fresh data is fetched.
 
 > **Caching:** If `serp-raw.json` already exists in the output directory and contains valid data, the script reuses it without making an API call. Use `--force` to bypass the cache and fetch fresh data.
 
@@ -64,7 +70,7 @@ Run the deterministic SERP parser to extract structured data from the raw API re
 
 ```sh
 node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top <N> \
-  > output/YYYY-MM-DD_<slug>/serp-processed.json
+  --output output/YYYY-MM-DD_<slug>/serp-processed.json
 ```
 
 This produces a structured JSON with:
@@ -78,7 +84,7 @@ This produces a structured JSON with:
 For each competitor URL from `serp-processed.json`, run the page extractor:
 
 ```sh
-node src/extractor/extract-page.mjs "<URL>" > output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
+node src/extractor/extract-page.mjs "<URL>" --output output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
 ```
 
 This returns JSON with: title, meta_description, canonical_url, og_title, og_description, h1, headings, word_count, link_count, main_content_preview.
@@ -92,7 +98,7 @@ node src/serp/assemble-competitors.mjs \
   output/YYYY-MM-DD_<slug>/serp-processed.json \
   output/YYYY-MM-DD_<slug>/pages/ \
   --date YYYY-MM-DD \
-  > output/YYYY-MM-DD_<slug>/competitors-data.json
+  --output output/YYYY-MM-DD_<slug>/competitors-data.json
 ```
 
 This produces the complete data structure with all deterministic fields filled and all qualitative fields set to `null`.
