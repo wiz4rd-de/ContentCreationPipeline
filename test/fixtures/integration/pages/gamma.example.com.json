@@ -1,0 +1,20 @@
+{
+  "url": "https://gamma.example.com/mallorca-tipps",
+  "main_content_text": "Mallorca Tipps fuer Urlauber Hier finden Sie die besten Tipps fuer Ihren Mallorca Urlaub. Wir haben alles zusammengestellt was Sie wissen muessen. Mallorca ist ein vielseitiges Reiseziel das fuer Familien Paare und Alleinreisende geeignet ist. Straende und Buchten Mallorca hat wunderschoene Straende die fuer jeden Geschmack etwas bieten. Von langen Sandstraenden bis zu versteckten Buchten ist alles dabei. Cala Mondrago ist ein Naturpark mit kristallklarem Wasser. Playa de Muro bietet flaches Wasser ideal fuer Familien mit kleinen Kindern. Der Strand von Alcudia erstreckt sich ueber mehrere Kilometer. Wandern und Natur Die Serra de Tramuntana ist ein UNESCO Welterbe und bietet spektakulaere Wanderwege. Der Fernwanderweg GR 221 fuehrt durch die gesamte Gebirgskette. Die Landschaft ist gepraegt von Olivenhainen und Zitronenbaeumen. Im Fruehling blueht die gesamte Insel in bunten Farben. Vogelbeobachtung ist im Naturpark S'Albufera moeglich. Haeufig gestellte Fragen Braucht man auf Mallorca ein Auto? Ein Mietwagen ist empfehlenswert um die Insel flexibel zu erkunden. Es gibt aber auch ein Busnetz das die wichtigsten Orte verbindet. Praktische Hinweise Die Landeswaerrung ist der Euro. Trinkgeld ist ueblich aber nicht verpflichtend. Die meisten Hotels und Restaurants akzeptieren Kreditkarten.",
+  "headings": [
+    { "level": 2, "text": "Straende und Buchten" },
+    { "level": 2, "text": "Wandern und Natur" },
+    { "level": 2, "text": "Haeufig gestellte Fragen" },
+    { "level": 3, "text": "Braucht man auf Mallorca ein Auto?" },
+    { "level": 2, "text": "Praktische Hinweise" }
+  ],
+  "html_signals": {
+    "faq_sections": 1,
+    "tables": 1,
+    "ordered_lists": 0,
+    "unordered_lists": 1,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 4
+  }
+}

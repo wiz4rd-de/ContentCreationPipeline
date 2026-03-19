@@ -1,0 +1,18 @@
+{
+  "url": "https://beta.example.com/mallorca-guide",
+  "main_content_text": "Mallorca Reisefuehrer Dieser Reisefuehrer hilft Ihnen bei der Planung Ihres Mallorca Urlaubs. Mallorca ist die groesste Insel der Balearen und bietet fuer jeden Geschmack etwas. Die Anreise ist unkompliziert und der Flughafen Palma wird von vielen Airlines angeflogen. Straende und Meer Die Insel hat ueber 200 Straende und Buchten. Besonders beliebt sind Cala Millor und Es Trenc. Die Wassertemperatur liegt im Sommer bei angenehmen 25 Grad. Schwimmen und Schnorcheln sind die beliebtesten Wasseraktivitaeten. Viele Buchten sind naturbelassen und bieten Ruhe abseits der Touristenzentren. Der Sand ist fein und das Meer tuerkisblau. Kultur und Geschichte Mallorca hat eine reiche Geschichte die bis in die Roemerzeit zurueckreicht. Die Altstadt von Palma ist besonders sehenswert mit ihren engen Gassen und historischen Gebaeuden. Das Kloster Lluc in den Bergen ist ein wichtiger Pilgerort. Zahlreiche Museen zeigen die Kunst und Geschichte der Insel. Die Kathedrale La Seu ist ein Meisterwerk der Gotik. Essen und Trinken Die mallorquinische Kueche bietet viele regionale Spezialitaeten. Ensaimada und Sobrassada sind typische Produkte der Insel. Die Weinregion Binissalem produziert ausgezeichnete Weine. Tapas Bars und Restaurants gibt es in jeder Stadt und jedem Dorf. Frischer Fisch und Meeresfruechte stehen auf vielen Speisekarten.",
+  "headings": [
+    { "level": 2, "text": "Straende und Meer" },
+    { "level": 2, "text": "Kultur und Geschichte" },
+    { "level": 2, "text": "Essen und Trinken" }
+  ],
+  "html_signals": {
+    "faq_sections": 0,
+    "tables": 0,
+    "ordered_lists": 0,
+    "unordered_lists": 3,
+    "video_embeds": 0,
+    "forms": 0,
+    "images_in_content": 3
+  }
+}
