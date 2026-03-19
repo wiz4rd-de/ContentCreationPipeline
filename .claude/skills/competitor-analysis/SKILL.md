@@ -43,9 +43,15 @@ For each primary keyword, retrieve the top 10 search results using the async SER
 ```sh
 node src/serp/fetch-serp.mjs "<KEYWORD>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
-  --outdir output/YYYY-MM-DD_<slug>/ \
-  --depth 10 [--force]
+  [--outdir output/YYYY-MM-DD_<slug>/] \
+  [--depth 10] [--force] [--max-age N]
 ```
+
+**Parameters:**
+- `--outdir` (optional) — Directory to save `serp-raw.json`. If omitted, the script auto-derives a directory based on today's date and the slugified keyword: `output/YYYY-MM-DD_<slug>/`. Useful when you want to organize results in a specific location.
+- `--depth` (optional, default: 10) — Number of organic results to fetch.
+- `--force` (optional) — Bypass cache and fetch fresh data from the API.
+- `--max-age` (optional, default: 7) — Maximum cache age in days. Cache older than this is treated as expired and fresh data is fetched.
 
 > **Caching:** If `serp-raw.json` already exists in the output directory and contains valid data, the script reuses it without making an API call. Use `--force` to bypass the cache and fetch fresh data.
 
