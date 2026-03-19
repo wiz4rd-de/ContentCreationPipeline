@@ -3,12 +3,14 @@
 // Usage: node process-serp.mjs <raw-serp.json> [--top N]
 // Outputs structured JSON to stdout. Same input always produces identical output.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
 const filePath = args.find(a => !a.startsWith('--'));
 const topFlag = args.indexOf('--top');
 const topN = topFlag !== -1 ? parseInt(args[topFlag + 1], 10) : 10;
+const outputFlag = args.indexOf('--output');
+const outputPath = outputFlag !== -1 ? args[outputFlag + 1] : null;
 
 if (!filePath) {
   console.error('Usage: node process-serp.mjs <raw-serp.json> [--top N]');
@@ -376,4 +378,9 @@ const output = {
   competitors: extractCompetitors(),
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

@@ -70,7 +70,7 @@ Run the deterministic SERP parser to extract structured data from the raw API re
 
 ```sh
 node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top <N> \
-  > output/YYYY-MM-DD_<slug>/serp-processed.json
+  --output output/YYYY-MM-DD_<slug>/serp-processed.json
 ```
 
 This produces a structured JSON with:
@@ -84,7 +84,7 @@ This produces a structured JSON with:
 For each competitor URL from `serp-processed.json`, run the page extractor:
 
 ```sh
-node src/extractor/extract-page.mjs "<URL>" > output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
+node src/extractor/extract-page.mjs "<URL>" --output output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
 ```
 
 This returns JSON with: title, meta_description, canonical_url, og_title, og_description, h1, headings, word_count, link_count, main_content_preview.
@@ -98,7 +98,7 @@ node src/serp/assemble-competitors.mjs \
   output/YYYY-MM-DD_<slug>/serp-processed.json \
   output/YYYY-MM-DD_<slug>/pages/ \
   --date YYYY-MM-DD \
-  > output/YYYY-MM-DD_<slug>/competitors-data.json
+  --output output/YYYY-MM-DD_<slug>/competitors-data.json
 ```
 
 This produces the complete data structure with all deterministic fields filled and all qualitative fields set to `null`.
