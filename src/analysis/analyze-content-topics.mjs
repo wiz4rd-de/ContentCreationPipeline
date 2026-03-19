@@ -9,8 +9,35 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { tokenize, removeStopwords, loadStopwordSet } from '../utils/tokenizer.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// --- IDF reference corpus ---
+// Midpoint used for normalising IDF scores.  Terms with IDF > IDF_MIDPOINT are
+// topic-specific (boost > 1.0); terms with IDF < IDF_MIDPOINT are common
+// language noise (boost < 1.0).  Fixed constant ensures determinism.
+const IDF_MIDPOINT = 10.0;
+
+function loadIdfTable(lang) {
+  if (lang !== 'de') return null;
+  try {
+    const raw = JSON.parse(readFileSync(join(__dirname, '../utils/idf-de.json'), 'utf-8'));
+    return raw.idf || null;
+  } catch {
+    return null;
+  }
+}
+
+// Returns the IDF boost multiplier for a term.
+// Terms absent from the table (n-grams, non-German terms) get a neutral 1.0
+// so they are not penalised.
+function idfBoost(term, idfTable) {
+  if (idfTable === null) return 1.0;
+  const val = idfTable[term];
+  if (val === undefined) return 1.0;
+  return Math.round((val / IDF_MIDPOINT) * 1000) / 1000;
+}
 
 // --- CLI parsing ---
 const args = process.argv.slice(2);
@@ -30,12 +57,10 @@ if (pagesDir === undefined || seed === undefined) {
 }
 
 // --- Load stopwords ---
-const stopwordsPath = join(__dirname, '..', 'utils', 'stopwords.json');
-const stopwordsData = JSON.parse(readFileSync(stopwordsPath, 'utf-8'));
-const stopwordSet = new Set([
-  ...(stopwordsData[language] || []),
-  ...(language === 'de' ? (stopwordsData.en || []) : []),
-]);
+const stopwordSet = loadStopwordSet(language);
+
+// --- Load IDF table (de only; null for other languages) ---
+const idfTable = loadIdfTable(language);
 
 // --- Load page files (sorted for determinism) ---
 const pageFiles = readdirSync(pagesDir)
@@ -103,22 +128,6 @@ const pages = pageFiles.map(f => {
 
 const totalPages = pages.length;
 
-// --- Tokenizer ---
-// Lowercase, remove punctuation (keep umlauts and word chars), split on whitespace.
-function tokenize(text) {
-  // Replace punctuation with spaces, keeping letters (including umlauts), digits
-  const cleaned = text
-    .toLowerCase()
-    .replace(/[^a-z0-9\u00e4\u00f6\u00fc\u00df\u00e0-\u00ff]+/g, ' ')
-    .trim();
-  if (cleaned.length === 0) return [];
-  return cleaned.split(/\s+/).filter(w => w.length > 1);
-}
-
-function removeStopwords(tokens) {
-  return tokens.filter(t => stopwordSet.has(t) === false);
-}
-
 // --- N-gram extraction ---
 function extractNgrams(tokens, n) {
   const ngrams = [];
@@ -148,7 +157,7 @@ function isAllStopwords(ngram) {
 // but filter out n-grams where ALL tokens are stopwords.
 function extractPageTerms(page) {
   const allTokens = tokenize(page.mainText);
-  const filteredTokens = removeStopwords(allTokens);
+  const filteredTokens = removeStopwords(allTokens, stopwordSet);
   const allTerms = [
     ...extractNgrams(filteredTokens, 1),
     ...extractNgrams(allTokens, 2).filter(ng => isAllStopwords(ng) === false),
@@ -177,31 +186,39 @@ for (const ptd of pageTermData) {
   }
 }
 
-// --- Proof keywords: ranked by DF (most common across pages) ---
-// Filter: DF >= 2 (appears in at least 2 pages), exclude the seed keyword itself
+// --- Proof keywords: ranked by IDF-boosted DF score ---
+// Filter: DF >= 2 (appears in at least 2 pages), exclude the seed keyword itself.
+// idf_boost: ratio of the term's corpus IDF to IDF_MIDPOINT.  Terms rare in
+// general language (high IDF) receive a boost > 1.0; common language terms
+// (low IDF) receive a boost < 1.0.  Terms absent from the IDF table get 1.0.
+// idf_score = document_frequency * idf_boost (rounded to 3 dp).
 const seedLower = seed.toLowerCase();
 const proofCandidates = [];
 for (const [term, df] of dfMap) {
   if (df < 2) continue;
   if (term === seedLower) continue;
   const avgTf = Math.round((tfSumMap.get(term) / df) * 10) / 10;
+  const boost = idfBoost(term, idfTable);
+  const idfScore = Math.round(df * boost * 1000) / 1000;
   proofCandidates.push({
     term,
     document_frequency: df,
     total_pages: totalPages,
     avg_tf: avgTf,
+    idf_boost: boost,
+    idf_score: idfScore,
   });
 }
 
-// Sort by DF desc, then by avg_tf desc, then alphabetically for determinism
+// Sort by idf_score desc, then by avg_tf desc, then alphabetically for determinism
 proofCandidates.sort((a, b) => {
-  if (b.document_frequency === a.document_frequency) {
+  if (b.idf_score === a.idf_score) {
     if (b.avg_tf === a.avg_tf) {
       return a.term.localeCompare(b.term);
     }
     return b.avg_tf - a.avg_tf;
   }
-  return b.document_frequency - a.document_frequency;
+  return b.idf_score - a.idf_score;
 });
 
 // Top 50 proof keywords

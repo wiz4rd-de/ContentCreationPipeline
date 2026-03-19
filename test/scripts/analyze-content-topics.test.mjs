@@ -67,17 +67,21 @@ describe('analyze-content-topics', () => {
       assert.ok(typeof pk.document_frequency === 'number', 'document_frequency must be a number');
       assert.ok(typeof pk.total_pages === 'number', 'total_pages must be a number');
       assert.ok(typeof pk.avg_tf === 'number', 'avg_tf must be a number');
+      assert.ok(typeof pk.idf_boost === 'number', 'idf_boost must be a number');
+      assert.ok(typeof pk.idf_score === 'number', 'idf_score must be a number');
+      assert.ok(pk.idf_boost > 0, 'idf_boost must be positive');
+      assert.ok(pk.idf_score > 0, 'idf_score must be positive');
       assert.ok(pk.term === 'mallorca' ? false : true, 'seed keyword must be excluded');
     }
   });
 
-  it('proof_keywords are sorted by document_frequency descending', () => {
+  it('proof_keywords are sorted by idf_score descending', () => {
     const result = runParsed();
     for (let i = 1; i < result.proof_keywords.length; i++) {
       const prev = result.proof_keywords[i - 1];
       const curr = result.proof_keywords[i];
-      assert.ok(prev.document_frequency >= curr.document_frequency,
-        'proof_keywords must be sorted by DF desc');
+      assert.ok(prev.idf_score >= curr.idf_score,
+        'proof_keywords must be sorted by idf_score desc');
     }
   });
 
@@ -306,6 +310,88 @@ describe('analyze-content-topics', () => {
     const run1 = run();
     const run2 = run();
     assert.equal(run1, run2, 'same inputs must produce byte-identical output');
+  });
+
+  it('idf_boost is 1.0 for terms absent from the IDF table (n-grams)', () => {
+    const result = runParsed();
+    // N-gram terms (containing a space) are never in the unigram IDF table,
+    // so they must always receive a neutral idf_boost of 1.0.
+    const ngrams = result.proof_keywords.filter(pk => pk.term.includes(' '));
+    assert.ok(ngrams.length > 0, 'fixture must contain at least one n-gram proof keyword');
+    for (const pk of ngrams) {
+      assert.equal(pk.idf_boost, 1.0, `n-gram "${pk.term}" must have idf_boost 1.0`);
+      assert.equal(pk.idf_score, pk.document_frequency,
+        `n-gram "${pk.term}" idf_score must equal document_frequency when boost is 1.0`);
+    }
+  });
+
+  it('idf_score equals document_frequency * idf_boost (rounded to 3dp)', () => {
+    const result = runParsed();
+    for (const pk of result.proof_keywords) {
+      const expected = Math.round(pk.document_frequency * pk.idf_boost * 1000) / 1000;
+      assert.equal(pk.idf_score, expected,
+        `idf_score for "${pk.term}" must equal df * idf_boost`);
+    }
+  });
+
+  it('common-language unigrams rank lower than topic-specific unigrams with same DF', () => {
+    const tmp = makeTmpDir();
+    try {
+      // Build 3 pages each containing both a common German word ("insel", IDF ~8.86)
+      // and a rare/specific word ("schnorcheln", IDF ~17.6).  Both have DF=3.
+      // With IDF boosting, "schnorcheln" (boost ~1.76) must outrank "insel" (boost ~0.886).
+      // Filler is 200 words to clear the 200-word quality gate.
+      const filler = 'wort '.repeat(200);
+      for (const host of ['a', 'b', 'c']) {
+        writeFileSync(join(tmp.pagesDir, `p-${host}.json`), JSON.stringify({
+          url: `https://${host}.example.com/page`,
+          main_content_text: `schnorcheln insel ${filler}`,
+          headings: [],
+          html_signals: {},
+        }));
+      }
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test' });
+      const schnorcheln = result.proof_keywords.find(pk => pk.term === 'schnorcheln');
+      const insel = result.proof_keywords.find(pk => pk.term === 'insel');
+      assert.ok(schnorcheln !== undefined, '"schnorcheln" must appear in proof_keywords');
+      assert.ok(insel !== undefined, '"insel" must appear in proof_keywords');
+      assert.equal(schnorcheln.document_frequency, insel.document_frequency,
+        'both terms must have the same DF (3)');
+      assert.ok(schnorcheln.idf_boost > insel.idf_boost,
+        '"schnorcheln" must have higher idf_boost than "insel"');
+      assert.ok(schnorcheln.idf_score > insel.idf_score,
+        '"schnorcheln" must rank above "insel" via idf_score');
+      // Find their positions in the sorted list
+      const schnorchelIdx = result.proof_keywords.indexOf(schnorcheln);
+      const inselIdx = result.proof_keywords.indexOf(insel);
+      assert.ok(schnorchelIdx < inselIdx,
+        '"schnorcheln" must appear before "insel" in proof_keywords');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('idf_boost is 1.0 for non-German languages (IDF table not loaded)', () => {
+    const tmp = makeTmpDir();
+    try {
+      // Filler is 200 words to clear the 200-word quality gate.
+      const filler = 'word '.repeat(200);
+      for (const host of ['a', 'b']) {
+        writeFileSync(join(tmp.pagesDir, `p-${host}.json`), JSON.stringify({
+          url: `https://${host}.example.com/page`,
+          main_content_text: `swimming beach ${filler}`,
+          headings: [],
+          html_signals: {},
+        }));
+      }
+      const result = runParsed({ pagesDir: tmp.pagesDir, seed: 'test', language: 'en' });
+      for (const pk of result.proof_keywords) {
+        assert.equal(pk.idf_boost, 1.0,
+          `term "${pk.term}" must have idf_boost 1.0 for non-German language`);
+      }
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
   });
 
   it('supports --language flag', () => {
