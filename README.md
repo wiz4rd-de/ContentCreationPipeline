@@ -475,3 +475,81 @@ Every deterministic script has byte-identity tests: given the same input JSON, t
 **JSON in, JSON out via stdout.** Every script reads JSON from files/flags and writes JSON to stdout. This enables Unix-style piping and makes each script independently testable.
 
 **Local extractor dependencies.** jsdom and @mozilla/readability are installed in `src/extractor/` with their own `package.json`, keeping the root project dependency-free. The root `package.json` has zero dependencies.
+
+## Troubleshooting
+
+### 1. HTTP 403 from DataForSEO
+
+**Symptom:** `API error 403: ...` from `fetch-serp.mjs` or `fetch-keywords.mjs`
+
+**Cause:** Invalid credentials, expired account, or exceeded API quota
+
+**Fix:** Verify credentials with a direct curl test:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}" -X POST \
+  -H "Authorization: Basic $(cat api.env | grep DATAFORSEO_AUTH | cut -d= -f2)" \
+  -H "Content-Type: application/json" \
+  -d '[{"keyword":"test","language_code":"en","location_code":2840}]' \
+  "https://api.dataforseo.com/v3/dataforseo_labs/google/related_keywords/live"
+```
+
+Check your account status at https://app.dataforseo.com/
+
+### 2. Missing extractor dependencies
+
+**Symptom:** `Error: Cannot find module 'jsdom'` or `MODULE_NOT_FOUND` from `extract-page.mjs`
+
+**Cause:** `src/extractor/node_modules` does not exist — dependencies are installed separately from root
+
+**Fix:**
+
+```bash
+cd src/extractor && npm install && cd ../..
+```
+
+### 3. ENOTDIR / output directory errors
+
+**Symptom:** `ENOTDIR: not a directory` or `ENOENT: no such file or directory` during pipeline run
+
+**Cause:** A file exists where a directory is expected, or the output path structure is wrong
+
+**Fix:** Ensure the `output/` directory exists and is writable. Delete any stale files that conflict with expected directory paths.
+
+### 4. Base64 encoding of credentials
+
+**Symptom:** `API error 401` despite correct login/password
+
+**Cause:** `DATAFORSEO_AUTH` in `api.env` is not properly base64-encoded, or includes trailing whitespace/newline
+
+**Fix:** Regenerate with:
+
+```bash
+echo -n 'login:password' | base64
+```
+
+The `-n` flag is critical — without it, a newline gets encoded into the credentials.
+
+### 5. Stale SERP cache
+
+**Symptom:** Pipeline returns old SERP data even after the search landscape changed
+
+**Cause:** `fetch-serp.mjs` caches results in `serp-raw.json` and reuses them by default
+
+**Fix:** Re-run with `--force` flag to bypass the cache:
+
+```bash
+node src/serp/fetch-serp.mjs "keyword" --market de --language de --force
+```
+
+### 6. Node.js version too old
+
+**Symptom:** Syntax errors on `import` statements or `AbortSignal.timeout is not a function`
+
+**Cause:** Node.js < 18 does not support ESM, `AbortSignal.timeout()`, or the built-in test runner
+
+**Fix:** Upgrade to Node.js 18 or later. Check with:
+
+```bash
+node --version
+```
