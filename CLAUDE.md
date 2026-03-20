@@ -2,11 +2,18 @@
 
 ## CRITICAL: GitHub CLI Multi-line Text
 
-When passing multi-line text to `gh` commands (e.g., `--comment`, `--body`), **ALWAYS** use the Write tool to save the text to `/tmp/gh-body.md` first, then reference it:
+When passing multi-line text to `gh` commands, **ALWAYS** use the Write tool to save the text to `/tmp/gh-body.md` first, then use `--body-file`:
 
 ```bash
-gh issue close 32 --comment "$(cat /tmp/gh-body.md)"
-gh pr create --title "Title" --body "$(cat /tmp/gh-body.md)"
+gh issue create --title "Title" --body-file /tmp/gh-body.md
+gh pr create --title "Title" --body-file /tmp/gh-body.md
+gh issue comment 32 --body-file /tmp/gh-body.md
+```
+
+For closing with a comment, use two commands (since `gh issue close --comment` has no `--body-file`):
+
+```bash
+gh issue comment 32 --body-file /tmp/gh-body.md && gh issue close 32
 ```
 
 **NEVER** inline multi-line text containing `#` characters directly in the command string. The security hook will block it.
