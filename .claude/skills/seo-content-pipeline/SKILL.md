@@ -39,20 +39,15 @@ Run each script in order. If `briefing-data.json` already exists in the output d
 
 #### Step 0: Fetch SERP (determines $OUT)
 
-**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`. Omit `--outdir` so the script auto-derives the path and prints it to stderr.
+**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`.
 
 ```bash
 node src/serp/fetch-serp.mjs "<seed-keyword>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
-  2>&1 | tee /tmp/fetch-serp.log
+  --outdir $OUT/
 ```
 
-After the script completes, extract `$OUT` from the log:
-```bash
-grep "Auto-derived outdir:" /tmp/fetch-serp.log | sed 's/.*Auto-derived outdir: //'
-```
-
-Use that path as `$OUT` for all subsequent steps.
+The script creates `$OUT` and outputs the path to stderr. Use that path as `$OUT` for all subsequent steps.
 
 **Note:** Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to bypass the cache and fetch fresh data. The `--max-age` flag (default 7 days) controls cache expiration. `--language` is required (e.g. `de` for German).
 
