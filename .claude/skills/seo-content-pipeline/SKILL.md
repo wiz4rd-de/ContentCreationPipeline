@@ -37,6 +37,8 @@ All output goes to `$OUT`.
 
 Run each script in order. If `briefing-data.json` already exists in the output directory, skip the entire Phase 1.
 
+> **Token budget:** All scripts use `--output` flags, so stdout should be minimal. If a step produces unexpected verbose output, pipe through `| head -20` to keep the context window lean. Never suppress stderr.
+
 #### Step 0: Fetch SERP (determines $OUT)
 
 **Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`.

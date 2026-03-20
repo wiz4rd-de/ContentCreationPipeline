@@ -28,6 +28,8 @@ Ask the user for:
 
 All data extraction happens through deterministic scripts. No LLM interpretation of raw API data.
 
+> **Token budget:** All scripts use `--output` flags, so stdout should be minimal. If a step produces unexpected verbose output, pipe through `| head -20` to keep the context window lean. Never suppress stderr.
+
 ### 1.1 Load config and prior data
 
 ```sh
