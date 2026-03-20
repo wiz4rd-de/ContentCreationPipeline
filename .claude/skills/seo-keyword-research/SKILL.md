@@ -58,7 +58,7 @@ node src/keywords/process-keywords.mjs \
   --suggestions "$OUTDIR/keywords-suggestions-raw.json" \
   --seed "<SEED_KEYWORD>" \
   [--brands "brand1,brand2"] \
-  > "$OUTDIR/keywords-processed.json"
+  --output "$OUTDIR/keywords-processed.json"
 ```
 
 This script deterministically:
