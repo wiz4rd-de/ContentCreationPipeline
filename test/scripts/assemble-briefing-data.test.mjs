@@ -23,11 +23,13 @@ function run(opts = {}) {
   // does not mutate the committed fixture (phase1_completed_at is a live timestamp).
   const dir = opts.dir || copyFixtureToTmp();
   const args = [script, '--dir', dir, ...extraArgs];
-  return execFileSync('node', args, { encoding: 'utf-8' });
+  const stdout = execFileSync('node', args, { encoding: 'utf-8' });
+  return { stdout, dir };
 }
 
 function runParsed(opts = {}) {
-  return JSON.parse(run(opts));
+  const { dir } = run(opts);
+  return JSON.parse(readFileSync(join(dir, 'briefing-data.json'), 'utf8'));
 }
 
 function makeTmpDir(name) {
