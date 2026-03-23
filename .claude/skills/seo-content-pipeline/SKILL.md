@@ -11,7 +11,7 @@ Run the full SEO content pipeline: deterministic data extraction and analysis, t
 
 The pipeline has two phases:
 
-1. **Deterministic scripts** (Phase 1): Seven scripts that extract, process, analyze, and consolidate data. Same inputs always produce byte-identical output. No LLM involvement.
+1. **Deterministic scripts** (Phase 1): Eight scripts that extract, process, analyze, and consolidate data. Same inputs always produce byte-identical output. No LLM involvement.
 2. **Single LLM call** (Phase 2): One prompt that reads the consolidated `briefing-data.json` and fills only qualitative fields (entity categorization, GEO audit, content format recommendation, unique angles, AIO strategy) before assembling the final briefing document.
 
 This replaces the previous architecture that used multiple LLM calls for analysis tasks. All quantitative analysis is now deterministic.
@@ -171,6 +171,9 @@ process-keywords.mjs ──────────┤
 filter-keywords.mjs ───────────┤──> assemble-briefing-data.mjs ──> briefing-data.json
 analyze-page-structure.mjs ────┤                                         |
 analyze-content-topics.mjs ────┘                                         v
+                                                              summarize-briefing.mjs
+                                                                   |
+                                                                   v
                                                               content-briefing skill
                                                               (single LLM call)
                                                                    |         |
