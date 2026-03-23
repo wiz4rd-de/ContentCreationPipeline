@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdirSync, rmSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -459,5 +459,37 @@ describe('analyze-content-topics', () => {
     assert.ok(proc.stderr.includes('Analyzing content topics for'), 'stderr must include progress message');
     assert.ok(proc.stderr.includes('competitors'), 'stderr must mention competitors');
     assert.ok(proc.stderr.includes('mallorca'), 'stderr must include the seed keyword');
+  });
+
+  it('writes JSON to file when --output is provided', () => {
+    const tmp = makeTmpDir();
+    const outFile = join(tmp.dir, 'result.json');
+    try {
+      const proc = spawnSync('node', [script, '--pages-dir', fixturePages, '--seed', 'mallorca', '--output', outFile], { encoding: 'utf-8' });
+      assert.equal(proc.status, 0, 'must exit with code 0');
+      assert.equal(proc.stdout, '', 'stdout must be empty when --output is used');
+      const written = JSON.parse(readFileSync(outFile, 'utf-8'));
+      assert.ok(Array.isArray(written.proof_keywords), 'file must contain proof_keywords');
+      assert.ok(Array.isArray(written.entity_candidates), 'file must contain entity_candidates');
+      assert.ok(Array.isArray(written.section_weights), 'file must contain section_weights');
+      assert.ok(typeof written.content_format_signals === 'object', 'file must contain content_format_signals');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('writes JSON to file on empty-dir early exit when --output is provided', () => {
+    const tmp = makeTmpDir();
+    const outFile = join(tmp.dir, 'empty-result.json');
+    try {
+      const proc = spawnSync('node', [script, '--pages-dir', tmp.pagesDir, '--seed', 'test', '--output', outFile], { encoding: 'utf-8' });
+      assert.equal(proc.status, 0, 'must exit with code 0');
+      assert.equal(proc.stdout, '', 'stdout must be empty when --output is used');
+      const written = JSON.parse(readFileSync(outFile, 'utf-8'));
+      assert.deepEqual(written.proof_keywords, []);
+      assert.deepEqual(written.section_weights, []);
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
   });
 });

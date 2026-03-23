@@ -6,7 +6,7 @@
 // Usage: node analyze-content-topics.mjs --pages-dir <pages/> --seed <keyword> [--language de]
 // Outputs JSON to stdout. Same inputs always produce byte-identical output.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tokenize, removeStopwords, loadStopwordSet } from '../utils/tokenizer.mjs';
@@ -50,6 +50,7 @@ function flag(name) {
 const pagesDir = flag('--pages-dir');
 const seed = flag('--seed');
 const language = flag('--language') || 'de';
+const outputPath = flag('--output') || null;
 
 if (pagesDir === undefined || seed === undefined) {
   console.error('Usage: node analyze-content-topics.mjs --pages-dir <pages/> --seed <keyword> [--language de]');
@@ -80,7 +81,12 @@ if (pageFiles.length === 0) {
       dominant_pattern: null,
     },
   };
-  console.log(JSON.stringify(emptyOutput, null, 2));
+  const json = JSON.stringify(emptyOutput, null, 2);
+  if (outputPath) {
+    writeFileSync(outputPath, json);
+  } else {
+    console.log(json);
+  }
   process.exit(0);
 }
 
@@ -440,4 +446,9 @@ const output = {
   content_format_signals,
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

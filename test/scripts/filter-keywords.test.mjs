@@ -1,8 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync, rmSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { randomBytes } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const script = join(__dirname, '..', '..', 'src', 'keywords', 'filter-keywords.mjs');
@@ -372,6 +375,39 @@ describe('filter-keywords', () => {
         seed: 'empty test',
       });
       assert.equal(run1, run2, 'same input must produce byte-identical output');
+    });
+  });
+
+  // --- --output flag ----------------------------------------------------------
+
+  describe('--output flag', () => {
+    it('writes JSON to file when --output is provided', () => {
+      const dir = join(tmpdir(), 'fk-test-' + randomBytes(4).toString('hex'));
+      mkdirSync(dir, { recursive: true });
+      const outFile = join(dir, 'result.json');
+      try {
+        const proc = spawnSync('node', [
+          script,
+          '--keywords', join(fixtures, 'keywords-processed.json'),
+          '--serp', join(fixtures, 'serp-processed.json'),
+          '--seed', 'thailand urlaub',
+          '--output', outFile,
+        ], { encoding: 'utf-8' });
+        assert.equal(proc.status, 0, 'must exit with code 0');
+        assert.equal(proc.stdout, '', 'stdout must be empty when --output is used');
+        const written = JSON.parse(readFileSync(outFile, 'utf-8'));
+        assert.equal(written.seed_keyword, 'thailand urlaub');
+        assert.ok(Array.isArray(written.clusters), 'file must contain clusters');
+        assert.ok(Array.isArray(written.faq_selection), 'file must contain faq_selection');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('still writes to stdout when --output is omitted', () => {
+      const stdout = runRaw();
+      const parsed = JSON.parse(stdout);
+      assert.equal(parsed.seed_keyword, 'thailand urlaub');
     });
   });
 
