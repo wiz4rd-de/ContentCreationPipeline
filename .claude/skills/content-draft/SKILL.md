@@ -52,6 +52,38 @@ Produce a complete article in markdown following these guidelines:
 - Add `<!-- TODO: ... -->` comments for elements the writer must manually complete (e.g. internal links, proprietary data, images)
 - Mark any facts or statistics that should be verified with `<!-- VERIFY: ... -->`
 
+**Output format:**
+
+The draft document must follow this structure exactly:
+
+```markdown
+# Draft: <Haupt-Keyword>
+
+| Feld | Wert |
+|------|------|
+| **Haupt-Keyword** | primary keyword (search volume) |
+| **Neben-Keywords** | secondary keywords, comma-separated (with SV each) |
+| **Title Tag** | composed title tag |
+| **Meta Description** | composed meta description (max 155 chars) |
+| **URL-Slug** | from briefing section A |
+| **Suchintention** | from briefing section A |
+| **Ziel-Wortanzahl** | from briefing section A |
+| **Zielgruppe** | from briefing section A |
+
+---
+
+# <H1 — actual article headline>
+
+<article content follows>
+```
+
+Rules:
+- The document title `# Draft: <Haupt-Keyword>` is the first line — no YAML frontmatter
+- The meta table sits between the document title and the article's H1
+- A `---` separator divides the meta block from the article content
+- All field values are pulled from the briefing's "A. Meta-Daten & Steuerung" section, except **Title Tag** and **Meta Description** which are composed during drafting
+- Do NOT put Title Tag or Meta Description into HTML comments — the meta table replaces that pattern
+
 ### 3. Self-review
 
 Before saving, review the draft against the brief's SEO checklist:
@@ -60,7 +92,8 @@ Before saving, review the draft against the brief's SEO checklist:
 - [ ] All outline sections covered
 - [ ] Word count within ±10% of target
 - [ ] CTA(s) included
-- [ ] Meta description present
+- [ ] Meta info table present below document title with all required fields
+- [ ] Title Tag and Meta Description in table match SEO guidelines
 
 If any item fails, fix it before proceeding.
 
