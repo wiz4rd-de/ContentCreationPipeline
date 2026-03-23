@@ -191,7 +191,32 @@ node src/utils/resolve-location.mjs de
 - **Output:** stdout integer
 - **Data source:** `src/utils/location-codes.json`
 
-### 2. fetch-keywords.mjs
+### 2. fetch-serp.mjs
+
+Calls DataForSEO `task_post` and `task_get/advanced` endpoints to retrieve top organic search results for a keyword. Handles caching automatically: if `serp-raw.json` exists and is fresh, reuses it; otherwise fetches from the API.
+
+```bash
+node src/serp/fetch-serp.mjs "thailand urlaub" \
+  --market de --language de --outdir output/2026-03-09_thailand-urlaub \
+  --depth 10 --force
+```
+
+- **Flags:**
+  - `<keyword>` (positional, required) — the search keyword
+  - `--market` (required) — ISO country code (e.g. `de`)
+  - `--language` (required) — language code (e.g. `de`)
+  - `--outdir` (optional) — where to save `serp-raw.json`. If omitted, auto-derives `output/YYYY-MM-DD_<slug>/`
+  - `--depth` (optional, default 10) — number of organic results to fetch
+  - `--timeout` (optional, default 120) — API request timeout in seconds
+  - `--force` (optional) — bypass cache and fetch fresh data from API
+  - `--max-age` (optional, default 7) — maximum cache age in days; older cache is treated as expired
+- **Output files:** `serp-raw.json` (raw DataForSEO API response) in `--outdir`
+- **Stdout:** raw SERP JSON (same as `serp-raw.json`)
+- **Data source:** DataForSEO API via credentials in `api.env`
+
+**Caching:** If `serp-raw.json` exists in the output directory and was created within `--max-age` days, the script reuses it without an API call. Use `--force` to bypass the cache.
+
+### 3. fetch-keywords.mjs
 
 Calls DataForSEO `related_keywords` and `keyword_suggestions` endpoints, saves raw responses, then runs `merge-keywords.mjs` internally to produce a deduplicated keyword list.
 
@@ -205,7 +230,7 @@ node src/keywords/fetch-keywords.mjs "thailand urlaub" \
 - **Stdout:** merged keyword JSON (same as `keywords-expanded.json`)
 - **Data source:** DataForSEO API via credentials in `api.env`
 
-### 3. process-keywords.mjs
+### 4. process-keywords.mjs
 
 Merges raw API responses into a structured skeleton with intent tags (DE+EN regex), Jaccard-similarity n-gram clusters (threshold >= 0.5), and opportunity scores. Null placeholders for LLM-only fields (`cluster_label`, `strategic_notes`).
 
@@ -219,7 +244,7 @@ node src/keywords/process-keywords.mjs \
 - **Flags:** `--related`, `--suggestions`, `--seed` (required), `--volume`, `--brands` (optional)
 - **Output:** stdout JSON with `clusters[]`, each containing `keywords[]` with intent, volume, CPC, opportunity score
 
-### 4. filter-keywords.mjs
+### 5. filter-keywords.mjs
 
 Tags keywords with filter status (blocklist, brand, foreign-language) without deleting them -- tag, don't delete. Computes FAQ prioritization by scoring PAA questions against keyword token overlaps.
 
@@ -234,7 +259,7 @@ node src/keywords/filter-keywords.mjs \
 - **Output:** stdout JSON with `clusters[]` (keywords annotated with `filter_status` + `filter_reason`), `faq_selection[]`, `removal_summary`
 - **Default blocklist:** `src/keywords/blocklist-default.json`
 
-### 5. process-serp.mjs
+### 6. process-serp.mjs
 
 Parses a raw DataForSEO advanced SERP response into structured features: AI Overview, featured snippets, People Also Ask, related searches, discussions, video, top stories, knowledge graph, commercial and local signals.
 
@@ -245,7 +270,7 @@ node src/serp/process-serp.mjs output/dir/serp-raw.json --top 10
 - **Flags:** `<file>` (positional, required), `--top` (optional, default 10)
 - **Output:** stdout JSON with `serp_features`, `competitors[]`
 
-### 6. extract-page.mjs
+### 7. extract-page.mjs
 
 Fetches a URL and parses it with jsdom + @mozilla/readability. Extracts headings (h2-h4), word count, link counts, meta tags, and HTML content signals (FAQ sections, tables, lists, video embeds, images, forms).
 
@@ -257,7 +282,7 @@ node src/extractor/extract-page.mjs "https://example.com/page"
 - **Output:** stdout JSON with `headings[]`, `word_count`, `link_count`, `html_signals`, `main_content_text`
 - **Dependencies:** jsdom, @mozilla/readability (installed locally in `src/extractor/`)
 
-### 7. assemble-competitors.mjs
+### 8. assemble-competitors.mjs
 
 Merges SERP ranking data with per-page extractor outputs. Qualitative fields (`format`, `topics`, `unique_angle`, `strengths`, `weaknesses`) are set to `null` as LLM placeholders.
 
@@ -268,7 +293,7 @@ node src/serp/assemble-competitors.mjs output/dir/serp-processed.json output/dir
 - **Flags:** `<serp-file>` `<pages-dir>` (positional, required), `--date` (optional, default today)
 - **Output:** stdout JSON with `competitors[]` (deterministic + null qualitative fields), `common_themes: null`, `content_gaps: null`, `opportunities: null`
 
-### 8. analyze-page-structure.mjs
+### 9. analyze-page-structure.mjs
 
 Detects content modules (FAQ, table, list, video, form, image gallery) per competitor page. Computes per-section word/sentence counts, depth scores, and cross-competitor module frequency.
 
@@ -279,7 +304,7 @@ node src/analysis/analyze-page-structure.mjs --pages-dir output/dir/pages/
 - **Flags:** `--pages-dir` (required)
 - **Output:** stdout JSON with `competitors[]` (each with `detected_modules[]`, `sections[]`), `cross_competitor` (module frequency, averages)
 
-### 9. analyze-content-topics.mjs
+### 10. analyze-content-topics.mjs
 
 Extracts n-gram term frequencies (TF-IDF proxy), clusters headings by Jaccard overlap into section weight groups, and reports content format signals across competitors.
 
@@ -292,7 +317,7 @@ node src/analysis/analyze-content-topics.mjs \
 - **Output:** stdout JSON with `proof_keywords[]` (top 50), `entity_candidates[]` (top 30), `section_weights[]`, `content_format_signals`
 - **Data source:** `src/utils/stopwords.json` for stopword filtering
 
-### 10. compute-entity-prominence.mjs
+### 11. compute-entity-prominence.mjs
 
 Re-computes entity mention counts across competitor page texts using exact synonym matching. Records discrepancies against any prior LLM-supplied prominence values in `_debug.corrections`.
 
@@ -304,7 +329,7 @@ node src/analysis/compute-entity-prominence.mjs \
 - **Flags:** `--entities`, `--pages-dir` (required)
 - **Output:** stdout JSON with `entity_clusters[]` (each entity has code-verified `prominence` as `"N/M"` string, `prominence_source: "code"`)
 
-### 11. assemble-briefing-data.mjs
+### 12. assemble-briefing-data.mjs
 
 Consolidates all pipeline outputs from a run directory into a single `briefing-data.json`. Normalizes years, ranks keyword clusters by total search volume, and sets all qualitative fields to `null`.
 

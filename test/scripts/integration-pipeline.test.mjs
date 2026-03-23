@@ -139,10 +139,10 @@ describe('integration: full pipeline end-to-end', () => {
       writeFileSync(join(tmpDir, 'content-topics.json'), ctStdout);
 
       // --- Stage 6: assemble-briefing-data ---
-      const bdStdout = runScript(assembleBriefingData, [
+      runScript(assembleBriefingData, [
         '--dir', tmpDir,
       ]);
-      briefingData = JSON.parse(bdStdout);
+      briefingData = JSON.parse(readFileSync(join(tmpDir, 'briefing-data.json'), 'utf8'));
 
       // --- Verify briefing-data.json top-level keys ---
       const requiredKeys = [
@@ -286,8 +286,8 @@ describe('integration: full pipeline end-to-end', () => {
         ]);
         writeFileSync(join(dir, 'content-topics.json'), ctStdout);
 
-        const bdStdout = runScript(assembleBriefingData, ['--dir', dir]);
-        return JSON.parse(bdStdout);
+        runScript(assembleBriefingData, ['--dir', dir]);
+        return JSON.parse(readFileSync(join(dir, 'briefing-data.json'), 'utf8'));
       }
 
       const result1 = runFullPipeline(tmpDir1);
@@ -337,8 +337,8 @@ describe('integration: full pipeline end-to-end', () => {
       ]);
       writeFileSync(join(tmpDir, 'content-topics.json'), ctStdout);
 
-      const bdStdout = runScript(assembleBriefingData, ['--dir', tmpDir]);
-      const bd = JSON.parse(bdStdout);
+      runScript(assembleBriefingData, ['--dir', tmpDir]);
+      const bd = JSON.parse(readFileSync(join(tmpDir, 'briefing-data.json'), 'utf8'));
 
       // Stats should reflect actual data
       assert.equal(bd.stats.total_keywords, filterParsed.total_keywords);

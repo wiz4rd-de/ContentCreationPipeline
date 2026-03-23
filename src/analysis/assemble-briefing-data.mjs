@@ -346,7 +346,7 @@ const output = {
   },
 };
 
-// Write to file and stdout
+// Write to file
 const jsonStr = JSON.stringify(output, null, 2) + '\n';
 writeFileSync(join(dir, 'briefing-data.json'), jsonStr);
-console.log(jsonStr);
+console.error('Wrote briefing-data.json');

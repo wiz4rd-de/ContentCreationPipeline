@@ -14,9 +14,10 @@
 //     --suggestions keywords-suggestions-raw.json \
 //     --seed "keyword recherche" \
 //     [--volume keywords-volume-raw.json] \
-//     [--brands "brand1,brand2"]
+//     [--brands "brand1,brand2"] \
+//     [--output output.json]
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { extractKeywords } from './extract-keywords.mjs';
 
 // --- Parse arguments --------------------------------------------------------
@@ -33,6 +34,7 @@ const suggestionsFile = flagValue('--suggestions');
 const volumeFile = flagValue('--volume');
 const seedKeyword = flagValue('--seed');
 const brandsRaw = flagValue('--brands');
+const outputFile = flagValue('--output');
 
 if (!relatedFile || !suggestionsFile || !seedKeyword) {
   console.error(
@@ -280,4 +282,9 @@ const output = {
   clusters,
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputFile) {
+  writeFileSync(outputFile, json, 'utf-8');
+} else {
+  console.log(json);
+}

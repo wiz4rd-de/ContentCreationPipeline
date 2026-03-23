@@ -37,22 +37,21 @@ All output goes to `$OUT`.
 
 Run each script in order. If `briefing-data.json` already exists in the output directory, skip the entire Phase 1.
 
+> **Token budget:** All scripts use `--output` flags, so stdout should be minimal. If a step produces unexpected verbose output, pipe through `| head -20` to keep the context window lean. Never suppress stderr.
+
 #### Step 0: Fetch SERP (determines $OUT)
 
-**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`. Omit `--outdir` so the script auto-derives the path and prints it to stderr.
+**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`.
 
 ```bash
-node src/serp/fetch-serp.mjs "<seed-keyword>" --market "$SEO_MARKET" --language "$SEO_LANGUAGE" 2>&1 | tee /tmp/fetch-serp.log
+node src/serp/fetch-serp.mjs "<seed-keyword>" \
+  --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
+  --outdir $OUT/
 ```
 
-After the script completes, extract `$OUT` from the log:
-```bash
-grep "Auto-derived outdir:" /tmp/fetch-serp.log | sed 's/.*Auto-derived outdir: //'
-```
+The script creates `$OUT` and outputs the path to stderr. Use that path as `$OUT` for all subsequent steps.
 
-Use that path as `$OUT` for all subsequent steps.
-
-**Note:** Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to fetch fresh data. `--language` is required (e.g. `de` for German).
+**Note:** Cached SERP data in `serp-raw.json` is automatically reused when available; pass `--force` to bypass the cache and fetch fresh data. The `--max-age` flag (default 7 days) controls cache expiration. `--language` is required (e.g. `de` for German).
 
 #### Step 1: SERP Processing
 ```bash
