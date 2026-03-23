@@ -142,7 +142,7 @@ Output format — set `qualitative.aio_strategy` to:
 
 **Additional inputs:** Read the selected template from `templates/` (if any) and the tone-of-voice file (if selected). These files are only needed for this step.
 
-Input: Entire `briefing-data.json` with all filled qualitative fields + the selected template
+Input: The `briefing-data.json` data already in your context from Step 2.1 (do NOT re-read the file) + the selected template
 
 Task: Assemble the final content briefing as a structured markdown document. The briefing MUST follow this structure:
 
@@ -207,4 +207,4 @@ After assembling the briefing markdown, set `qualitative.briefing` to a short su
 Since `briefing-data.json` is already updated incrementally during Phase 2 steps, Phase 3 only needs to:
 
 1. **Save `brief-<seed-keyword-slug>.md`** -- The complete briefing markdown document assembled in Step 2.2.
-2. **Print** the final briefing to the conversation so the user can review immediately.
+2. **Inform the user** of the saved file path. Do NOT print the full briefing to the conversation — the user can open the file directly.
