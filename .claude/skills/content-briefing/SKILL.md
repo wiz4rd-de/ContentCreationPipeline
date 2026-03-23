@@ -207,4 +207,4 @@ After assembling the briefing markdown, set `qualitative.briefing` to a short su
 Since `briefing-data.json` is already updated incrementally during Phase 2 steps, Phase 3 only needs to:
 
 1. **Save `brief-<seed-keyword-slug>.md`** -- The complete briefing markdown document assembled in Step 2.2.
-2. **Print** the final briefing to the conversation so the user can review immediately.
+2. **Inform the user** of the saved file path. Do NOT print the full briefing to the conversation — the user can open the file directly.
