@@ -4,89 +4,76 @@ Deterministic SEO content pipeline -- scripts handle all data extraction; a sing
 
 ## Architecture
 
-Every byte of data processing is handled by deterministic Node.js scripts that produce identical output for identical input. The LLM is constrained to a single, final step: filling in qualitative null placeholders on a pre-built data skeleton. It never re-ranks, re-scores, or modifies any deterministic field.
+Every byte of data processing is handled by deterministic Node.js scripts (~9,300 LOC) that produce identical output for identical input. The LLM is constrained to a single, final step: filling in qualitative null placeholders on a pre-built data skeleton. It never re-ranks, re-scores, or modifies any deterministic field.
 
-The pipeline runs in two phases:
+The pipeline runs in three phases:
 
-- **Phase 1 (deterministic):** 11 scripts fetch, parse, cluster, score, and assemble all keyword, SERP, competitor, and content analysis data into `briefing-data.json`. Every intermediate file is JSON-in, JSON-out via stdout.
+- **Phase 1 (deterministic):** 8 pipeline scripts fetch, parse, cluster, score, and assemble all keyword, SERP, competitor, and content analysis data into `briefing-data.json`. Every intermediate file is JSON-in, JSON-out via stdout.
 - **Phase 2 (single LLM call):** The LLM reads `briefing-data.json` and fills 6 qualitative fields (entity clusters, GEO audit, format recommendation, unique angles, AIO strategy, final briefing). It operates on the pre-built skeleton and cannot alter deterministic data.
+- **Phase 3 (optional, LLM):** Generates a publish-ready article draft from the content briefing, enforcing SEO best practices and brand voice guidelines.
 
 ```
                          Seed Keyword + Market
                                 |
-                                v
-                     +---------------------+
-                     | resolve-location.mjs |  market code -> DataForSEO location code
-                     +---------------------+
-                                |
-                                v
-                     +---------------------+
-                     | fetch-keywords.mjs   |  DataForSEO related + suggestions endpoints
-                     +---------------------+
-                           |         |
-          keywords-related-raw.json  keywords-suggestions-raw.json
-                           |         |
-                           v         v
-                     +---------------------+
-                     | process-keywords.mjs |  intent tags, Jaccard clusters, opportunity scores
-                     +---------------------+
-                                |
-                    keywords-processed.json
-                                |
-         +----------------------+----------------------+
-         |                                             |
-         v                                             v
-+---------------------+                    +---------------------+
-| filter-keywords.mjs |                    | process-serp.mjs    |  SERP feature extraction
-+---------------------+                    +---------------------+
-         |                                             |
- keywords-filtered.json                      serp-processed.json
-         |                                        |         |
-         |                        +---------------+         |
-         |                        v                         v
-         |             +---------------------+   +-------------------------+
-         |             | extract-page.mjs    |   | assemble-competitors.mjs|
-         |             +---------------------+   +-------------------------+
-         |                   (per URL)                      |
-         |                        |                competitors-data.json
-         |                  pages/<domain>.json              |
-         |                        |                         |
-         |                        v                         |
-         |             +---------------------------+        |
-         |             | analyze-page-structure.mjs |       |
-         |             +---------------------------+        |
-         |                        |                         |
-         |               page-structure.json                |
-         |                        |                         |
-         |                        v                         |
-         |             +---------------------------+        |
-         |             | analyze-content-topics.mjs |       |
-         |             +---------------------------+        |
-         |                        |                         |
-         |               content-topics.json                |
-         |                        |                         |
-         |                        v                         |
-         |             +-------------------------------+    |
-         |             | compute-entity-prominence.mjs  |   |
-         |             +-------------------------------+    |
-         |                        |                         |
-         |              entity-prominence.json              |
-         |                        |                         |
-         +----------+-------------+-------------------------+
-                    |
-                    v
-         +---------------------------+
-         | assemble-briefing-data.mjs |  consolidates everything
-         +---------------------------+
-                    |
-            briefing-data.json
-                    |
-                    v
-         +---------------------------+
-         |   Single LLM call         |  fills 6 qualitative null fields
-         +---------------------------+
-                    |
-              brief-<slug>.md
+               +----------------+----------------+
+               |                                 |
+               v                                 v
+    +---------------------+           +---------------------+
+    | fetch-keywords.mjs  |           | fetch-serp.mjs      |
+    | DataForSEO related  |           | DataForSEO SERP     |
+    | + suggestions       |           | (async task_post/get)|
+    +---------------------+           +---------------------+
+               |                                 |
+               v                                 v
+    +---------------------+           +---------------------+
+    | process-keywords.mjs|           | process-serp.mjs    |
+    | intent, clusters,   |           | AI Overview, PAA,   |
+    | opportunity scores  |           | featured snippets   |
+    +---------------------+           +---------------------+
+               |                                 |
+               v                          +------+------+
+    +---------------------+               |             |
+    | filter-keywords.mjs |               v             v
+    | blocklist, brand,   |    +----------------+  +------------------+
+    | FAQ priority        |    | extract-page   |  | assemble-        |
+    +---------------------+    | (per URL)      |  | competitors.mjs  |
+               |               +----------------+  +------------------+
+               |                      |                    |
+               |               pages/<domain>.json         |
+               |                      |                    |
+               |                      v                    |
+               |          +--------------------------+     |
+               |          | analyze-page-structure   |     |
+               |          | analyze-content-topics   |     |
+               |          | compute-entity-prominence|     |
+               |          +--------------------------+     |
+               |                      |                    |
+               +----------+-----------+--------------------+
+                          |
+                          v
+               +---------------------+
+               | assemble-briefing-  |  consolidates everything
+               | data.mjs           |  into briefing-data.json
+               +---------------------+
+                          |
+                  briefing-data.json
+                     (Phase 1 done)
+                          |
+                          v
+               +---------------------+
+               | Single LLM call     |  fills 6 qualitative
+               | (Phase 2)           |  null fields
+               +---------------------+
+                          |
+                    brief-<slug>.md
+                          |
+                          v
+               +---------------------+
+               | Article draft       |  SEO-optimized article
+               | (Phase 3, optional) |  with brand voice
+               +---------------------+
+                          |
+                    draft-<slug>.md
 ```
 
 ## Prerequisites
@@ -104,7 +91,14 @@ The pipeline runs in two phases:
    cd ClaudeContentCreationPipeline
    ```
 
-2. Configure API credentials:
+2. Install dependencies:
+
+   ```bash
+   npm install
+   cd src/extractor && npm install && cd ../..
+   ```
+
+3. Configure API credentials:
 
    ```bash
    cp api.env.example api.env
@@ -116,24 +110,13 @@ The pipeline runs in two phases:
    SEO_PROVIDER=dataforseo
    DATAFORSEO_AUTH=<base64 of login:password>
    DATAFORSEO_BASE=https://api.dataforseo.com/v3
-   ```
-
-   Generate the auth string with: `echo -n 'login:password' | base64`
-
-3. Set your market and language in `api.env`:
-
-   ```env
    SEO_MARKET=de
    SEO_LANGUAGE=de
    ```
 
-4. Install extractor dependencies (jsdom + @mozilla/readability):
+   Generate the auth string with: `echo -n 'login:password' | base64`
 
-   ```bash
-   cd src/extractor && npm install && cd ../..
-   ```
-
-5. Verify the setup:
+4. Verify the setup:
 
    ```bash
    npm test
@@ -159,7 +142,7 @@ Claude will collect these inputs interactively:
 | Business context | yes | What you sell, target audience |
 | Content goals | yes | Traffic, leads, authority, conversions |
 | Content template | no | Pick from `templates/template-*.md` or skip |
-| Brand voice | no | Pick from `templates/*ToneOfVoice*` or skip |
+| Brand voice | no | Pick from `templates/*ToV*` or skip |
 
 ### Individual skills
 
@@ -174,172 +157,108 @@ Each pipeline phase is also available as a standalone skill:
 | `/content-draft` | Write a publish-ready article from an existing brief |
 | `/implement-issues` | Work through GitHub issues in `IMPLEMENTATION.md` via agent orchestration |
 
+### Direct CLI
+
+Every pipeline script can be run standalone for debugging, piping, or integration:
+
+```bash
+# Keyword research
+node src/keywords/fetch-keywords.mjs "thailand urlaub" \
+  --market de --language de --outdir output/2026-03-23_thailand-urlaub --limit 50
+node src/keywords/process-keywords.mjs \
+  --related keywords-related-raw.json --suggestions keywords-suggestions-raw.json \
+  --seed "thailand urlaub"
+node src/keywords/filter-keywords.mjs \
+  --keywords keywords-processed.json --serp serp-processed.json --seed "thailand urlaub"
+
+# SERP analysis
+node src/serp/fetch-serp.mjs "thailand urlaub" --market de --language de --force
+node src/serp/process-serp.mjs serp-raw.json --top 10
+
+# Page extraction
+node src/extractor/extract-page.mjs "https://example.com/page"
+
+# Content analysis
+node src/analysis/analyze-page-structure.mjs --pages-dir output/dir/pages/
+node src/analysis/analyze-content-topics.mjs --pages-dir output/dir/pages/ --seed "thailand urlaub"
+node src/analysis/compute-entity-prominence.mjs --entities entities.json --pages-dir output/dir/pages/
+
+# Assembly
+node src/analysis/assemble-briefing-data.mjs --dir output/2026-03-23_thailand-urlaub/
+
+# Utilities
+node src/utils/resolve-location.mjs de          # -> 2276
+node src/utils/slugify.mjs "thailand urlaub"     # -> thailand-urlaub
+node scripts/clean-output.mjs --keep-days 30
+```
+
+All scripts support `--output <path>` for file output (default: stdout).
+
 ## Pipeline Steps (Phase 1)
 
 Each script reads JSON (from files or stdout) and writes JSON to stdout. All sorting is stable. All output is byte-identical for identical input.
 
-### 1. resolve-location.mjs
+### 1. fetch-serp.mjs
 
-Resolves an ISO country code to a DataForSEO numeric location code via local lookup. Zero network calls.
+Calls DataForSEO `task_post` and `task_get/advanced` endpoints to retrieve top organic search results. Handles caching automatically: if `serp-raw.json` exists and is fresh, reuses it; otherwise fetches from the API.
 
-```bash
-node src/utils/resolve-location.mjs de
-# stdout: 2276 (integer, not JSON)
-```
+- **Flags:** `<keyword>` (positional), `--market`, `--language` (required), `--outdir`, `--depth` (default 10), `--timeout` (default 120s), `--force` (bypass cache), `--max-age` (default 7 days)
+- **Output:** `serp-raw.json` in `--outdir`
 
-- **Input:** positional `<market>` (ISO 3166-1 alpha-2)
-- **Output:** stdout integer
-- **Data source:** `src/utils/location-codes.json`
+### 2. fetch-keywords.mjs
 
-### 2. fetch-serp.mjs
+Calls DataForSEO `related_keywords` and `keyword_suggestions` endpoints, saves raw responses, then merges internally to produce a deduplicated keyword list.
 
-Calls DataForSEO `task_post` and `task_get/advanced` endpoints to retrieve top organic search results for a keyword. Handles caching automatically: if `serp-raw.json` exists and is fresh, reuses it; otherwise fetches from the API.
+- **Flags:** `<seed>` (positional), `--market`, `--language`, `--outdir` (required), `--limit` (default 50)
+- **Output:** `keywords-related-raw.json`, `keywords-suggestions-raw.json`, `keywords-expanded.json`
 
-```bash
-node src/serp/fetch-serp.mjs "thailand urlaub" \
-  --market de --language de --outdir output/2026-03-09_thailand-urlaub \
-  --depth 10 --force
-```
-
-- **Flags:**
-  - `<keyword>` (positional, required) — the search keyword
-  - `--market` (required) — ISO country code (e.g. `de`)
-  - `--language` (required) — language code (e.g. `de`)
-  - `--outdir` (optional) — where to save `serp-raw.json`. If omitted, auto-derives `output/YYYY-MM-DD_<slug>/`
-  - `--depth` (optional, default 10) — number of organic results to fetch
-  - `--timeout` (optional, default 120) — API request timeout in seconds
-  - `--force` (optional) — bypass cache and fetch fresh data from API
-  - `--max-age` (optional, default 7) — maximum cache age in days; older cache is treated as expired
-- **Output files:** `serp-raw.json` (raw DataForSEO API response) in `--outdir`
-- **Stdout:** raw SERP JSON (same as `serp-raw.json`)
-- **Data source:** DataForSEO API via credentials in `api.env`
-
-**Caching:** If `serp-raw.json` exists in the output directory and was created within `--max-age` days, the script reuses it without an API call. Use `--force` to bypass the cache.
-
-### 3. fetch-keywords.mjs
-
-Calls DataForSEO `related_keywords` and `keyword_suggestions` endpoints, saves raw responses, then runs `merge-keywords.mjs` internally to produce a deduplicated keyword list.
-
-```bash
-node src/keywords/fetch-keywords.mjs "thailand urlaub" \
-  --market de --language de --outdir output/2026-03-09_thailand-urlaub --limit 50
-```
-
-- **Flags:** `<seed>` (positional), `--market`, `--language`, `--outdir` (all required), `--limit` (optional, default 50)
-- **Output files:** `keywords-related-raw.json`, `keywords-suggestions-raw.json`, `keywords-expanded.json` in outdir
-- **Stdout:** merged keyword JSON (same as `keywords-expanded.json`)
-- **Data source:** DataForSEO API via credentials in `api.env`
-
-### 4. process-keywords.mjs
+### 3. process-keywords.mjs
 
 Merges raw API responses into a structured skeleton with intent tags (DE+EN regex), Jaccard-similarity n-gram clusters (threshold >= 0.5), and opportunity scores. Null placeholders for LLM-only fields (`cluster_label`, `strategic_notes`).
 
-```bash
-node src/keywords/process-keywords.mjs \
-  --related output/dir/keywords-related-raw.json \
-  --suggestions output/dir/keywords-suggestions-raw.json \
-  --seed "thailand urlaub"
-```
-
 - **Flags:** `--related`, `--suggestions`, `--seed` (required), `--volume`, `--brands` (optional)
-- **Output:** stdout JSON with `clusters[]`, each containing `keywords[]` with intent, volume, CPC, opportunity score
+- **Output:** JSON with `clusters[]`, each containing `keywords[]` with intent, volume, CPC, opportunity score
 
-### 5. filter-keywords.mjs
+### 4. filter-keywords.mjs
 
 Tags keywords with filter status (blocklist, brand, foreign-language) without deleting them -- tag, don't delete. Computes FAQ prioritization by scoring PAA questions against keyword token overlaps.
 
-```bash
-node src/keywords/filter-keywords.mjs \
-  --keywords output/dir/keywords-processed.json \
-  --serp output/dir/serp-processed.json \
-  --seed "thailand urlaub"
-```
-
 - **Flags:** `--keywords`, `--serp`, `--seed` (required), `--blocklist`, `--brands` (optional)
-- **Output:** stdout JSON with `clusters[]` (keywords annotated with `filter_status` + `filter_reason`), `faq_selection[]`, `removal_summary`
-- **Default blocklist:** `src/keywords/blocklist-default.json`
+- **Output:** JSON with `clusters[]` (keywords annotated with `filter_status` + `filter_reason`), `faq_selection[]`, `removal_summary`
+- **Default blocklist:** `src/keywords/blocklist-default.json` (ethics, booking portals, spam patterns)
 
-### 6. process-serp.mjs
+### 5. process-serp.mjs
 
 Parses a raw DataForSEO advanced SERP response into structured features: AI Overview, featured snippets, People Also Ask, related searches, discussions, video, top stories, knowledge graph, commercial and local signals.
 
-```bash
-node src/serp/process-serp.mjs output/dir/serp-raw.json --top 10
-```
+- **Flags:** `<file>` (positional), `--top` (default 10)
+- **Output:** JSON with `serp_features`, `competitors[]`
 
-- **Flags:** `<file>` (positional, required), `--top` (optional, default 10)
-- **Output:** stdout JSON with `serp_features`, `competitors[]`
-
-### 7. extract-page.mjs
+### 6. extract-page.mjs
 
 Fetches a URL and parses it with jsdom + @mozilla/readability. Extracts headings (h2-h4), word count, link counts, meta tags, and HTML content signals (FAQ sections, tables, lists, video embeds, images, forms).
 
-```bash
-node src/extractor/extract-page.mjs "https://example.com/page"
-```
-
-- **Flags:** `<URL>` (positional, required)
-- **Output:** stdout JSON with `headings[]`, `word_count`, `link_count`, `html_signals`, `main_content_text`
+- **Flags:** `<URL>` (positional)
+- **Output:** JSON with `headings[]`, `word_count`, `link_count`, `html_signals`, `main_content_text`
 - **Dependencies:** jsdom, @mozilla/readability (installed locally in `src/extractor/`)
 
-### 8. assemble-competitors.mjs
+### 7. Content analysis scripts
 
-Merges SERP ranking data with per-page extractor outputs. Qualitative fields (`format`, `topics`, `unique_angle`, `strengths`, `weaknesses`) are set to `null` as LLM placeholders.
+Three scripts that analyze the extracted pages:
 
-```bash
-node src/serp/assemble-competitors.mjs output/dir/serp-processed.json output/dir/pages/
-```
+**analyze-page-structure.mjs** -- Detects content modules (FAQ, table, list, video, form, image gallery) per competitor page. Computes per-section word/sentence counts, depth scores, and cross-competitor module frequency.
 
-- **Flags:** `<serp-file>` `<pages-dir>` (positional, required), `--date` (optional, default today)
-- **Output:** stdout JSON with `competitors[]` (deterministic + null qualitative fields), `common_themes: null`, `content_gaps: null`, `opportunities: null`
+**analyze-content-topics.mjs** -- Extracts n-gram term frequencies with IDF boost (Leipzig Wikipedia 1M corpus), clusters headings by Jaccard overlap, and reports content format signals across competitors.
 
-### 9. analyze-page-structure.mjs
+**compute-entity-prominence.mjs** -- Re-computes entity mention counts across competitor page texts using exact synonym matching. Records discrepancies against any prior LLM-supplied values.
 
-Detects content modules (FAQ, table, list, video, form, image gallery) per competitor page. Computes per-section word/sentence counts, depth scores, and cross-competitor module frequency.
-
-```bash
-node src/analysis/analyze-page-structure.mjs --pages-dir output/dir/pages/
-```
-
-- **Flags:** `--pages-dir` (required)
-- **Output:** stdout JSON with `competitors[]` (each with `detected_modules[]`, `sections[]`), `cross_competitor` (module frequency, averages)
-
-### 10. analyze-content-topics.mjs
-
-Extracts n-gram term frequencies (TF-IDF proxy), clusters headings by Jaccard overlap into section weight groups, and reports content format signals across competitors.
-
-```bash
-node src/analysis/analyze-content-topics.mjs \
-  --pages-dir output/dir/pages/ --seed "thailand urlaub" --language de
-```
-
-- **Flags:** `--pages-dir`, `--seed` (required), `--language` (optional, default `de`)
-- **Output:** stdout JSON with `proof_keywords[]` (top 50), `entity_candidates[]` (top 30), `section_weights[]`, `content_format_signals`
-- **Data source:** `src/utils/stopwords.json` for stopword filtering
-
-### 11. compute-entity-prominence.mjs
-
-Re-computes entity mention counts across competitor page texts using exact synonym matching. Records discrepancies against any prior LLM-supplied prominence values in `_debug.corrections`.
-
-```bash
-node src/analysis/compute-entity-prominence.mjs \
-  --entities output/dir/entities.json --pages-dir output/dir/pages/
-```
-
-- **Flags:** `--entities`, `--pages-dir` (required)
-- **Output:** stdout JSON with `entity_clusters[]` (each entity has code-verified `prominence` as `"N/M"` string, `prominence_source: "code"`)
-
-### 12. assemble-briefing-data.mjs
+### 8. assemble-briefing-data.mjs
 
 Consolidates all pipeline outputs from a run directory into a single `briefing-data.json`. Normalizes years, ranks keyword clusters by total search volume, and sets all qualitative fields to `null`.
 
-```bash
-node src/analysis/assemble-briefing-data.mjs --dir output/2026-03-09_thailand-urlaub/
-```
-
-- **Flags:** `--dir` (required) -- path to the pipeline run output directory
+- **Flags:** `--dir` (required)
 - **Reads (all optional, gracefully absent):** `serp-processed.json`, `keywords-processed.json`, `keywords-filtered.json`, `page-structure.json`, `content-topics.json`, `entity-prominence.json`, `competitors-data.json`
-- **Output:** writes `briefing-data.json` to `--dir` and emits the same JSON to stdout
+- **Output:** writes `briefing-data.json` to `--dir`
 
 Output structure:
 
@@ -362,13 +281,30 @@ Output structure:
 }
 ```
 
-### Utility scripts (not pipeline steps)
+### Utility modules
 
-These scripts are imported by other pipeline scripts or used by specific skills:
+These are imported by pipeline scripts or used by specific skills:
 
-- **`extract-keywords.mjs`** -- shared ES module that normalizes keyword records from DataForSEO response shapes. No CLI interface.
-- **`merge-keywords.mjs`** -- deduplicates keywords from two raw response files. Called internally by `fetch-keywords.mjs`.
-- **`prepare-strategist-data.mjs`** -- builds a data skeleton for the content-strategy skill (top keywords, autocomplete, PAA, SERP snippets). Used by `/content-strategy`.
+| Module | Purpose |
+|--------|---------|
+| `extract-keywords.mjs` | Shared ES module that normalizes keyword records from DataForSEO responses |
+| `merge-keywords.mjs` | Deduplicates keywords from two raw response files |
+| `prepare-strategist-data.mjs` | Builds a data skeleton for the content-strategy skill |
+| `merge-qualitative.mjs` | Merges LLM qualitative output back into briefing-data.json |
+| `summarize-briefing.mjs` | Generates a concise briefing summary for token-efficient display |
+| `score-draft-wdfidf.mjs` | Scores a draft against WDF*IDF proof keywords |
+| `tokenizer.mjs` | Deterministic text tokenization with stopword filtering (de/en) |
+| `slugify.mjs` | URL-safe slug generation with German umlaut transliteration |
+| `load-api-config.mjs` | Loads and parses `api.env` credentials |
+| `preflight.mjs` | Pre-run validation of API config and environment |
+| `resolve-location.mjs` | Maps ISO country codes to DataForSEO location codes |
+
+### Standalone scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/build-idf-table.mjs` | Computes IDF table from Wikipedia corpus (one-time setup) |
+| `scripts/clean-output.mjs` | Deletes old output directories by age threshold |
 
 ## Qualitative Analysis (Phase 2)
 
@@ -381,16 +317,26 @@ After `briefing-data.json` is assembled, a single LLM call fills these 6 null fi
 | `content_format_recommendation` | Recommended content format based on SERP and competitor signals |
 | `unique_angles` | Differentiation opportunities not covered by competitors |
 | `aio_strategy` | Strategy for AI Overview optimization |
-| `briefing` | Final assembled content briefing |
+| `briefing` | Final assembled content briefing document (9-section markdown) |
 
 **Data integrity constraint:** The LLM never re-ranks keywords, re-scores opportunities, modifies competitor data, or alters any deterministic field. It reads the skeleton and fills nulls only.
+
+## Article Draft (Phase 3)
+
+An optional phase that transforms the content brief into a publish-ready article:
+
+- Enforces SEO best practices (primary keyword in title/H1/first 100 words, secondary keyword distribution)
+- Follows outline from brief exactly
+- Applies brand voice guidelines from selected template
+- Generates meta description, title tag, alt text suggestions
+- Produces `draft-<slug>.md` with meta table, article content, and TODO/VERIFY markers for editorial review
 
 ## Output Directory
 
 Each pipeline run produces a dated directory:
 
 ```
-output/2026-03-09_thailand-urlaub/
+output/2026-03-23_thailand-urlaub/
   keywords-related-raw.json       # Raw DataForSEO related keywords response
   keywords-suggestions-raw.json   # Raw DataForSEO suggestions response
   keywords-expanded.json          # Deduplicated merged keywords
@@ -406,7 +352,9 @@ output/2026-03-09_thailand-urlaub/
   content-topics.json             # Proof keywords, entity candidates, section weights
   entity-prominence.json          # Code-verified entity mention counts
   briefing-data.json              # Consolidated data skeleton (Phase 1 output)
+  qualitative.json                # LLM-generated qualitative fields (Phase 2 intermediate)
   brief-thailand-urlaub.md        # Final content briefing (Phase 2 output)
+  draft-thailand-urlaub.md        # Article draft (Phase 3 output, optional)
 ```
 
 ## Project Structure
@@ -415,9 +363,13 @@ output/2026-03-09_thailand-urlaub/
 src/
   utils/
     resolve-location.mjs          # Market code -> DataForSEO location code
-    slugify.mjs                    # URL-safe slug generator
-    location-codes.json            # ISO -> numeric location mapping
-    stopwords.json                 # Stopword lists for TF-IDF filtering
+    slugify.mjs                    # URL-safe slug generator (ö->oe, ä->ae, ü->ue, ß->ss)
+    tokenizer.mjs                  # Deterministic tokenization + stopword filtering
+    load-api-config.mjs            # api.env credential loader
+    preflight.mjs                  # Pre-run environment validation
+    location-codes.json            # ISO -> numeric location mapping (16 markets)
+    stopwords.json                 # German + English stopword lists
+    idf-de.json                    # IDF reference corpus (Leipzig Wikipedia 1M)
   keywords/
     fetch-keywords.mjs             # DataForSEO API caller + merge orchestrator
     extract-keywords.mjs           # Shared keyword normalization module
@@ -438,24 +390,17 @@ src/
     analyze-content-topics.mjs     # TF-IDF proof keywords, entity candidates
     compute-entity-prominence.mjs  # Code-verified entity counts across pages
     assemble-briefing-data.mjs     # Consolidate all outputs into briefing-data.json
+    merge-qualitative.mjs          # Merge LLM qualitative output into data skeleton
+    summarize-briefing.mjs         # Token-efficient briefing summary
+    score-draft-wdfidf.mjs         # WDF*IDF scoring for draft quality
+
+scripts/
+  build-idf-table.mjs             # One-time IDF table builder from Wikipedia corpus
+  clean-output.mjs                 # Delete old output directories
 
 test/
   scripts/
-    resolve-location.test.mjs
-    extract-keywords.test.mjs
-    merge-keywords.test.mjs
-    process-keywords.test.mjs
-    filter-keywords.test.mjs
-    extract-page.test.mjs
-    process-serp.test.mjs
-    fetch-serp.test.mjs
-    slugify.test.mjs
-    analyze-page-structure.test.mjs
-    analyze-content-topics.test.mjs
-    compute-entity-prominence.test.mjs
-    assemble-briefing-data.test.mjs
-    prepare-strategist-data.test.mjs
-    example.test.mjs
+    *.test.mjs                     # 25 test files, 552 tests (node --test)
 
 .claude/
   skills/
@@ -465,29 +410,32 @@ test/
     content-strategy/              # Content strategy skill
     content-briefing/              # Content briefing skill
     content-draft/                 # Article draft skill
-    implement-issues/              # GitHub issue orchestration skill
 
 templates/
-  template-urlaubsseite.md         # Transactional destination page template
   template-reisemagazin.md         # Travel magazine article template
-  DT_ToneOfVoice.md               # Brand tone of voice guide
+  template-urlaubsseite.md         # Transactional destination page template
+  DT_ToV_v3.md                     # Brand tone of voice (v3, AI-native)
+  DT_ToV_v2.md                     # Brand tone of voice (v2)
+  DT_ToneOfVoice.md               # Brand tone of voice (v1)
 
 output/                            # Generated pipeline runs (gitignored)
 api.env.example                    # API configuration template
-package.json                       # Test runner config (node --test)
+package.json                       # Project config + test runner
 ```
 
 ## Testing
 
-13 test files, 272 passing tests. Zero external test dependencies -- uses Node.js built-in `node --test`.
+25 test files, 552 passing tests, 0 failures. Zero external test dependencies -- uses Node.js built-in `node --test`.
 
 ```bash
 npm test
 ```
 
-Every deterministic script has byte-identity tests: given the same input JSON, the script produces the exact same output, byte for byte.
+Every deterministic script has byte-identity tests: given the same input JSON, the script produces the exact same output, byte for byte. Tests include an end-to-end integration test that validates the full pipeline flow with fixture data.
 
 ## Design Decisions
+
+**Determinism first.** The LLM should guess, infer, and interpret as little as possible. Data extraction is handled by deterministic scripts that produce byte-identical output for the same input. The LLM's role is constrained to qualitative analysis only, operating on a pre-built data skeleton with null placeholders.
 
 **Tag, don't delete.** Filtered keywords are tagged with `filter_status` and `filter_reason` rather than removed. This preserves a full audit trail and lets downstream steps make informed decisions.
 
@@ -499,11 +447,30 @@ Every deterministic script has byte-identity tests: given the same input JSON, t
 
 **JSON in, JSON out via stdout.** Every script reads JSON from files/flags and writes JSON to stdout. This enables Unix-style piping and makes each script independently testable.
 
-**Local extractor dependencies.** jsdom and @mozilla/readability are installed in `src/extractor/` with their own `package.json`, keeping the root project dependency-free. The root `package.json` has zero dependencies.
+**Local extractor dependencies.** jsdom and @mozilla/readability are installed in `src/extractor/` with their own `package.json`, keeping the core pipeline lightweight.
+
+**IDF-boosted term scoring.** Content topic analysis uses a production IDF table (Leipzig Wikipedia 1M corpus) to boost topic-specific terms and downweight common language patterns.
+
+**Caching with TTL.** SERP data is cached automatically; `--force` bypasses the cache; `--max-age` controls expiration (default 7 days). Avoids unnecessary API calls during iterative development.
+
+## Supported Markets
+
+The pipeline supports 16 markets via `src/utils/location-codes.json`:
+
+| Code | Market | Code | Market |
+|------|--------|------|--------|
+| `de` | Germany | `nl` | Netherlands |
+| `at` | Austria | `pl` | Poland |
+| `ch` | Switzerland | `br` | Brazil |
+| `us` | United States | `au` | Australia |
+| `gb` | United Kingdom | `ca` | Canada |
+| `fr` | France | `in` | India |
+| `es` | Spain | `jp` | Japan |
+| `it` | Italy | | |
 
 ## Troubleshooting
 
-### 1. HTTP 403 from DataForSEO
+### HTTP 403 from DataForSEO
 
 **Symptom:** `API error 403: ...` from `fetch-serp.mjs` or `fetch-keywords.mjs`
 
@@ -521,11 +488,11 @@ curl -s -o /dev/null -w "%{http_code}" -X POST \
 
 Check your account status at https://app.dataforseo.com/
 
-### 2. Missing extractor dependencies
+### Missing extractor dependencies
 
 **Symptom:** `Error: Cannot find module 'jsdom'` or `MODULE_NOT_FOUND` from `extract-page.mjs`
 
-**Cause:** `src/extractor/node_modules` does not exist — dependencies are installed separately from root
+**Cause:** `src/extractor/node_modules` does not exist -- dependencies are installed separately from root
 
 **Fix:**
 
@@ -533,7 +500,7 @@ Check your account status at https://app.dataforseo.com/
 cd src/extractor && npm install && cd ../..
 ```
 
-### 3. ENOTDIR / output directory errors
+### ENOTDIR / output directory errors
 
 **Symptom:** `ENOTDIR: not a directory` or `ENOENT: no such file or directory` during pipeline run
 
@@ -541,7 +508,7 @@ cd src/extractor && npm install && cd ../..
 
 **Fix:** Ensure the `output/` directory exists and is writable. Delete any stale files that conflict with expected directory paths.
 
-### 4. Base64 encoding of credentials
+### Base64 encoding of credentials
 
 **Symptom:** `API error 401` despite correct login/password
 
@@ -553,9 +520,9 @@ cd src/extractor && npm install && cd ../..
 echo -n 'login:password' | base64
 ```
 
-The `-n` flag is critical — without it, a newline gets encoded into the credentials.
+The `-n` flag is critical -- without it, a newline gets encoded into the credentials.
 
-### 5. Stale SERP cache
+### Stale SERP cache
 
 **Symptom:** Pipeline returns old SERP data even after the search landscape changed
 
@@ -567,7 +534,7 @@ The `-n` flag is critical — without it, a newline gets encoded into the creden
 node src/serp/fetch-serp.mjs "keyword" --market de --language de --force
 ```
 
-### 6. Node.js version too old
+### Node.js version too old
 
 **Symptom:** Syntax errors on `import` statements or `AbortSignal.timeout is not a function`
 
