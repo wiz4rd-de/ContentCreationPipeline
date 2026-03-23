@@ -7,7 +7,7 @@
 // Usage: node analyze-page-structure.mjs --pages-dir <pages/>
 // Outputs JSON to stdout. Same inputs always produce byte-identical output.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // --- CLI parsing ---
@@ -19,6 +19,7 @@ function flag(name) {
 }
 
 const pagesDir = flag('--pages-dir');
+const outputPath = flag('--output') || null;
 
 if (pagesDir === undefined) {
   console.error('Usage: node analyze-page-structure.mjs --pages-dir <pages/>');
@@ -31,7 +32,12 @@ const pageFiles = readdirSync(pagesDir)
   .sort();
 
 if (pageFiles.length === 0) {
-  console.log(JSON.stringify({ competitors: [], cross_competitor: { common_modules: [], rare_modules: [], module_frequency: {}, avg_word_count: 0, avg_sections: 0 } }, null, 2));
+  const json = JSON.stringify({ competitors: [], cross_competitor: { common_modules: [], rare_modules: [], module_frequency: {}, avg_word_count: 0, avg_sections: 0 } }, null, 2);
+  if (outputPath) {
+    writeFileSync(outputPath, json);
+  } else {
+    console.log(json);
+  }
   process.exit(0);
 }
 
@@ -246,4 +252,9 @@ const output = {
   },
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

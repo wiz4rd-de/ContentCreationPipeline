@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { writeFileSync, mkdirSync, rmSync, readFileSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -381,6 +381,36 @@ describe('analyze-page-structure', () => {
       const proc = spawnSync('node', [script, '--pages-dir', tmp.pagesDir], { encoding: 'utf-8' });
       assert.ok(proc.stderr.includes('Skipping'), 'must log "Skipping" to stderr for excluded page');
       assert.ok(proc.stderr.includes('captcha.example.com'), 'must include domain in stderr message');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('writes JSON to file when --output is provided', () => {
+    const tmp = makeTmpDir();
+    const outFile = join(tmp.dir, 'result.json');
+    try {
+      const proc = spawnSync('node', [script, '--pages-dir', fixturePages, '--output', outFile], { encoding: 'utf-8' });
+      assert.equal(proc.status, 0, 'must exit with code 0');
+      assert.equal(proc.stdout, '', 'stdout must be empty when --output is used');
+      const written = JSON.parse(readFileSync(outFile, 'utf-8'));
+      assert.ok(Array.isArray(written.competitors), 'file must contain competitors array');
+      assert.ok(written.cross_competitor, 'file must contain cross_competitor');
+    } finally {
+      rmSync(tmp.dir, { recursive: true, force: true });
+    }
+  });
+
+  it('writes JSON to file on empty-dir early exit when --output is provided', () => {
+    const tmp = makeTmpDir();
+    const outFile = join(tmp.dir, 'empty-result.json');
+    try {
+      const proc = spawnSync('node', [script, '--pages-dir', tmp.pagesDir, '--output', outFile], { encoding: 'utf-8' });
+      assert.equal(proc.status, 0, 'must exit with code 0');
+      assert.equal(proc.stdout, '', 'stdout must be empty when --output is used');
+      const written = JSON.parse(readFileSync(outFile, 'utf-8'));
+      assert.deepEqual(written.competitors, []);
+      assert.equal(written.cross_competitor.avg_word_count, 0);
     } finally {
       rmSync(tmp.dir, { recursive: true, force: true });
     }

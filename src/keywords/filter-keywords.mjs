@@ -14,7 +14,7 @@
 //     [--blocklist <blocklist.json>] \
 //     [--brands "brand1,brand2,brand3"]
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,6 +35,7 @@ const serpFile = flagValue('--serp');
 const seedKeyword = flagValue('--seed');
 const blocklistFile = flagValue('--blocklist');
 const brandsRaw = flagValue('--brands');
+const outputPath = flagValue('--output') || null;
 
 if (keywordsFile === undefined || serpFile === undefined || seedKeyword === undefined) {
   console.error(
@@ -260,4 +261,9 @@ const output = {
   faq_selection: faqSelection,
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}
