@@ -21,9 +21,6 @@ Ask the user for:
 
 Read the selected brief from the `output/YYYY-MM-DD_<SEED_KEYWORD_SLUG>/` subfolder.
 
-Also load supporting pipeline data if available:
-- `keywords-*.json` — for keyword placement and density guidance
-- `competitors-*.json` — to ensure differentiation from competing content
 
 ### 2. Write the article draft
 
@@ -74,7 +71,7 @@ Write the finished article to:
 output/YYYY-MM-DD_<SEED_KEYWORD_SLUG>/draft-<KEYWORD_SLUG>.md
 ```
 
-Print the full draft to the conversation so the user can review it immediately.
+Inform the user of the saved file path. Do NOT print the full draft to the conversation — the user can open the file directly.
 
 Provide a short summary at the end:
 - Actual word count vs. target
