@@ -116,7 +116,13 @@ Consolidates all pipeline outputs into a single `briefing-data.json` with:
 - Content format signals
 - A `qualitative` section with all fields set to `null` (filled by Phase 2)
 
-Show the user a summary of what was discovered: number of keywords, clusters, competitors analyzed, SERP features detected. Confirm before proceeding.
+#### Step 8: Briefing Summary
+
+```bash
+node src/analysis/summarize-briefing.mjs --file $OUT/briefing-data.json
+```
+
+Prints a compact summary of the assembled data. Show this output to the user and confirm before proceeding to Phase 2. Do NOT read `briefing-data.json` directly — the summary script extracts all necessary stats.
 
 ### Phase 2: Content Briefing
 
