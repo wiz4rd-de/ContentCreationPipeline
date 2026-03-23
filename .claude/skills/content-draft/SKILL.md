@@ -21,9 +21,6 @@ Ask the user for:
 
 Read the selected brief from the `output/YYYY-MM-DD_<SEED_KEYWORD_SLUG>/` subfolder.
 
-Also load supporting pipeline data if available:
-- `keywords-*.json` — for keyword placement and density guidance
-- `competitors-*.json` — to ensure differentiation from competing content
 
 ### 2. Write the article draft
 
