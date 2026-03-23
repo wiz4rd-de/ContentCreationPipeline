@@ -142,7 +142,7 @@ Output format — set `qualitative.aio_strategy` to:
 
 **Additional inputs:** Read the selected template from `templates/` (if any) and the tone-of-voice file (if selected). These files are only needed for this step.
 
-Input: Entire `briefing-data.json` with all filled qualitative fields + the selected template
+Input: The `briefing-data.json` data already in your context from Step 2.1 (do NOT re-read the file) + the selected template
 
 Task: Assemble the final content briefing as a structured markdown document. The briefing MUST follow this structure:
 
