@@ -11,9 +11,8 @@ Verify factual claims in a completed content draft by combining deterministic ex
 
 Ask the user for:
 1. **Which draft to check** -- pick from available `draft-*.md` files in the current output folder, or provide a path
-2. **Auto-correct mode** (optional, default: off) -- whether to produce a corrected draft alongside the report
-3. **Claim categories to check** (optional, default: all) -- allow limiting to specific categories (e.g., only prices_costs, only geographic)
-4. **Output directory** -- path to the `$OUT` directory (auto-detect from draft path if possible)
+2. **Claim categories to check** (optional, default: all) -- allow limiting to specific categories (e.g., only prices_costs, only geographic)
+3. **Output directory** -- path to the `$OUT` directory (auto-detect from draft path if possible)
 
 ## Steps
 
@@ -145,26 +144,22 @@ Write the Markdown report using the Write tool. Structure:
 (numbered list of all unique sources referenced above)
 ```
 
-### 5. Auto-correction (opt-in only)
+### 5. Apply corrections to draft
 
-Skip this step unless the user explicitly requested auto-correct mode in the Inputs.
+If the report contains claims with verdict `incorrect` and a non-null `corrected_value`:
 
-If auto-correction is enabled:
-1. Read the original draft using the Read tool
-2. For each claim with verdict `incorrect` and a non-null `corrected_value`:
-   - Find the exact text in the draft matching the claim's `value`
-   - Replace the incorrect value with the corrected value
-   - Add a `<!-- FACT-CHECKED: corrected from X to Y, source: URL -->` HTML comment immediately after the correction
-3. Write the corrected draft using the Write tool to `$OUT/draft-<slug>-corrected.md`
-4. Do NOT modify the original draft file
+1. For each incorrect claim, use the Edit tool to replace the erroneous value in the original draft with the `corrected_value`. Do NOT change anything else in the draft — no rewording, no restructuring, no additions.
+2. After all corrections are applied, note the changes in the summary output.
+
+If there are no incorrect claims, skip this step.
 
 ### 6. Summary output
 
 Print a concise summary to the conversation:
 - Total claims checked
 - Count by verdict (correct / incorrect / uncertain / unverifiable)
-- List of errors found with their corrected values
+- List of errors found with their corrected values (and confirmation that corrections were applied to the draft)
 - List of uncertain claims requiring manual review
-- File paths to the generated report files (and corrected draft, if applicable)
+- File paths to the generated report files
 
 Do NOT print the full report to the conversation -- the user can open the files directly.

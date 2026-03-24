@@ -153,7 +153,7 @@ If yes, follow the instructions in the `fact-check` skill:
 - Run deterministic claim extraction first
 - Verify claims via web search
 - Save report to `$OUT/fact-check-report.json` and `$OUT/fact-check-report.md`
-- Ask if the user wants auto-correction (produces `$OUT/draft-<slug>-corrected.md`)
+- Corrections for incorrect claims are applied directly to the original draft
 
 Present the fact-check summary for review.
 
@@ -175,7 +175,6 @@ At the end of the pipeline, the user has:
 | `claims-extracted.json` | Deterministic claim extraction from draft | Deterministic (Step 4) |
 | `fact-check-report.json` | Claim verification results with sources | LLM + WebSearch (Step 4) |
 | `fact-check-report.md` | Human-readable fact-check report | LLM (Step 4) |
-| `draft-<slug>-corrected.md` | Auto-corrected draft (if requested) | LLM (Step 4) |
 
 All files in `$OUT`.
 
@@ -218,6 +217,6 @@ analyze-content-topics.mjs ────┘                                      
                                                                    v
                                                      fact-check-report.json / .md
                                                                    |
-                                                                   v (optional)
-                                                          draft-<slug>-corrected.md
+                                                                   v (if errors found)
+                                                        corrections applied to draft-<slug>.md
 ```
