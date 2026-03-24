@@ -366,6 +366,10 @@ if (isMain) {
 
   while (taskReady === false) {
     const elapsed = Date.now() - startTime;
+    if (shouldFallback(elapsed, parsed.fallbackTimeout)) {
+      console.error(`Async task ${taskId} not ready after ${parsed.fallbackTimeout}s. Falling back to live endpoint...`);
+      break;
+    }
     if (elapsed >= timeoutMs) {
       throw new Error(`Task ${taskId} timed out after ${timeout} seconds. Status: pending`);
     }
@@ -384,6 +388,27 @@ if (isMain) {
     }
 
     attempt += 1;
+  }
+
+  // --- Fallback to live endpoint when async polling did not complete ---
+  if (taskReady === false) {
+    console.error('Calling live endpoint as fallback...');
+    const liveResponse = await postEndpoint(
+      'serp/google/organic/live/advanced',
+      taskPostBody
+    );
+    const liveTask = liveResponse.tasks && liveResponse.tasks[0];
+    if (liveTask === undefined || liveTask === null || liveTask.status_code !== 20000) {
+      const msg = liveTask ? liveTask.status_message : 'no tasks in response';
+      throw new Error(`Live endpoint failed: ${msg}`);
+    }
+    const rawPath = join(outdir, 'serp-raw.json');
+    const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), _pipeline_source: 'live_fallback', ...liveResponse };
+    const rawJson = JSON.stringify(responseWithTimestamp, null, 2);
+    writeFileSync(rawPath, rawJson);
+    console.error(`Saved (via live fallback): ${rawPath}`);
+    process.stdout.write(rawJson + '\n');
+    process.exit(0);
   }
 
   console.error(`Task ${taskId} is ready. Retrieving results...`);
@@ -416,7 +441,7 @@ if (isMain) {
 
   // --- Save raw response ---
   const rawPath = join(outdir, 'serp-raw.json');
-  const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), ...getResponse };
+  const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), _pipeline_source: 'async', ...getResponse };
   const rawJson = JSON.stringify(responseWithTimestamp, null, 2);
   writeFileSync(rawPath, rawJson);
   console.error(`Saved: ${rawPath}`);

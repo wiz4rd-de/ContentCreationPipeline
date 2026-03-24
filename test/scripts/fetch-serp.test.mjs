@@ -495,6 +495,60 @@ describe('fetch-serp', () => {
     });
   });
 
+  // --- pipeline source annotation ---
+
+  describe('pipeline source annotation', () => {
+    const mockResponse = {
+      tasks: [{ data: { keyword: 'test' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+    };
+
+    it('async path produces object with _pipeline_source "async"', () => {
+      const result = { _pipeline_fetched_at: '2026-03-24T00:00:00.000Z', _pipeline_source: 'async', ...mockResponse };
+      assert.equal(result._pipeline_source, 'async');
+      assert.equal(result._pipeline_fetched_at, '2026-03-24T00:00:00.000Z');
+      assert.ok(Array.isArray(result.tasks), 'tasks array preserved');
+    });
+
+    it('live_fallback path produces object with _pipeline_source "live_fallback"', () => {
+      const result = { _pipeline_fetched_at: '2026-03-24T00:00:00.000Z', _pipeline_source: 'live_fallback', ...mockResponse };
+      assert.equal(result._pipeline_source, 'live_fallback');
+      assert.equal(result._pipeline_fetched_at, '2026-03-24T00:00:00.000Z');
+      assert.ok(Array.isArray(result.tasks), 'tasks array preserved');
+    });
+
+    it('checkCache still validates files containing _pipeline_source correctly', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = {
+          _pipeline_fetched_at: new Date().toISOString(),
+          _pipeline_source: 'async',
+          tasks: [{ data: { keyword: 'test' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), 'test', 7);
+        assert.equal(result.hit, true, '_pipeline_source field must not interfere with cache validation');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('checkCache validates files with _pipeline_source "live_fallback" correctly', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = {
+          _pipeline_fetched_at: new Date().toISOString(),
+          _pipeline_source: 'live_fallback',
+          tasks: [{ data: { keyword: 'search term' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), 'search term', 7);
+        assert.equal(result.hit, true, '_pipeline_source "live_fallback" must not interfere with cache validation');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  });
+
   // --- deriveOutdir ---
 
   describe('deriveOutdir', () => {
