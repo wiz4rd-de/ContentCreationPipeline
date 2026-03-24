@@ -43,6 +43,7 @@ function parseArgs(argv) {
     outdir: flagValue('--outdir', undefined),
     depth: parseInt(flagValue('--depth', '10'), 10),
     timeout: parseInt(flagValue('--timeout', '120'), 10),
+    fallbackTimeout: parseInt(flagValue('--fallback-timeout', '300'), 10),
     force: argv.includes('--force'),
     maxAge: parseInt(flagValue('--max-age', '7'), 10),
   };
@@ -211,8 +212,29 @@ function deriveOutdir(keyword, baseDir) {
   return join(baseDir, `${dateStr}_${slug}`);
 }
 
+/**
+ * Build the DataForSEO live/advanced endpoint URL from a base URL.
+ * @param {string} base - API base URL (e.g. https://api.dataforseo.com/v3)
+ * @returns {string} full live endpoint URL
+ */
+function buildLiveUrl(base) {
+  return `${base}/serp/google/organic/live/advanced`;
+}
+
+/**
+ * Determine whether elapsed time exceeds the fallback threshold.
+ * Returns false when fallbackTimeoutSec is 0 (disabled).
+ * @param {number} elapsedMs - elapsed time in milliseconds
+ * @param {number} fallbackTimeoutSec - threshold in seconds; 0 = disabled
+ * @returns {boolean}
+ */
+function shouldFallback(elapsedMs, fallbackTimeoutSec) {
+  if (fallbackTimeoutSec <= 0) return false;
+  return elapsedMs >= fallbackTimeoutSec * 1000;
+}
+
 // --- Export pure functions for testing ---
-export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir };
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir, buildLiveUrl, shouldFallback };
 
 // --- Main execution guard ---
 // Only run main logic when executed directly (not when imported as a module)

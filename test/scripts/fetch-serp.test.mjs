@@ -15,6 +15,8 @@ import {
   calculateBackoff,
   checkCache,
   deriveOutdir,
+  buildLiveUrl,
+  shouldFallback,
 } from '../../src/serp/fetch-serp.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,6 +92,25 @@ describe('fetch-serp', () => {
     it('returns custom maxAge when --max-age is provided', () => {
       const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--max-age', '14']);
       assert.equal(result.maxAge, 14);
+    });
+  });
+
+  // --- parseArgs - fallbackTimeout ---
+
+  describe('parseArgs - fallbackTimeout', () => {
+    it('returns default fallbackTimeout of 300 when not specified', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de']);
+      assert.equal(result.fallbackTimeout, 300);
+    });
+
+    it('returns custom fallbackTimeout when --fallback-timeout is provided', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--fallback-timeout', '600']);
+      assert.equal(result.fallbackTimeout, 600);
+    });
+
+    it('returns 0 when --fallback-timeout 0 is provided (disabled)', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--fallback-timeout', '0']);
+      assert.equal(result.fallbackTimeout, 0);
     });
   });
 
@@ -442,6 +463,35 @@ describe('fetch-serp', () => {
       const fixturePath = join(fixtures, 'serp-raw-with-timestamp.json');
       const result = checkCache(fixturePath, 'Urlaub Mallorca');
       assert.equal(result.hit, true);
+    });
+  });
+
+  // --- buildLiveUrl ---
+
+  describe('buildLiveUrl', () => {
+    it('returns the correct live/advanced endpoint URL', () => {
+      const result = buildLiveUrl('https://api.dataforseo.com/v3');
+      assert.equal(result, 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced');
+    });
+  });
+
+  // --- shouldFallback ---
+
+  describe('shouldFallback', () => {
+    it('returns false when elapsed time is below threshold', () => {
+      assert.equal(shouldFallback(299999, 300), false);
+    });
+
+    it('returns true when elapsed time equals threshold', () => {
+      assert.equal(shouldFallback(300000, 300), true);
+    });
+
+    it('returns true when elapsed time exceeds threshold', () => {
+      assert.equal(shouldFallback(400000, 300), true);
+    });
+
+    it('returns false when fallback is disabled (timeout = 0)', () => {
+      assert.equal(shouldFallback(999999, 0), false);
     });
   });
 
