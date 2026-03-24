@@ -233,8 +233,19 @@ function shouldFallback(elapsedMs, fallbackTimeoutSec) {
   return elapsedMs >= fallbackTimeoutSec * 1000;
 }
 
+/**
+ * Auto-raise timeout to accommodate fallback when fallback is enabled but
+ * timeout is too low. Returns the adjusted timeout (in seconds).
+ */
+function adjustTimeout(timeout, fallbackTimeout, buffer = 30) {
+  if (fallbackTimeout > 0 && timeout < fallbackTimeout + buffer) {
+    return fallbackTimeout + buffer;
+  }
+  return timeout;
+}
+
 // --- Export pure functions for testing ---
-export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir, buildLiveUrl, shouldFallback };
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir, buildLiveUrl, shouldFallback, adjustTimeout };
 
 // --- Main execution guard ---
 // Only run main logic when executed directly (not when imported as a module)
@@ -242,7 +253,15 @@ const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].repla
 if (isMain) {
   // --- Parse arguments ---
   const parsed = parseArgs(process.argv.slice(2));
-  const { keyword, market, language, depth, timeout, maxAge } = parsed;
+  const { keyword, market, language, depth, maxAge } = parsed;
+  let timeout = parsed.timeout;
+
+  // Ensure timeout is high enough to allow fallback when fallback is enabled
+  const adjustedTimeout = adjustTimeout(timeout, parsed.fallbackTimeout);
+  if (adjustedTimeout !== timeout) {
+    console.error(`Adjusted --timeout from ${timeout}s to ${adjustedTimeout}s to allow fallback at ${parsed.fallbackTimeout}s`);
+    timeout = adjustedTimeout;
+  }
 
   if (keyword === undefined || market === undefined || language === undefined) {
     console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force] [--max-age N]');

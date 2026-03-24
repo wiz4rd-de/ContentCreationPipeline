@@ -17,6 +17,7 @@ import {
   deriveOutdir,
   buildLiveUrl,
   shouldFallback,
+  adjustTimeout,
 } from '../../src/serp/fetch-serp.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -492,6 +493,36 @@ describe('fetch-serp', () => {
 
     it('returns false when fallback is disabled (timeout = 0)', () => {
       assert.equal(shouldFallback(999999, 0), false);
+    });
+  });
+
+  // --- adjustTimeout ---
+
+  describe('adjustTimeout', () => {
+    it('raises timeout when it is below fallbackTimeout + buffer', () => {
+      // Default: timeout=120, fallbackTimeout=300, buffer=30 → should become 330
+      assert.equal(adjustTimeout(120, 300), 330);
+    });
+
+    it('leaves timeout unchanged when already high enough', () => {
+      assert.equal(adjustTimeout(400, 300), 400);
+    });
+
+    it('leaves timeout unchanged when fallback is disabled (fallbackTimeout=0)', () => {
+      assert.equal(adjustTimeout(120, 0), 120);
+    });
+
+    it('raises timeout when it equals fallbackTimeout but is below fallbackTimeout + buffer', () => {
+      // timeout=300, fallbackTimeout=300, buffer=30 → should become 330
+      assert.equal(adjustTimeout(300, 300), 330);
+    });
+
+    it('uses custom buffer value', () => {
+      assert.equal(adjustTimeout(120, 300, 60), 360);
+    });
+
+    it('leaves timeout unchanged when exactly at fallbackTimeout + buffer', () => {
+      assert.equal(adjustTimeout(330, 300, 30), 330);
     });
   });
 
