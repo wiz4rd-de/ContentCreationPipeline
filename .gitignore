@@ -28,3 +28,4 @@ docs/
 # Node.js dependencies
 node_modules/
 
+n8n/*
