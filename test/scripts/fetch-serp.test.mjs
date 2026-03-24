@@ -15,6 +15,9 @@ import {
   calculateBackoff,
   checkCache,
   deriveOutdir,
+  buildLiveUrl,
+  shouldFallback,
+  adjustTimeout,
 } from '../../src/serp/fetch-serp.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,6 +93,25 @@ describe('fetch-serp', () => {
     it('returns custom maxAge when --max-age is provided', () => {
       const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--max-age', '14']);
       assert.equal(result.maxAge, 14);
+    });
+  });
+
+  // --- parseArgs - fallbackTimeout ---
+
+  describe('parseArgs - fallbackTimeout', () => {
+    it('returns default fallbackTimeout of 300 when not specified', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de']);
+      assert.equal(result.fallbackTimeout, 300);
+    });
+
+    it('returns custom fallbackTimeout when --fallback-timeout is provided', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--fallback-timeout', '600']);
+      assert.equal(result.fallbackTimeout, 600);
+    });
+
+    it('returns 0 when --fallback-timeout 0 is provided (disabled)', () => {
+      const result = parseArgs(['kw', '--market', 'de', '--language', 'de', '--fallback-timeout', '0']);
+      assert.equal(result.fallbackTimeout, 0);
     });
   });
 
@@ -442,6 +464,119 @@ describe('fetch-serp', () => {
       const fixturePath = join(fixtures, 'serp-raw-with-timestamp.json');
       const result = checkCache(fixturePath, 'Urlaub Mallorca');
       assert.equal(result.hit, true);
+    });
+  });
+
+  // --- buildLiveUrl ---
+
+  describe('buildLiveUrl', () => {
+    it('returns the correct live/advanced endpoint URL', () => {
+      const result = buildLiveUrl('https://api.dataforseo.com/v3');
+      assert.equal(result, 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced');
+    });
+  });
+
+  // --- shouldFallback ---
+
+  describe('shouldFallback', () => {
+    it('returns false when elapsed time is below threshold', () => {
+      assert.equal(shouldFallback(299999, 300), false);
+    });
+
+    it('returns true when elapsed time equals threshold', () => {
+      assert.equal(shouldFallback(300000, 300), true);
+    });
+
+    it('returns true when elapsed time exceeds threshold', () => {
+      assert.equal(shouldFallback(400000, 300), true);
+    });
+
+    it('returns false when fallback is disabled (timeout = 0)', () => {
+      assert.equal(shouldFallback(999999, 0), false);
+    });
+  });
+
+  // --- adjustTimeout ---
+
+  describe('adjustTimeout', () => {
+    it('raises timeout when it is below fallbackTimeout + buffer', () => {
+      // Default: timeout=120, fallbackTimeout=300, buffer=30 → should become 330
+      assert.equal(adjustTimeout(120, 300), 330);
+    });
+
+    it('leaves timeout unchanged when already high enough', () => {
+      assert.equal(adjustTimeout(400, 300), 400);
+    });
+
+    it('leaves timeout unchanged when fallback is disabled (fallbackTimeout=0)', () => {
+      assert.equal(adjustTimeout(120, 0), 120);
+    });
+
+    it('raises timeout when it equals fallbackTimeout but is below fallbackTimeout + buffer', () => {
+      // timeout=300, fallbackTimeout=300, buffer=30 → should become 330
+      assert.equal(adjustTimeout(300, 300), 330);
+    });
+
+    it('uses custom buffer value', () => {
+      assert.equal(adjustTimeout(120, 300, 60), 360);
+    });
+
+    it('leaves timeout unchanged when exactly at fallbackTimeout + buffer', () => {
+      assert.equal(adjustTimeout(330, 300, 30), 330);
+    });
+  });
+
+  // --- pipeline source annotation ---
+
+  describe('pipeline source annotation', () => {
+    const mockResponse = {
+      tasks: [{ data: { keyword: 'test' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+    };
+
+    it('async path produces object with _pipeline_source "async"', () => {
+      const result = { _pipeline_fetched_at: '2026-03-24T00:00:00.000Z', _pipeline_source: 'async', ...mockResponse };
+      assert.equal(result._pipeline_source, 'async');
+      assert.equal(result._pipeline_fetched_at, '2026-03-24T00:00:00.000Z');
+      assert.ok(Array.isArray(result.tasks), 'tasks array preserved');
+    });
+
+    it('live_fallback path produces object with _pipeline_source "live_fallback"', () => {
+      const result = { _pipeline_fetched_at: '2026-03-24T00:00:00.000Z', _pipeline_source: 'live_fallback', ...mockResponse };
+      assert.equal(result._pipeline_source, 'live_fallback');
+      assert.equal(result._pipeline_fetched_at, '2026-03-24T00:00:00.000Z');
+      assert.ok(Array.isArray(result.tasks), 'tasks array preserved');
+    });
+
+    it('checkCache still validates files containing _pipeline_source correctly', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = {
+          _pipeline_fetched_at: new Date().toISOString(),
+          _pipeline_source: 'async',
+          tasks: [{ data: { keyword: 'test' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), 'test', 7);
+        assert.equal(result.hit, true, '_pipeline_source field must not interfere with cache validation');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    it('checkCache validates files with _pipeline_source "live_fallback" correctly', () => {
+      const dir = makeTmpDir();
+      try {
+        const data = {
+          _pipeline_fetched_at: new Date().toISOString(),
+          _pipeline_source: 'live_fallback',
+          tasks: [{ data: { keyword: 'search term' }, result: [{ datetime: '2026-03-24', items: [{ type: 'organic' }] }] }],
+        };
+        writeFileSync(join(dir, 'serp-raw.json'), JSON.stringify(data));
+        const result = checkCache(join(dir, 'serp-raw.json'), 'search term', 7);
+        assert.equal(result.hit, true, '_pipeline_source "live_fallback" must not interfere with cache validation');
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 

@@ -43,6 +43,7 @@ function parseArgs(argv) {
     outdir: flagValue('--outdir', undefined),
     depth: parseInt(flagValue('--depth', '10'), 10),
     timeout: parseInt(flagValue('--timeout', '120'), 10),
+    fallbackTimeout: parseInt(flagValue('--fallback-timeout', '300'), 10),
     force: argv.includes('--force'),
     maxAge: parseInt(flagValue('--max-age', '7'), 10),
   };
@@ -211,8 +212,40 @@ function deriveOutdir(keyword, baseDir) {
   return join(baseDir, `${dateStr}_${slug}`);
 }
 
+/**
+ * Build the DataForSEO live/advanced endpoint URL from a base URL.
+ * @param {string} base - API base URL (e.g. https://api.dataforseo.com/v3)
+ * @returns {string} full live endpoint URL
+ */
+function buildLiveUrl(base) {
+  return `${base}/serp/google/organic/live/advanced`;
+}
+
+/**
+ * Determine whether elapsed time exceeds the fallback threshold.
+ * Returns false when fallbackTimeoutSec is 0 (disabled).
+ * @param {number} elapsedMs - elapsed time in milliseconds
+ * @param {number} fallbackTimeoutSec - threshold in seconds; 0 = disabled
+ * @returns {boolean}
+ */
+function shouldFallback(elapsedMs, fallbackTimeoutSec) {
+  if (fallbackTimeoutSec <= 0) return false;
+  return elapsedMs >= fallbackTimeoutSec * 1000;
+}
+
+/**
+ * Auto-raise timeout to accommodate fallback when fallback is enabled but
+ * timeout is too low. Returns the adjusted timeout (in seconds).
+ */
+function adjustTimeout(timeout, fallbackTimeout, buffer = 30) {
+  if (fallbackTimeout > 0 && timeout < fallbackTimeout + buffer) {
+    return fallbackTimeout + buffer;
+  }
+  return timeout;
+}
+
 // --- Export pure functions for testing ---
-export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir };
+export { parseArgs, loadEnv, resolveLocation, extractTaskId, isTaskReady, calculateBackoff, checkCache, deriveOutdir, buildLiveUrl, shouldFallback, adjustTimeout };
 
 // --- Main execution guard ---
 // Only run main logic when executed directly (not when imported as a module)
@@ -220,7 +253,15 @@ const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].repla
 if (isMain) {
   // --- Parse arguments ---
   const parsed = parseArgs(process.argv.slice(2));
-  const { keyword, market, language, depth, timeout, maxAge } = parsed;
+  const { keyword, market, language, depth, maxAge } = parsed;
+  let timeout = parsed.timeout;
+
+  // Ensure timeout is high enough to allow fallback when fallback is enabled
+  const adjustedTimeout = adjustTimeout(timeout, parsed.fallbackTimeout);
+  if (adjustedTimeout !== timeout) {
+    console.error(`Adjusted --timeout from ${timeout}s to ${adjustedTimeout}s to allow fallback at ${parsed.fallbackTimeout}s`);
+    timeout = adjustedTimeout;
+  }
 
   if (keyword === undefined || market === undefined || language === undefined) {
     console.error('Usage: node fetch-serp.mjs <keyword> --market <cc> --language <lc> [--outdir <dir>] [--depth N] [--timeout N] [--force] [--max-age N]');
@@ -344,6 +385,10 @@ if (isMain) {
 
   while (taskReady === false) {
     const elapsed = Date.now() - startTime;
+    if (shouldFallback(elapsed, parsed.fallbackTimeout)) {
+      console.error(`Async task ${taskId} not ready after ${parsed.fallbackTimeout}s. Falling back to live endpoint...`);
+      break;
+    }
     if (elapsed >= timeoutMs) {
       throw new Error(`Task ${taskId} timed out after ${timeout} seconds. Status: pending`);
     }
@@ -362,6 +407,27 @@ if (isMain) {
     }
 
     attempt += 1;
+  }
+
+  // --- Fallback to live endpoint when async polling did not complete ---
+  if (taskReady === false) {
+    console.error('Calling live endpoint as fallback...');
+    const liveResponse = await postEndpoint(
+      'serp/google/organic/live/advanced',
+      taskPostBody
+    );
+    const liveTask = liveResponse.tasks && liveResponse.tasks[0];
+    if (liveTask === undefined || liveTask === null || liveTask.status_code !== 20000) {
+      const msg = liveTask ? liveTask.status_message : 'no tasks in response';
+      throw new Error(`Live endpoint failed: ${msg}`);
+    }
+    const rawPath = join(outdir, 'serp-raw.json');
+    const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), _pipeline_source: 'live_fallback', ...liveResponse };
+    const rawJson = JSON.stringify(responseWithTimestamp, null, 2);
+    writeFileSync(rawPath, rawJson);
+    console.error(`Saved (via live fallback): ${rawPath}`);
+    process.stdout.write(rawJson + '\n');
+    process.exit(0);
   }
 
   console.error(`Task ${taskId} is ready. Retrieving results...`);
@@ -394,7 +460,7 @@ if (isMain) {
 
   // --- Save raw response ---
   const rawPath = join(outdir, 'serp-raw.json');
-  const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), ...getResponse };
+  const responseWithTimestamp = { _pipeline_fetched_at: new Date().toISOString(), _pipeline_source: 'async', ...getResponse };
   const rawJson = JSON.stringify(responseWithTimestamp, null, 2);
   writeFileSync(rawPath, rawJson);
   console.error(`Saved: ${rawPath}`);
