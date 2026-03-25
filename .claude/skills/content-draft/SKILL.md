@@ -94,6 +94,7 @@ Before saving, review the draft against the brief's SEO checklist:
 - [ ] CTA(s) included
 - [ ] Meta info table present below document title with all required fields
 - [ ] Title Tag and Meta Description in table match SEO guidelines
+- [ ] No unverified facts stated as definitive (mark uncertain claims with <!-- VERIFY: ... -->)
 
 If any item fails, fix it before proceeding.
 
@@ -110,3 +111,5 @@ Provide a short summary at the end:
 - Actual word count vs. target
 - Primary keyword usage count
 - Any `<!-- TODO -->` or `<!-- VERIFY -->` items that need attention
+
+**Recommended next step:** Run `/fact-check` to verify factual claims in the draft before publication. The fact-check catches both LLM hallucinations and errors propagated from the briefing.

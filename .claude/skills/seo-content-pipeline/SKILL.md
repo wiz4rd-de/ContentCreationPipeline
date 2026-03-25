@@ -144,6 +144,19 @@ If yes, follow the instructions in the `content-draft` skill:
 
 Present the finished draft for review.
 
+### Step 4: Fact-Check (recommended)
+
+Ask the user if they want to run a fact-check on the draft.
+
+If yes, follow the instructions in the `fact-check` skill:
+- Use the draft from Step 3 as input
+- Run deterministic claim extraction first
+- Verify claims via web search
+- Save report to `$OUT/fact-check-report.json` and `$OUT/fact-check-report.md`
+- Corrections for incorrect claims are applied directly to the original draft
+
+Present the fact-check summary for review.
+
 ## Output
 
 At the end of the pipeline, the user has:
@@ -159,6 +172,9 @@ At the end of the pipeline, the user has:
 | `briefing-data.json` | Consolidated data + qualitative fields | Deterministic + LLM (Step 7 + Phase 2) |
 | `brief-<slug>.md` | Final content briefing document | LLM (Phase 2) |
 | `draft-<slug>.md` | Article draft (if requested) | LLM (Step 3) |
+| `claims-extracted.json` | Deterministic claim extraction from draft | Deterministic (Step 4) |
+| `fact-check-report.json` | Claim verification results with sources | LLM + WebSearch (Step 4) |
+| `fact-check-report.md` | Human-readable fact-check report | LLM (Step 4) |
 
 All files in `$OUT`.
 
@@ -180,4 +196,27 @@ analyze-content-topics.mjs ────┘                                      
                                                                    v         v
                                                          briefing-data.json  brief-<slug>.md
                                                          (qualitative filled) (final briefing)
+                                                                   |
+                                                                   v
+                                                           content-draft skill
+                                                         (complete article)
+                                                                   |
+                                                                   v
+                                                           draft-<slug>.md
+                                                                   |
+                                                                   v
+                                                       extract-claims.mjs
+                                                                   |
+                                                                   v
+                                                         claims-extracted.json
+                                                                   |
+                                                                   v
+                                                        fact-check skill
+                                                      (WebSearch verification)
+                                                                   |
+                                                                   v
+                                                     fact-check-report.json / .md
+                                                                   |
+                                                                   v (if errors found)
+                                                        corrections applied to draft-<slug>.md
 ```
