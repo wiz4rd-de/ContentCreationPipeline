@@ -163,18 +163,18 @@ At the end of the pipeline, the user has:
 
 | File | Description | Source |
 |------|-------------|--------|
-| `serp-processed.json` | SERP features, AIO data, competitors | Deterministic (Step 1) |
-| `competitors-data.json` | Extracted competitor page content | Deterministic (Step 2) |
-| `keywords-processed.json` | Clustered keywords with scores | Deterministic (Step 3) |
-| `keywords-filtered.json` | Filtered keywords + FAQ ranking | Deterministic (Step 4) |
-| `page-structure.json` | Module detection, content depth | Deterministic (Step 5) |
-| `content-topics.json` | TF-IDF entities, section weights | Deterministic (Step 6) |
-| `briefing-data.json` | Consolidated data + qualitative fields | Deterministic + LLM (Step 7 + Phase 2) |
+| `serp-processed.json` | SERP features, AIO data, competitors | Deterministic (Phase 1, Step 1) |
+| `competitors-data.json` | Extracted competitor page content | Deterministic (Phase 1, Step 2) |
+| `keywords-processed.json` | Clustered keywords with scores | Deterministic (Phase 1, Step 3) |
+| `keywords-filtered.json` | Filtered keywords + FAQ ranking | Deterministic (Phase 1, Step 4) |
+| `page-structure.json` | Module detection, content depth | Deterministic (Phase 1, Step 5) |
+| `content-topics.json` | TF-IDF entities, section weights | Deterministic (Phase 1, Step 6) |
+| `briefing-data.json` | Consolidated data + qualitative fields | Deterministic + LLM (Phase 1, Step 7 + Phase 2) |
 | `brief-<slug>.md` | Final content briefing document | LLM (Phase 2) |
-| `draft-<slug>.md` | Article draft (if requested) | LLM (Step 3) |
-| `claims-extracted.json` | Deterministic claim extraction from draft | Deterministic (Step 4) |
-| `fact-check-report.json` | Claim verification results with sources | LLM + WebSearch (Step 4) |
-| `fact-check-report.md` | Human-readable fact-check report | LLM (Step 4) |
+| `draft-<slug>.md` | Article draft (if requested) | LLM (Post-Phase 2, Content Draft) |
+| `claims-extracted.json` | Deterministic claim extraction from draft | Deterministic (Post-Phase 2, Claim Extraction) |
+| `fact-check-report.json` | Claim verification results with sources | LLM + WebSearch (Post-Phase 2, Fact-Check) |
+| `fact-check-report.md` | Human-readable fact-check report | LLM (Post-Phase 2, Fact-Check) |
 
 All files in `$OUT`.
 
