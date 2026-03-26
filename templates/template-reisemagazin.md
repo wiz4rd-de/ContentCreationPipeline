@@ -92,7 +92,24 @@ Jede Sektion folgt einem einheitlichen Baukasten-Prinzip:
 
 ---
 
-## F. SEO-Checkliste
+## F. Output-Format
+
+Non-Content-Elemente in Drafts werden als Blockquote-Marker dargestellt:
+
+| Element | Format |
+|---------|--------|
+| **Bild (pro H2)** | `> **[Bild]** {Motiv} \| Alt: {Alt-Text}` |
+| **Bildunterschrift (pro Bild)** | `> **[Bildunterschrift]** {Caption}` |
+| **Info-Box** | `> **[CMS: Info-Box]** Insider-Tipp / DERTOUR Extratipp / Faktenbox` |
+| **Hotel-Teaser** | `> **[CMS: Hotel-Teaser]** Hotel-Name, Region, Bewertung, Preis ab X €` |
+| **Karten-Embed** | `> **[CMS: Karten-Embed]** Google Maps für Orte/Routen` |
+| **Bildergalerie** | `> **[CMS: Bildergalerie]** Horizontale Scroll-Galerie` |
+| **Related Content** | `> **[CMS: Related Content]** 3–4 Teaser-Karten zu verwandten Artikeln` |
+| **CTA-Bereich** | `> **[CMS: CTA]** Buchungs-CTA oder Newsletter-Verweis` |
+
+---
+
+## G. SEO-Checkliste
 
 - [ ] Haupt-Keyword in H1, mind. 2–3 H2s und Intro-Absatz enthalten
 - [ ] Title Tag: [Keyword] + emotionaler Zusatz | DERTOUR (max. 60 Zeichen)
@@ -107,7 +124,7 @@ Jede Sektion folgt einem einheitlichen Baukasten-Prinzip:
 
 ---
 
-## G. Tonalitäts- und Stil-Guidelines
+## H. Tonalitäts- und Stil-Guidelines
 
 | Kategorie | So ja ✓ | So nicht ✗ |
 |-----------|---------|------------|

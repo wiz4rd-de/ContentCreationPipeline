@@ -284,7 +284,20 @@ Jede Sektion folgt einem einheitlichen Baukasten-Prinzip. Alle H2-Überschriften
 
 ---
 
-## K. Zielgruppen-Referenz
+## K. Output-Format
+
+Non-Content-Elemente in Drafts werden als Blockquote-Marker dargestellt:
+
+| Element | Format |
+|---------|--------|
+| **Keyvisual (Bild oben)** | `> **[Bild]** {Keyvisual-Motiv} \| Alt: {Alt-Text}` |
+| **Teaserreihe** | `> **[CMS: Teaserreihe]** Image Wall mit Verlinkungen` |
+| **Experten-Tipp** | `> **[CMS: Experten-Tipp]** DERTOUR Experten-Tipp` |
+| **Klimatabelle** | `> **[CMS: Klimatabelle]** Temperatur, Niederschlag, beste Reisezeit (wenn applicable)` |
+
+---
+
+## L. Zielgruppen-Referenz
 
 ### Allgemeine DERTOUR-Zielgruppe
 Bodenständig, qualitätsbewusst und sicherheitsaffin. Sucht Angebote mit dem besten Preis-Leistungs-Verhältnis, aber mit hohem Anspruch und ohne auf Komfort zu verzichten.
@@ -301,7 +314,7 @@ Bodenständig, qualitätsbewusst und sicherheitsaffin. Sucht Angebote mit dem be
 
 ---
 
-## L. Seitenstruktur auf einen Blick
+## M. Seitenstruktur auf einen Blick
 
 ```
 Meta-Title
