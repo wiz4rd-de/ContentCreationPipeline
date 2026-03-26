@@ -148,14 +148,39 @@ Present the finished draft for review.
 
 Ask the user if they want to run a fact-check on the draft.
 
-If yes, follow the instructions in the `fact-check` skill:
-- Use the draft from Step 3 as input
-- Run deterministic claim extraction first
-- Verify claims via web search
-- Save report to `$OUT/fact-check-report.json` and `$OUT/fact-check-report.md`
-- Corrections for incorrect claims are applied directly to the original draft
+If yes:
 
-Present the fact-check summary for review.
+#### 4a. Deterministic claim extraction (in main context)
+
+```bash
+node src/analysis/extract-claims.mjs --draft $OUT/draft-<slug>.md --output $OUT/claims-extracted.json
+```
+
+#### 4b. Spawn fact-check subagent
+
+Use the **Agent tool** to spawn a subagent. The subagent runs the entire verification workflow in its own context window — web search results never enter the main pipeline context.
+
+Agent prompt (fill in the `$OUT`, draft filename, and slug values):
+
+> You are a fact-checker for SEO content drafts.
+>
+> **Inputs (already on disk):**
+> - Draft: `$OUT/draft-<slug>.md`
+> - Extracted claims: `$OUT/claims-extracted.json`
+> - Output directory: `$OUT`
+>
+> **Your task:** Follow Steps 2-6 of the fact-check skill (read `.claude/skills/fact-check/SKILL.md`).
+>
+> 1. Read the claims JSON and the draft
+> 2. Supplement claims the regex missed (Step 2)
+> 3. Verify each claim via WebSearch (Step 3)
+> 4. Write `fact-check-report.json` and `fact-check-report.md` (Step 4)
+> 5. Apply corrections to the draft for any incorrect claims (Step 5)
+> 6. Return a concise summary: total claims, verdicts breakdown, errors found with corrections, uncertain claims, file paths (Step 6)
+
+#### 4c. Present summary
+
+Print the subagent's returned summary to the user. The full reports are in `$OUT/fact-check-report.json` and `$OUT/fact-check-report.md`.
 
 ## Output
 
