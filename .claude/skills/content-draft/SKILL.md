@@ -49,8 +49,8 @@ Produce a complete article in markdown following these guidelines:
 
 **Formatting:**
 - Use markdown formatting: headers, bold, lists, blockquotes where appropriate
-- Add `<!-- TODO: ... -->` comments for elements the writer must manually complete (e.g. internal links, proprietary data, images)
-- Mark any facts or statistics that should be verified with `<!-- VERIFY: ... -->`
+- Add `> **[TODO]** ...` blockquote markers for elements the writer must manually complete (e.g. internal links, proprietary data, images)
+- Mark any facts or statistics that should be verified with `> **[VERIFY]** ...` blockquote markers
 
 **Output format:**
 
@@ -82,7 +82,7 @@ Rules:
 - The meta table sits between the document title and the article's H1
 - A `---` separator divides the meta block from the article content
 - All field values are pulled from the briefing's "A. Meta-Daten & Steuerung" section, except **Title Tag** and **Meta Description** which are composed during drafting
-- Do NOT put Title Tag or Meta Description into HTML comments — the meta table replaces that pattern
+- Do NOT put Title Tag or Meta Description into blockquote markers — the meta table replaces that pattern
 
 ### 3. Self-review
 
@@ -94,7 +94,7 @@ Before saving, review the draft against the brief's SEO checklist:
 - [ ] CTA(s) included
 - [ ] Meta info table present below document title with all required fields
 - [ ] Title Tag and Meta Description in table match SEO guidelines
-- [ ] No unverified facts stated as definitive (mark uncertain claims with <!-- VERIFY: ... -->)
+- [ ] No unverified facts stated as definitive (mark uncertain claims with `> **[VERIFY]** ...`)
 
 If any item fails, fix it before proceeding.
 
@@ -110,6 +110,6 @@ Inform the user of the saved file path. Do NOT print the full draft to the conve
 Provide a short summary at the end:
 - Actual word count vs. target
 - Primary keyword usage count
-- Any `<!-- TODO -->` or `<!-- VERIFY -->` items that need attention
+- Any `> **[TODO]**` or `> **[VERIFY]**` items that need attention
 
 **Recommended next step:** Run `/fact-check` to verify factual claims in the draft before publication. The fact-check catches both LLM hallucinations and errors propagated from the briefing.

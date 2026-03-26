@@ -6,8 +6,8 @@
 
 ---
 
-<!-- TODO: Titelbild einfuegen -->
-<!-- VERIFY: Alle Preise pruefen -->
+> **[TODO]** Titelbild einfuegen
+> **[VERIFY]** Alle Preise pruefen
 
 ## Wandern in Norwegen: Ein Ueberblick
 

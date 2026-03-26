@@ -126,9 +126,14 @@ function isInSkipRange(lineIdx, ranges) {
   return ranges.some(r => lineIdx >= r.start && lineIdx <= r.end);
 }
 
-// Check if text is inside an HTML comment
-function isHtmlComment(line) {
-  return /<!--.*?-->/.test(line) && line.trim().startsWith('<!--');
+// Check if line is an editorial marker (legacy HTML comments or new blockquote markers)
+function isEditorialMarker(line) {
+  const trimmed = line.trim();
+  // Legacy HTML comments (backward compat for older drafts)
+  if (/^<!--/.test(trimmed) && /-->/.test(trimmed)) return true;
+  // New blockquote markers
+  if (/^>\s*\*\*\[/.test(trimmed)) return true;
+  return false;
 }
 
 // Track the current section heading
@@ -182,8 +187,8 @@ for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
   // Skip meta table lines
   if (isInSkipRange(lineIdx, skipRanges)) continue;
 
-  // Skip HTML comments
-  if (isHtmlComment(line)) continue;
+  // Skip editorial markers (HTML comments and blockquote markers)
+  if (isEditorialMarker(line)) continue;
 
   // Skip heading lines themselves (don't extract claims from headings)
   if (/^#{1,6}\s+/.test(line)) continue;

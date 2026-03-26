@@ -115,8 +115,8 @@ describe('extract-claims', () => {
     assert.equal(metaLineClaims.length, 0, 'no claims should come from meta table lines');
   });
 
-  // Test 8: skips HTML comments
-  it('skips HTML comments', () => {
+  // Test 8: skips editorial markers
+  it('skips editorial markers', () => {
     const result = runParsed();
     const commentClaims = result.claims.filter(c =>
       c.sentence.includes('TODO') || c.sentence.includes('VERIFY')
