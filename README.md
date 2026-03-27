@@ -1,5 +1,7 @@
 # Claude Content Creation Pipeline
 
+> **Maintenance mode.** This Node.js codebase is feature-frozen at v1.0.0. Active development continues in the Python rewrite: [ContentCreationPipeline](https://github.com/wiz4rd-de/ContentCreationPipeline).
+
 Deterministic SEO content pipeline -- scripts handle all data extraction; a single LLM call does qualitative analysis only.
 
 ## Architecture
