@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "seo-pipeline"
+version = "0.1.0"
+description = "Python rewrite of the Claude Content Creation Pipeline"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "httpx",
+    "readability-lxml",
+    "beautifulsoup4",
+    "lxml",
+]
+
+[project.optional-dependencies]
+cli = ["typer[all]>=0.9"]
+api = ["fastapi>=0.100", "uvicorn[standard]"]
+dev = ["pytest>=8.0", "pytest-asyncio", "ruff"]
+
+[project.scripts]
+seo-pipeline = "seo_pipeline.cli.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = ["src/", "test/", "templates/", "node_modules/"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
