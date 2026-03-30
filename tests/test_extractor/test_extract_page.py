@@ -6,14 +6,10 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 from seo_pipeline.extractor.extract_page import (
     extract_page,
     extract_page_from_html,
-    main,
 )
 from seo_pipeline.models import ExtractedPage, ExtractedPageError
 
@@ -47,7 +43,8 @@ FULL_HTML = """\
   before it will extract anything meaningful from the page.</p>
   <p>Second paragraph adds more content to help readability detect this as the main
   article body. Without sufficient text density, readability-lxml will return empty
-  content because it assumes the page has no article-like structure worth extracting.</p>
+  content because it assumes the page has no article-like structure
+  worth extracting.</p>
   <h3>Subsection A</h3>
   <p>More content here in subsection A. This paragraph also needs to be substantial
   enough to contribute to the overall content score. Readability algorithms typically
