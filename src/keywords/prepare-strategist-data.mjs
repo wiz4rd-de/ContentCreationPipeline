@@ -11,7 +11,7 @@
 //     [--competitor-kws <file>] \
 //     --seed <keyword>
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 // --- Parse arguments --------------------------------------------------------
 
@@ -26,11 +26,12 @@ const serpFile = flagValue('--serp');
 const keywordsFile = flagValue('--keywords');
 const competitorKwsFile = flagValue('--competitor-kws');
 const seedKeyword = flagValue('--seed');
+const outputPath = flagValue('--output') || null;
 
 if (serpFile === undefined || keywordsFile === undefined || seedKeyword === undefined) {
   console.error(
     'Usage: node prepare-strategist-data.mjs --serp <file> --keywords <file> --seed <keyword> ' +
-    '[--competitor-kws <file>]',
+    '[--competitor-kws <file>] [--output <file>]',
   );
   process.exit(1);
 }
@@ -259,4 +260,9 @@ const output = {
   stats,
 };
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

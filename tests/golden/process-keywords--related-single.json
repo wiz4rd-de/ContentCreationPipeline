@@ -1,0 +1,25 @@
+{
+  "seed_keyword": "single keyword",
+  "total_keywords": 1,
+  "total_clusters": 1,
+  "clusters": [
+    {
+      "cluster_keyword": "single keyword",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "single keyword",
+          "search_volume": 500,
+          "cpc": 1,
+          "monthly_searches": [],
+          "difficulty": 35,
+          "intent": null,
+          "opportunity_score": 13.89
+        }
+      ],
+      "cluster_opportunity": 13.89
+    }
+  ]
+}

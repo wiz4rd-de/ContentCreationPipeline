@@ -1,0 +1,58 @@
+{
+  "target_keyword": "obscure query",
+  "se_results_count": 100,
+  "location_code": 2840,
+  "language_code": "en",
+  "item_types_present": [
+    "organic"
+  ],
+  "serp_features": {
+    "ai_overview": {
+      "present": false,
+      "title": null,
+      "text": null,
+      "references": [],
+      "references_count": 0
+    },
+    "featured_snippet": {
+      "present": false
+    },
+    "people_also_ask": [],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": {
+      "present": false
+    },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://example.com/page",
+      "domain": "example.com",
+      "title": "Some Page",
+      "description": "A description.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": false
+    }
+  ]
+}

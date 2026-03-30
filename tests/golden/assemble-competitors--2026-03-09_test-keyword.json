@@ -1,0 +1,150 @@
+{
+  "target_keyword": "test keyword",
+  "date": "2026-03-09",
+  "se_results_count": 1500000,
+  "location_code": 2276,
+  "language_code": "de",
+  "item_types_present": [
+    "organic",
+    "people_also_ask",
+    "ai_overview"
+  ],
+  "serp_features": {
+    "ai_overview": {
+      "present": true,
+      "title": "AI Overview for test keyword",
+      "text": "Some AI overview text from 2024 about test keyword.",
+      "references_count": 2,
+      "references": [
+        {
+          "domain": "example.com",
+          "url": "https://example.com/page",
+          "title": "Example"
+        },
+        {
+          "domain": "test.de",
+          "url": "https://test.de/page",
+          "title": "Test"
+        }
+      ]
+    },
+    "featured_snippet": {
+      "present": false
+    },
+    "people_also_ask": [
+      {
+        "question": "Was ist test keyword?",
+        "answer": "Ein Beispiel.",
+        "url": "https://example.com/faq",
+        "domain": "example.com"
+      },
+      {
+        "question": "Wie funktioniert test keyword?",
+        "answer": null,
+        "url": null,
+        "domain": null
+      }
+    ],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": {
+      "present": false
+    },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://example.com/page",
+      "domain": "example.com",
+      "title": "Example Page about test keyword 2025",
+      "description": "A description",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": "2024-01-15",
+      "cited_in_ai_overview": true,
+      "word_count": null,
+      "h1": null,
+      "headings": null,
+      "link_count": null,
+      "meta_description": null,
+      "format": null,
+      "topics": null,
+      "unique_angle": null,
+      "strengths": null,
+      "weaknesses": null
+    },
+    {
+      "rank": 2,
+      "rank_absolute": 2,
+      "url": "https://test.de/page",
+      "domain": "test.de",
+      "title": "Test Page",
+      "description": "Another description",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": true,
+      "rating": {
+        "value": 4.5,
+        "votes_count": 100,
+        "rating_max": 5
+      },
+      "timestamp": null,
+      "cited_in_ai_overview": true,
+      "word_count": null,
+      "h1": null,
+      "headings": null,
+      "link_count": null,
+      "meta_description": null,
+      "format": null,
+      "topics": null,
+      "unique_angle": null,
+      "strengths": null,
+      "weaknesses": null
+    },
+    {
+      "rank": 3,
+      "rank_absolute": 4,
+      "url": "https://third.com/page",
+      "domain": "third.com",
+      "title": "Third Page",
+      "description": "Third desc",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": false,
+      "word_count": null,
+      "h1": null,
+      "headings": null,
+      "link_count": null,
+      "meta_description": null,
+      "format": null,
+      "topics": null,
+      "unique_angle": null,
+      "strengths": null,
+      "weaknesses": null
+    }
+  ],
+  "common_themes": null,
+  "content_gaps": null,
+  "opportunities": null
+}

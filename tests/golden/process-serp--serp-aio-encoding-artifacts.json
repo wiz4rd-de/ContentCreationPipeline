@@ -1,0 +1,65 @@
+{
+  "target_keyword": "weather today",
+  "se_results_count": 1000000,
+  "location_code": 2276,
+  "language_code": "de",
+  "item_types_present": [
+    "organic",
+    "ai_overview"
+  ],
+  "serp_features": {
+    "ai_overview": {
+      "present": true,
+      "references": [
+        {
+          "domain": "wetter.de",
+          "url": "https://www.wetter.de/berlin",
+          "title": "Wetter Berlin"
+        }
+      ],
+      "title": "Wetter heute",
+      "text": "Morgen werden 18 °F erwartet.Ein weiterer schöner Tag.\nKein Niederschlag erwartet & sonnig den ganzen Tag.\nDie Temperatur beträgt heute 23 °C in Berlin.",
+      "references_count": 1
+    },
+    "featured_snippet": {
+      "present": false
+    },
+    "people_also_ask": [],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": {
+      "present": false
+    },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://www.wetter.de/berlin",
+      "domain": "wetter.de",
+      "title": "Wetter Berlin",
+      "description": "Aktuelles Wetter für Berlin.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": true
+    }
+  ]
+}
