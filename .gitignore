@@ -4,6 +4,12 @@
 # Python venv
 .venv
 
+# Python bytecode
+*.pyc
+*.pyd
+__pycache__/
+
+
 # macOS
 .DS_Store
 
