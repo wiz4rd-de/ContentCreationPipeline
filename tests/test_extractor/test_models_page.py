@@ -83,11 +83,9 @@ class TestExtractedPage:
         # Serialize back
         serialized = page.model_dump(mode="json")
 
-        # Should match original (with defaults added)
-        assert serialized["url"] == original_data["url"]
-        assert serialized["main_content_text"] == original_data["main_content_text"]
-        assert serialized["headings"] == original_data["headings"]
-        assert serialized["html_signals"] == original_data["html_signals"]
+        # Verify all original fields survive roundtrip
+        for key, value in original_data.items():
+            assert serialized[key] == value, f"Field {key} mismatch"
 
     def test_roundtrip_analyze_content_topics_page_beta(self, page_fixtures_dir):
         """Test roundtrip serialization matches page-beta.json."""
@@ -100,8 +98,9 @@ class TestExtractedPage:
         page = ExtractedPage(**original_data)
         serialized = page.model_dump(mode="json")
 
-        assert serialized["url"] == original_data["url"]
-        assert serialized["html_signals"] == original_data["html_signals"]
+        # Verify all original fields survive roundtrip
+        for key, value in original_data.items():
+            assert serialized[key] == value, f"Field {key} mismatch"
 
     def test_roundtrip_analyze_page_structure_page_alpha(self, page_fixtures_dir):
         """Test roundtrip serialization matches page-alpha.json."""
@@ -114,8 +113,9 @@ class TestExtractedPage:
         page = ExtractedPage(**original_data)
         serialized = page.model_dump(mode="json")
 
-        assert serialized["url"] == original_data["url"]
-        assert serialized["headings"] == original_data["headings"]
+        # Verify all original fields survive roundtrip
+        for key, value in original_data.items():
+            assert serialized[key] == value, f"Field {key} mismatch"
 
     def test_integration_fixture_roundtrip(self, page_fixtures_dir):
         """Test roundtrip serialization with integration fixture."""
@@ -128,9 +128,44 @@ class TestExtractedPage:
         page = ExtractedPage(**original_data)
         serialized = page.model_dump(mode="json")
 
-        # Verify roundtrip preserves key fields
-        assert serialized["url"] == original_data["url"]
-        assert serialized["main_content_text"] == original_data["main_content_text"]
+        # Verify all original fields survive roundtrip
+        for key, value in original_data.items():
+            assert serialized[key] == value, f"Field {key} mismatch"
+
+    @pytest.mark.parametrize(
+        "fixture_file",
+        [
+            path
+            for path in Path(__file__).resolve().parent.parent.parent.glob(
+                "test/fixtures/*/pages/*.json"
+            )
+        ],
+        ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}/{p.name}",
+    )
+    def test_all_page_fixtures_roundtrip(self, fixture_file: Path):
+        """Test that all page fixture JSON files deserialize and roundtrip correctly.
+
+        This parametrized test discovers all page fixture files and verifies that:
+        1. Each fixture can be deserialized into ExtractedPage
+        2. All original fields survive serialization roundtrip
+
+        This satisfies the acceptance criterion: "ExtractedPage deserializable from
+        any page fixture JSON."
+        """
+        with open(fixture_file) as f:
+            original_data = json.load(f)
+
+        # Deserialize from fixture
+        page = ExtractedPage(**original_data)
+
+        # Serialize back
+        serialized = page.model_dump(mode="json")
+
+        # Verify all original fields survive roundtrip
+        for key, value in original_data.items():
+            assert (
+                serialized[key] == value
+            ), f"Field {key} mismatch in {fixture_file}"
 
 
 class TestExtractedPageError:
