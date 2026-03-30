@@ -61,8 +61,24 @@ def extract_keywords(
         - monthly_searches (list | None)
         - difficulty (int | None) - only if include_difficulty=True
     """
-    # Extract items from the standard response path
-    items = raw.get("tasks", [{}])[0].get("result", [{}])[0].get("items")
+    # Extract items from the standard response path, safely handling empty lists
+    tasks = raw.get("tasks", [])
+    if not tasks or not isinstance(tasks, list):
+        return []
+
+    task = tasks[0]
+    if not isinstance(task, dict):
+        return []
+
+    result = task.get("result", [])
+    if not result or not isinstance(result, list):
+        return []
+
+    result_item = result[0]
+    if not isinstance(result_item, dict):
+        return []
+
+    items = result_item.get("items")
 
     if not isinstance(items, list):
         return []

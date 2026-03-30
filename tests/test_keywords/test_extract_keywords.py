@@ -329,6 +329,18 @@ class TestExtractKeywords:
         results = extract_keywords(raw)
         assert results == []
 
+    def test_empty_tasks_list(self):
+        """Test handling when tasks list is empty."""
+        raw = {"tasks": []}
+        results = extract_keywords(raw)
+        assert results == []
+
+    def test_empty_result_list(self):
+        """Test handling when result list is empty."""
+        raw = {"tasks": [{"result": []}]}
+        results = extract_keywords(raw)
+        assert results == []
+
     def test_items_not_array(self):
         """Test handling when items is not an array."""
         raw = {"tasks": [{"result": [{"items": "not an array"}]}]}
