@@ -150,22 +150,24 @@ class TestProcessedKeywords:
             original_data = json.load(f)
 
         processed = ProcessedKeywords(**original_data)
-        serialized = processed.model_dump(mode="json")
+        # Exclude filter fields from keywords since they don't exist in process-keywords output
+        serialized = processed.model_dump(
+            mode="json",
+            exclude={
+                "clusters": {
+                    "__all__": {
+                        "keywords": {"__all__": {"filter_status", "filter_reason", "source"}}
+                    }
+                }
+            },
+        )
 
-        # Verify key fields match
-        assert serialized["seed_keyword"] == original_data["seed_keyword"]
-        assert serialized["total_keywords"] == original_data["total_keywords"]
-        assert serialized["total_clusters"] == original_data["total_clusters"]
-
-        # Verify cluster structure
-        assert len(serialized["clusters"]) == len(original_data["clusters"])
-        for i, cluster in enumerate(serialized["clusters"]):
-            assert cluster["cluster_keyword"] == original_data["clusters"][i][
-                "cluster_keyword"
-            ]
-            assert len(cluster["keywords"]) == len(
-                original_data["clusters"][i]["keywords"]
-            )
+        # Verify full structural equality - must match original exactly
+        assert serialized == original_data, (
+            f"Roundtrip mismatch:\n"
+            f"Expected: {json.dumps(original_data, indent=2)}\n"
+            f"Got: {json.dumps(serialized, indent=2)}"
+        )
 
     def test_processed_keywords_empty(self, golden_dir):
         """Test deserialization of empty processed keywords."""
@@ -232,29 +234,24 @@ class TestFilteredKeywords:
             original_data = json.load(f)
 
         filtered = FilteredKeywords(**original_data)
-        serialized = filtered.model_dump(mode="json")
-
-        # Verify top-level fields
-        assert serialized["seed_keyword"] == original_data["seed_keyword"]
-        assert serialized["filtered_keywords"] == original_data["filtered_keywords"]
-        assert serialized["removed_count"] == original_data["removed_count"]
-
-        # Verify removal summary
-        assert (
-            serialized["removal_summary"]["ethics"]
-            == original_data["removal_summary"]["ethics"]
+        # Exclude source field from keywords since it doesn't exist in filter-keywords output
+        serialized = filtered.model_dump(
+            mode="json",
+            exclude={
+                "clusters": {
+                    "__all__": {
+                        "keywords": {"__all__": {"source"}}
+                    }
+                }
+            },
         )
 
-        # Verify FAQ selection
-        assert len(serialized["faq_selection"]) == len(original_data["faq_selection"])
-        for i, faq in enumerate(serialized["faq_selection"]):
-            assert faq["question"] == original_data["faq_selection"][i]["question"]
-
-        # Verify keywords have filter fields
-        for cluster in serialized["clusters"]:
-            for keyword in cluster["keywords"]:
-                assert "filter_status" in keyword
-                assert "filter_reason" in keyword
+        # Verify full structural equality - must match original exactly
+        assert serialized == original_data, (
+            f"Roundtrip mismatch:\n"
+            f"Expected: {json.dumps(original_data, indent=2)}\n"
+            f"Got: {json.dumps(serialized, indent=2)}"
+        )
 
     def test_filtered_keywords_empty(self, golden_dir):
         """Test deserialization of empty filtered keywords."""
@@ -297,25 +294,12 @@ class TestStrategistData:
         strategist = StrategistData(**original_data)
         serialized = strategist.model_dump(mode="json")
 
-        # Verify top-level fields
-        assert serialized["seed_keyword"] == original_data["seed_keyword"]
-
-        # Verify list lengths
-        assert len(serialized["top_keywords"]) == len(original_data["top_keywords"])
-        assert len(serialized["all_keywords"]) == len(original_data["all_keywords"])
-        assert len(serialized["autocomplete"]) == len(original_data["autocomplete"])
-        assert len(serialized["content_ideas"]) == len(original_data["content_ideas"])
-        assert len(serialized["paa_questions"]) == len(original_data["paa_questions"])
-        assert len(serialized["serp_snippets"]) == len(original_data["serp_snippets"])
-        assert (
-            len(serialized["competitor_keywords"])
-            == len(original_data["competitor_keywords"])
+        # Verify full structural equality - must match original exactly
+        assert serialized == original_data, (
+            f"Roundtrip mismatch:\n"
+            f"Expected: {json.dumps(original_data, indent=2)}\n"
+            f"Got: {json.dumps(serialized, indent=2)}"
         )
-
-        # Verify stats
-        assert serialized["stats"]["total_keywords"] == original_data["stats"][
-            "total_keywords"
-        ]
 
     def test_strategist_data_top_keywords_structure(self, golden_dir):
         """Test that top_keywords have the correct structure."""

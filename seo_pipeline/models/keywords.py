@@ -1,7 +1,5 @@
 """Data models for keyword processing in the SEO Pipeline."""
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -22,15 +20,15 @@ class Keyword(BaseModel):
     """
 
     keyword: str
-    search_volume: Optional[int] = Field(default=None)
-    cpc: Optional[float] = Field(default=None)
-    monthly_searches: Optional[list] = Field(default=None)
-    difficulty: Optional[int] = Field(default=None)
-    intent: Optional[str] = Field(default=None)
-    opportunity_score: Optional[float] = Field(default=None)
-    filter_status: Optional[str] = Field(default=None)
-    filter_reason: Optional[str] = Field(default=None)
-    source: Optional[str] = Field(default=None)
+    search_volume: int | None = Field(default=None)
+    cpc: float | None = Field(default=None)
+    monthly_searches: list | None = Field(default=None)
+    difficulty: int | None = Field(default=None)
+    intent: str | None = Field(default=None)
+    opportunity_score: float | None = Field(default=None)
+    filter_status: str | None = Field(default=None)
+    filter_reason: str | None = Field(default=None)
+    source: str | None = Field(default=None)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -48,11 +46,11 @@ class KeywordCluster(BaseModel):
     """
 
     cluster_keyword: str
-    cluster_label: Optional[str] = Field(default=None)
-    strategic_notes: Optional[str] = Field(default=None)
+    cluster_label: str | None = Field(default=None)
+    strategic_notes: str | None = Field(default=None)
     keyword_count: int
     keywords: list[Keyword]
-    cluster_opportunity: Optional[float] = Field(default=None)
+    cluster_opportunity: float | None = Field(default=None)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -69,7 +67,7 @@ class ProcessedKeywords(BaseModel):
 
     seed_keyword: str
     total_keywords: int
-    total_clusters: Optional[int] = Field(default=None)
+    total_clusters: int | None = Field(default=None)
     clusters: list[KeywordCluster] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
@@ -109,22 +107,29 @@ class RemovalSummary(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
-class FilteredKeywords(ProcessedKeywords):
+class FilteredKeywords(BaseModel):
     """Processed keywords after filtering.
 
-    Extends ProcessedKeywords with filtering results and FAQ selection.
+    Contains filtering results and FAQ selection. Field order is important for
+    serialization compatibility with golden output.
 
     Attributes:
+        seed_keyword: The original keyword that was expanded.
+        total_keywords: Total number of keywords found.
         filtered_keywords: Count of keywords that passed filtering.
         removed_count: Count of keywords removed during filtering.
         removal_summary: Breakdown of removal reasons.
+        clusters: List of keyword clusters with filter information.
         faq_selection: Selected FAQ items based on keywords.
     """
 
+    seed_keyword: str
+    total_keywords: int
     filtered_keywords: int
     removed_count: int
     removal_summary: RemovalSummary
-    faq_selection: list[FaqItem]
+    clusters: list[KeywordCluster] = Field(default_factory=list)
+    faq_selection: list[FaqItem] = Field(default_factory=list)
 
     model_config = ConfigDict(populate_by_name=True)
 
