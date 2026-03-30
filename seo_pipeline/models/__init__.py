@@ -1,5 +1,45 @@
 """Data models for the SEO Pipeline."""
 
+from seo_pipeline.models.analysis import (
+    BriefingAio,
+    BriefingAioReference,
+    BriefingCompetitor,
+    BriefingCompetitorAnalysis,
+    BriefingContentAnalysis,
+    BriefingData,
+    BriefingDataSources,
+    BriefingFaqData,
+    BriefingFaqQuestion,
+    BriefingHeading,
+    BriefingKeywordClusterSummary,
+    BriefingKeywordData,
+    BriefingMeta,
+    BriefingQualitative,
+    BriefingRating,
+    BriefingSerpData,
+    BriefingSerpFeatures,
+    BriefingStats,
+    Claim,
+    ClaimsMeta,
+    ClaimsOutput,
+    CompetitorPageStructure,
+    ContentFormatSignals,
+    ContentTopics,
+    CrossCompetitorAnalysis,
+    Entity,
+    EntityCandidate,
+    EntityCluster,
+    EntityProminence,
+    PageStructure,
+    PageStructureSection,
+    ProminenceCorrection,
+    ProminenceDebug,
+    ProofKeyword,
+    SectionWeight,
+    WdfIdfMeta,
+    WdfIdfScore,
+    WdfIdfTerm,
+)
 from seo_pipeline.models.common import Heading, HtmlSignals, LinkCount
 from seo_pipeline.models.keywords import (
     FaqItem,
@@ -31,9 +71,11 @@ from seo_pipeline.models.serp import (
 )
 
 __all__ = [
+    # common
     "Heading",
     "LinkCount",
     "HtmlSignals",
+    # keywords
     "Keyword",
     "KeywordCluster",
     "ProcessedKeywords",
@@ -41,8 +83,10 @@ __all__ = [
     "RemovalSummary",
     "FilteredKeywords",
     "StrategistData",
+    # page
     "ExtractedPage",
     "ExtractedPageError",
+    # serp
     "AiOverviewReference",
     "AiOverview",
     "FeaturedSnippet",
@@ -59,4 +103,48 @@ __all__ = [
     "SerpCompetitor",
     "SerpProcessed",
     "CompetitorsData",
+    # analysis - content topics
+    "ProofKeyword",
+    "EntityCandidate",
+    "SectionWeight",
+    "ContentFormatSignals",
+    "ContentTopics",
+    # analysis - page structure
+    "PageStructureSection",
+    "CompetitorPageStructure",
+    "CrossCompetitorAnalysis",
+    "PageStructure",
+    # analysis - entity prominence
+    "Entity",
+    "EntityCluster",
+    "ProminenceCorrection",
+    "ProminenceDebug",
+    "EntityProminence",
+    # analysis - claims
+    "Claim",
+    "ClaimsMeta",
+    "ClaimsOutput",
+    # analysis - wdf*idf
+    "WdfIdfTerm",
+    "WdfIdfMeta",
+    "WdfIdfScore",
+    # analysis - briefing data
+    "BriefingDataSources",
+    "BriefingMeta",
+    "BriefingStats",
+    "BriefingKeywordClusterSummary",
+    "BriefingKeywordData",
+    "BriefingSerpFeatures",
+    "BriefingAioReference",
+    "BriefingAio",
+    "BriefingHeading",
+    "BriefingRating",
+    "BriefingCompetitor",
+    "BriefingSerpData",
+    "BriefingContentAnalysis",
+    "BriefingCompetitorAnalysis",
+    "BriefingFaqQuestion",
+    "BriefingFaqData",
+    "BriefingQualitative",
+    "BriefingData",
 ]
