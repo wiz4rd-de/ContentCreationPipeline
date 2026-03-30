@@ -150,13 +150,16 @@ class TestProcessedKeywords:
             original_data = json.load(f)
 
         processed = ProcessedKeywords(**original_data)
-        # Exclude filter fields from keywords since they don't exist in process-keywords output
+        # Exclude filter fields from keywords since they don't exist in
+        # process-keywords output
         serialized = processed.model_dump(
             mode="json",
             exclude={
                 "clusters": {
                     "__all__": {
-                        "keywords": {"__all__": {"filter_status", "filter_reason", "source"}}
+                        "keywords": {
+                            "__all__": {"filter_status", "filter_reason", "source"}
+                        }
                     }
                 }
             },
@@ -234,7 +237,8 @@ class TestFilteredKeywords:
             original_data = json.load(f)
 
         filtered = FilteredKeywords(**original_data)
-        # Exclude source field from keywords since it doesn't exist in filter-keywords output
+        # Exclude source field from keywords since it doesn't exist in
+        # filter-keywords output
         serialized = filtered.model_dump(
             mode="json",
             exclude={
