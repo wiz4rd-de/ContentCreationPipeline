@@ -10,6 +10,7 @@ from seo_pipeline.models.keywords import (
     RemovalSummary,
     StrategistData,
 )
+from seo_pipeline.models.page import ExtractedPage, ExtractedPageError
 from seo_pipeline.models.serp import (
     AiOverview,
     AiOverviewReference,
@@ -40,6 +41,8 @@ __all__ = [
     "RemovalSummary",
     "FilteredKeywords",
     "StrategistData",
+    "ExtractedPage",
+    "ExtractedPageError",
     "AiOverviewReference",
     "AiOverview",
     "FeaturedSnippet",
