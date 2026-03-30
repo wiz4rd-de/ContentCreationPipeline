@@ -1,0 +1,88 @@
+{
+  "entity_clusters": [
+    {
+      "category_name": "Aktivitaeten",
+      "entities": [
+        {
+          "entity": "Schnorcheln",
+          "prominence": "2/3",
+          "prominence_gemini": "8/10",
+          "prominence_source": "code",
+          "synonyms": [
+            "schnorcheln",
+            "snorkeling",
+            "schnorchelausflug"
+          ]
+        },
+        {
+          "entity": "Tauchen",
+          "prominence": "1/3",
+          "prominence_gemini": "5/10",
+          "prominence_source": "code",
+          "synonyms": [
+            "tauchen",
+            "diving",
+            "tauchgang"
+          ]
+        }
+      ]
+    },
+    {
+      "category_name": "Orte",
+      "entities": [
+        {
+          "entity": "Riff",
+          "prominence": "2/3",
+          "prominence_gemini": "9/10",
+          "prominence_source": "code",
+          "synonyms": [
+            "riff",
+            "reef",
+            "korallenriff"
+          ]
+        },
+        {
+          "entity": "Spa",
+          "prominence": "1/3",
+          "prominence_gemini": "3/10",
+          "prominence_source": "code",
+          "synonyms": [
+            "spa"
+          ]
+        }
+      ]
+    }
+  ],
+  "_debug": {
+    "corrections": [
+      {
+        "entity": "Schnorcheln",
+        "category": "Aktivitaeten",
+        "gemini": "8/10",
+        "code": "2/3",
+        "delta": 6
+      },
+      {
+        "entity": "Tauchen",
+        "category": "Aktivitaeten",
+        "gemini": "5/10",
+        "code": "1/3",
+        "delta": 4
+      },
+      {
+        "entity": "Riff",
+        "category": "Orte",
+        "gemini": "9/10",
+        "code": "2/3",
+        "delta": 7
+      },
+      {
+        "entity": "Spa",
+        "category": "Orte",
+        "gemini": "3/10",
+        "code": "1/3",
+        "delta": 2
+      }
+    ]
+  }
+}

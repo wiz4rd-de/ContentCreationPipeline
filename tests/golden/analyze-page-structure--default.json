@@ -1,0 +1,186 @@
+{
+  "competitors": [
+    {
+      "url": "https://alpha.example.com/guide",
+      "domain": "alpha.example.com",
+      "total_word_count": 201,
+      "section_count": 6,
+      "detected_modules": [
+        "faq",
+        "image_gallery",
+        "list",
+        "table"
+      ],
+      "sections": [
+        {
+          "heading": "",
+          "level": 0,
+          "word_count": 38,
+          "sentence_count": 4,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "basic"
+        },
+        {
+          "heading": "Strände und Buchten",
+          "level": 2,
+          "word_count": 54,
+          "sentence_count": 7,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "detailed"
+        },
+        {
+          "heading": "Haeufig gestellte Fragen",
+          "level": 2,
+          "word_count": 0,
+          "sentence_count": 0,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Wie komme ich nach Mallorca?",
+          "level": 3,
+          "word_count": 18,
+          "sentence_count": 2,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Wann ist die beste Reisezeit?",
+          "level": 3,
+          "word_count": 16,
+          "sentence_count": 2,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Aktivitaeten und Sport",
+          "level": 2,
+          "word_count": 56,
+          "sentence_count": 7,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    },
+    {
+      "url": "https://beta.example.com/mallorca-tipps",
+      "domain": "beta.example.com",
+      "total_word_count": 200,
+      "section_count": 5,
+      "detected_modules": [
+        "faq",
+        "list",
+        "table",
+        "video"
+      ],
+      "sections": [
+        {
+          "heading": "",
+          "level": 0,
+          "word_count": 16,
+          "sentence_count": 1,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Unterkunft waehlen",
+          "level": 2,
+          "word_count": 35,
+          "sentence_count": 3,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "basic"
+        },
+        {
+          "heading": "FAQ zu Mallorca",
+          "level": 2,
+          "word_count": 0,
+          "sentence_count": 0,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Brauche ich einen Mietwagen?",
+          "level": 3,
+          "word_count": 19,
+          "sentence_count": 2,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Essen und Trinken",
+          "level": 2,
+          "word_count": 118,
+          "sentence_count": 11,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    },
+    {
+      "url": "https://gamma.example.com/mallorca-info",
+      "domain": "gamma.example.com",
+      "total_word_count": 201,
+      "section_count": 3,
+      "detected_modules": [
+        "form",
+        "list"
+      ],
+      "sections": [
+        {
+          "heading": "",
+          "level": 0,
+          "word_count": 11,
+          "sentence_count": 1,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "shallow"
+        },
+        {
+          "heading": "Anreise nach Mallorca",
+          "level": 2,
+          "word_count": 39,
+          "sentence_count": 3,
+          "has_numbers": true,
+          "has_lists": true,
+          "depth_score": "basic"
+        },
+        {
+          "heading": "Sehenswuerdigkeiten",
+          "level": 2,
+          "word_count": 147,
+          "sentence_count": 10,
+          "has_numbers": false,
+          "has_lists": true,
+          "depth_score": "detailed"
+        }
+      ]
+    }
+  ],
+  "cross_competitor": {
+    "common_modules": [
+      "list"
+    ],
+    "rare_modules": [],
+    "module_frequency": {
+      "faq": 2,
+      "form": 1,
+      "image_gallery": 1,
+      "list": 3,
+      "table": 2,
+      "video": 1
+    },
+    "avg_word_count": 201,
+    "avg_sections": 5
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "target_keyword": "simple query",
+  "se_results_count": 5000,
+  "location_code": 2840,
+  "language_code": "en",
+  "item_types_present": [
+    "organic",
+    "people_also_ask"
+  ],
+  "serp_features": {
+    "ai_overview": {
+      "present": false,
+      "title": null,
+      "text": null,
+      "references": [],
+      "references_count": 0
+    },
+    "featured_snippet": {
+      "present": false
+    },
+    "people_also_ask": [
+      {
+        "question": "What is SEO?",
+        "answer": null,
+        "url": null,
+        "domain": null
+      },
+      {
+        "question": "How does SEO work?",
+        "answer": null,
+        "url": null,
+        "domain": null
+      }
+    ],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": {
+      "present": false
+    },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://example.com/seo",
+      "domain": "example.com",
+      "title": "SEO Guide",
+      "description": "Learn about SEO.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": false
+    }
+  ]
+}

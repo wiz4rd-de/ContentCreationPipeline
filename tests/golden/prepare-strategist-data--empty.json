@@ -1,0 +1,22 @@
+{
+  "seed_keyword": "empty test",
+  "top_keywords": [],
+  "all_keywords": [],
+  "autocomplete": [],
+  "content_ideas": [],
+  "paa_questions": [],
+  "serp_snippets": [],
+  "competitor_keywords": [],
+  "stats": {
+    "total_keywords": 0,
+    "keywords_with_volume": 0,
+    "total_search_volume": 0,
+    "avg_search_volume": 0,
+    "avg_difficulty": null,
+    "paa_count": 0,
+    "serp_snippet_count": 0,
+    "competitor_keyword_count": 0,
+    "foreign_filtered_count": 0,
+    "year_dedup_count": 0
+  }
+}

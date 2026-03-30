@@ -4,7 +4,7 @@
 // Usage: node compute-entity-prominence.mjs --entities <entities.json> --pages-dir <pages/>
 // Outputs corrected JSON to stdout. Same inputs always produce byte-identical output.
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 // --- CLI parsing ---
@@ -17,9 +17,10 @@ function flag(name) {
 
 const entitiesPath = flag('--entities');
 const pagesDir = flag('--pages-dir');
+const outputPath = flag('--output') || null;
 
 if (entitiesPath === undefined || pagesDir === undefined) {
-  console.error('Usage: node compute-entity-prominence.mjs --entities <entities.json> --pages-dir <pages/>');
+  console.error('Usage: node compute-entity-prominence.mjs --entities <entities.json> --pages-dir <pages/> [--output <file>]');
   process.exit(1);
 }
 
@@ -121,4 +122,9 @@ if (corrections.length > 0) {
   output._debug = { corrections };
 }
 
-console.log(JSON.stringify(output, null, 2));
+const json = JSON.stringify(output, null, 2);
+if (outputPath) {
+  writeFileSync(outputPath, json);
+} else {
+  console.log(json);
+}

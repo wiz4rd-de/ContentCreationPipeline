@@ -1,0 +1,746 @@
+{
+  "proof_keywords": [
+    {
+      "term": "playa",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.612,
+      "idf_score": 4.836
+    },
+    {
+      "term": "serra",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.518,
+      "idf_score": 4.554
+    },
+    {
+      "term": "reisezeit",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.7,
+      "idf_boost": 1.468,
+      "idf_score": 4.404
+    },
+    {
+      "term": "wandern",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.7,
+      "idf_boost": 1.276,
+      "idf_score": 3.828
+    },
+    {
+      "term": "seu",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.735,
+      "idf_score": 3.47
+    },
+    {
+      "term": "touristen",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.153,
+      "idf_score": 3.459
+    },
+    {
+      "term": "beliebt",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.3,
+      "idf_boost": 1.134,
+      "idf_score": 3.402
+    },
+    {
+      "term": "cala",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1.5,
+      "idf_boost": 1.623,
+      "idf_score": 3.246
+    },
+    {
+      "term": "empfehlenswert",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1.5,
+      "idf_boost": 1.547,
+      "idf_score": 3.094
+    },
+    {
+      "term": "straende",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 2.7,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "beste reisezeit",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.7,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "die beste reisezeit",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.7,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "die insel",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.7,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "mallorca ist",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.3,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "tramuntana",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.3,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "de tramuntana",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "der serra",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "der serra de",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "die straende",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "in der serra",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "playa de",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "serra de",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "serra de tramuntana",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "wandern in",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "wandern in der",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 3
+    },
+    {
+      "term": "palma",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 2.5,
+      "idf_boost": 1.457,
+      "idf_score": 2.914
+    },
+    {
+      "term": "ferienwohnungen",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.432,
+      "idf_score": 2.864
+    },
+    {
+      "term": "familien",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 1.3,
+      "idf_boost": 0.952,
+      "idf_score": 2.856
+    },
+    {
+      "term": "radfahren",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.426,
+      "idf_score": 2.852
+    },
+    {
+      "term": "buchten",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1.5,
+      "idf_boost": 1.42,
+      "idf_score": 2.84
+    },
+    {
+      "term": "bietet",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 2,
+      "idf_boost": 0.893,
+      "idf_score": 2.679
+    },
+    {
+      "term": "insel",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 3.7,
+      "idf_boost": 0.886,
+      "idf_score": 2.658
+    },
+    {
+      "term": "beliebtesten",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.284,
+      "idf_score": 2.568
+    },
+    {
+      "term": "mittelmeer",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.258,
+      "idf_score": 2.516
+    },
+    {
+      "term": "beliebtes",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.253,
+      "idf_score": 2.506
+    },
+    {
+      "term": "kathedrale",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.194,
+      "idf_score": 2.388
+    },
+    {
+      "term": "restaurants",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.194,
+      "idf_score": 2.388
+    },
+    {
+      "term": "hotels",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.159,
+      "idf_score": 2.318
+    },
+    {
+      "term": "sand",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.146,
+      "idf_score": 2.292
+    },
+    {
+      "term": "de",
+      "document_frequency": 3,
+      "total_pages": 3,
+      "avg_tf": 2.3,
+      "idf_boost": 0.728,
+      "idf_score": 2.184
+    },
+    {
+      "term": "lokalen",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.036,
+      "idf_score": 2.072
+    },
+    {
+      "term": "sport",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.013,
+      "idf_score": 2.026
+    },
+    {
+      "term": "besucher",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1.006,
+      "idf_score": 2.012
+    },
+    {
+      "term": "auf mallorca",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 2,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "der insel",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 2,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "in palma",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 2,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "beliebt bei",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1.5,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "mallorca die",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1.5,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "aller welt",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 2
+    },
+    {
+      "term": "auf mallorca die",
+      "document_frequency": 2,
+      "total_pages": 3,
+      "avg_tf": 1,
+      "idf_boost": 1,
+      "idf_score": 2
+    }
+  ],
+  "entity_candidates": [
+    {
+      "term": "beliebt",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "bietet",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "familien",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "insel",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "playa",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "reisezeit",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "serra",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "straende",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "touristen",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "tramuntana",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "wandern",
+      "document_frequency": 3,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "beliebtes",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "beliebtesten",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "besucher",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "buchten",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "cala",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "ebenfalls",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "eines",
+      "document_frequency": 2,
+      "pages": [
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "empfehlenswert",
+      "document_frequency": 2,
+      "pages": [
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "ferienwohnungen",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "finden",
+      "document_frequency": 2,
+      "pages": [
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "gibt",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "hotels",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "kathedrale",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "kueche",
+      "document_frequency": 2,
+      "pages": [
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "lokalen",
+      "document_frequency": 2,
+      "pages": [
+        "beta.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "millor",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    },
+    {
+      "term": "mittelmeer",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "oktober",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "beta.example.com"
+      ]
+    },
+    {
+      "term": "palma",
+      "document_frequency": 2,
+      "pages": [
+        "alpha.example.com",
+        "gamma.example.com"
+      ]
+    }
+  ],
+  "section_weights": [
+    {
+      "heading_cluster": "aktivitaeten und sport",
+      "sample_headings": [
+        "Aktivitaeten und Sport"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 77,
+      "avg_content_percentage": 36.7,
+      "weight": "high"
+    },
+    {
+      "heading_cluster": "die schoensten straende",
+      "sample_headings": [
+        "Die schoensten Straende"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 44,
+      "avg_content_percentage": 22,
+      "weight": "medium"
+    },
+    {
+      "heading_cluster": "essen und trinken",
+      "sample_headings": [
+        "Essen und Trinken"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 86,
+      "avg_content_percentage": 42.6,
+      "weight": "high"
+    },
+    {
+      "heading_cluster": "haeufig gestellte fragen",
+      "sample_headings": [
+        "Haeufig gestellte Fragen"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 0,
+      "avg_content_percentage": 0,
+      "weight": "low"
+    },
+    {
+      "heading_cluster": "kultur und geschichte",
+      "sample_headings": [
+        "Kultur und Geschichte"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 124,
+      "avg_content_percentage": 62,
+      "weight": "high"
+    },
+    {
+      "heading_cluster": "sehenswuerdigkeiten",
+      "sample_headings": [
+        "Sehenswuerdigkeiten"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 44,
+      "avg_content_percentage": 21,
+      "weight": "medium"
+    },
+    {
+      "heading_cluster": "straende auf mallorca",
+      "sample_headings": [
+        "Straende auf Mallorca"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 38,
+      "avg_content_percentage": 18.8,
+      "weight": "medium"
+    },
+    {
+      "heading_cluster": "straende und buchten",
+      "sample_headings": [
+        "Straende und Buchten"
+      ],
+      "occurrence": 1,
+      "avg_word_count": 63,
+      "avg_content_percentage": 30,
+      "weight": "high"
+    }
+  ],
+  "content_format_signals": {
+    "pages_with_numbered_lists": 1,
+    "pages_with_faq": 1,
+    "pages_with_tables": 2,
+    "avg_h2_count": 2.7,
+    "dominant_pattern": null
+  }
+}

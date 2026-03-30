@@ -1,0 +1,16 @@
+[
+  {
+    "keyword": "flat shape keyword",
+    "search_volume": 500,
+    "cpc": 1.5,
+    "monthly_searches": [],
+    "difficulty": 35
+  },
+  {
+    "keyword": "another flat keyword",
+    "search_volume": 200,
+    "cpc": 0.8,
+    "monthly_searches": [],
+    "difficulty": 20
+  }
+]

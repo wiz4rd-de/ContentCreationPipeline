@@ -1,0 +1,109 @@
+{
+  "target_keyword": "best seo tools",
+  "se_results_count": 500000,
+  "location_code": 2840,
+  "language_code": "en",
+  "item_types_present": [
+    "organic",
+    "ai_overview",
+    "people_also_ask"
+  ],
+  "serp_features": {
+    "ai_overview": {
+      "present": true,
+      "references": [
+        {
+          "domain": "ahrefs.com",
+          "url": "https://ahrefs.com/blog/best-seo-tools",
+          "title": "Best SEO Tools - Ahrefs"
+        },
+        {
+          "domain": "semrush.com",
+          "url": "https://semrush.com/blog/seo-tools",
+          "title": "Top SEO Tools - Semrush"
+        },
+        {
+          "domain": "google.com",
+          "url": "https://search.google.com/search-console",
+          "title": "Google Search Console"
+        }
+      ],
+      "title": "Best SEO Tools for 2026",
+      "text": "Ahrefs is widely considered one of the best all-around SEO tools.\nSemrush offers comprehensive keyword research and site audit features.\nHere are the top SEO tools recommended by experts.\nGoogle Search Console is a free tool every SEO professional should use.",
+      "references_count": 3
+    },
+    "featured_snippet": {
+      "present": false
+    },
+    "people_also_ask": [
+      {
+        "question": "What is the best free SEO tool?",
+        "answer": "Google Search Console is widely considered the best free SEO tool.",
+        "url": "https://example.com/free-seo-tools",
+        "domain": "example.com"
+      },
+      {
+        "question": "How much do SEO tools cost?",
+        "answer": "SEO tools range from free to $999/month for enterprise plans.",
+        "url": "https://example.org/seo-pricing",
+        "domain": "example.org"
+      },
+      {
+        "question": "Is Ahrefs better than Semrush?",
+        "answer": null,
+        "url": null,
+        "domain": null
+      }
+    ],
+    "people_also_search": [],
+    "related_searches": [],
+    "discussions_and_forums": [],
+    "video": [],
+    "top_stories": [],
+    "knowledge_graph": {
+      "present": false
+    },
+    "commercial_signals": {
+      "paid_ads_present": false,
+      "shopping_present": false,
+      "commercial_units_present": false,
+      "popular_products_present": false
+    },
+    "local_signals": {
+      "local_pack_present": false,
+      "map_present": false,
+      "hotels_pack_present": false
+    },
+    "other_features_present": []
+  },
+  "competitors": [
+    {
+      "rank": 1,
+      "rank_absolute": 1,
+      "url": "https://ahrefs.com/blog/best-seo-tools",
+      "domain": "ahrefs.com",
+      "title": "Best SEO Tools",
+      "description": "A comprehensive list of the best SEO tools.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": true
+    },
+    {
+      "rank": 2,
+      "rank_absolute": 2,
+      "url": "https://semrush.com/blog/seo-tools",
+      "domain": "semrush.com",
+      "title": "Top SEO Tools",
+      "description": "Compare the top SEO tools on the market.",
+      "is_featured_snippet": false,
+      "is_video": false,
+      "has_rating": false,
+      "rating": null,
+      "timestamp": null,
+      "cited_in_ai_overview": true
+    }
+  ]
+}

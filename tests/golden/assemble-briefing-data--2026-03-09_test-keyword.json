@@ -1,0 +1,361 @@
+{
+  "meta": {
+    "seed_keyword": "test keyword",
+    "date": "2026-03-09",
+    "current_year": 2026,
+    "pipeline_version": "0.2.0",
+    "market": null,
+    "language": null,
+    "user_domain": null,
+    "business_context": null,
+    "phase1_completed_at": "2026-01-01T00:00:00.000Z",
+    "data_sources": {
+      "competitor_urls": [
+        "https://example.com/page",
+        "https://test.de/page",
+        "https://third.com/page"
+      ],
+      "location_code": 2276
+    }
+  },
+  "stats": {
+    "total_keywords": 10,
+    "filtered_keywords": 8,
+    "total_clusters": 3,
+    "competitor_count": 3
+  },
+  "keyword_data": {
+    "clusters": [
+      {
+        "cluster_keyword": "keyword tool",
+        "cluster_label": null,
+        "cluster_opportunity": 30,
+        "keyword_count": 4,
+        "rank": 1,
+        "total_search_volume": 1800
+      },
+      {
+        "cluster_keyword": "test keyword",
+        "cluster_label": null,
+        "cluster_opportunity": 50,
+        "keyword_count": 3,
+        "rank": 2,
+        "total_search_volume": 1700
+      },
+      {
+        "cluster_keyword": "seo analyse",
+        "cluster_label": null,
+        "cluster_opportunity": 20,
+        "keyword_count": 3,
+        "rank": 3,
+        "total_search_volume": 750
+      }
+    ],
+    "total_keywords": 10,
+    "filtered_count": 8,
+    "removal_summary": {
+      "ethics": 0,
+      "brand": 1,
+      "off_topic": 1,
+      "foreign_language": 0
+    }
+  },
+  "serp_data": {
+    "competitors": [
+      {
+        "cited_in_ai_overview": true,
+        "description": "A description",
+        "domain": "example.com",
+        "format": null,
+        "h1": "Test Keyword Guide",
+        "has_rating": false,
+        "headings": [
+          {
+            "level": 2,
+            "text": "Section 1"
+          }
+        ],
+        "is_featured_snippet": false,
+        "is_video": false,
+        "link_count": 15,
+        "meta_description": "A meta desc",
+        "rank": 1,
+        "rank_absolute": 1,
+        "rating": null,
+        "strengths": null,
+        "timestamp": "2026-01-15",
+        "title": "Example Page about test keyword 2026",
+        "topics": null,
+        "unique_angle": null,
+        "url": "https://example.com/page",
+        "weaknesses": null,
+        "word_count": 2500
+      },
+      {
+        "cited_in_ai_overview": true,
+        "description": "Another description",
+        "domain": "test.de",
+        "format": null,
+        "h1": "Test keyword Ratgeber",
+        "has_rating": true,
+        "headings": [],
+        "is_featured_snippet": false,
+        "is_video": false,
+        "link_count": 10,
+        "meta_description": null,
+        "rank": 2,
+        "rank_absolute": 2,
+        "rating": {
+          "rating_max": 5,
+          "value": 4.5,
+          "votes_count": 100
+        },
+        "strengths": null,
+        "timestamp": null,
+        "title": "Test Page",
+        "topics": null,
+        "unique_angle": null,
+        "url": "https://test.de/page",
+        "weaknesses": null,
+        "word_count": 1800
+      },
+      {
+        "cited_in_ai_overview": false,
+        "description": "Third desc",
+        "domain": "third.com",
+        "format": null,
+        "h1": "Third",
+        "has_rating": false,
+        "headings": [],
+        "is_featured_snippet": false,
+        "is_video": false,
+        "link_count": 8,
+        "meta_description": "Third meta",
+        "rank": 3,
+        "rank_absolute": 4,
+        "rating": null,
+        "strengths": null,
+        "timestamp": null,
+        "title": "Third Page",
+        "topics": null,
+        "unique_angle": null,
+        "url": "https://third.com/page",
+        "weaknesses": null,
+        "word_count": 2000
+      }
+    ],
+    "serp_features": {
+      "ai_overview": true,
+      "featured_snippet": false,
+      "people_also_ask": true,
+      "people_also_search": false,
+      "related_searches": false,
+      "discussions_and_forums": false,
+      "video": false,
+      "top_stories": false,
+      "knowledge_graph": false,
+      "commercial_signals": false,
+      "local_signals": false,
+      "other_features_present": false
+    },
+    "aio": {
+      "present": true,
+      "references": [
+        {
+          "domain": "example.com",
+          "title": "Example",
+          "url": "https://example.com/page"
+        },
+        {
+          "domain": "test.de",
+          "title": "Test",
+          "url": "https://test.de/page"
+        }
+      ],
+      "references_count": 2,
+      "text": "Some AI overview text from 2026 about test keyword.",
+      "title": "AI Overview for test keyword"
+    }
+  },
+  "content_analysis": {
+    "proof_keywords": [
+      {
+        "avg_tf": 5.2,
+        "document_frequency": 3,
+        "term": "keyword recherche",
+        "total_pages": 3
+      },
+      {
+        "avg_tf": 3.8,
+        "document_frequency": 3,
+        "term": "suchvolumen",
+        "total_pages": 3
+      },
+      {
+        "avg_tf": 2.1,
+        "document_frequency": 2,
+        "term": "seo strategie",
+        "total_pages": 3
+      }
+    ],
+    "entity_candidates": [
+      {
+        "term": "google",
+        "document_frequency": 3,
+        "pages": [
+          "example.com",
+          "test.de",
+          "third.com"
+        ],
+        "prominence": "3/3",
+        "prominence_source": "code"
+      },
+      {
+        "term": "semrush",
+        "document_frequency": 2,
+        "pages": [
+          "example.com",
+          "test.de"
+        ],
+        "prominence": "2/3",
+        "prominence_source": "code"
+      }
+    ],
+    "section_weights": [
+      {
+        "heading_cluster": "keyword recherche grundlagen",
+        "sample_headings": [
+          "Keyword Recherche Grundlagen",
+          "Grundlagen der Keyword Recherche"
+        ],
+        "occurrence": 3,
+        "avg_word_count": 450,
+        "avg_content_percentage": 18.5,
+        "weight": "medium"
+      },
+      {
+        "heading_cluster": "tools und methoden",
+        "sample_headings": [
+          "Tools und Methoden"
+        ],
+        "occurrence": 2,
+        "avg_word_count": 300,
+        "avg_content_percentage": 12,
+        "weight": "medium"
+      }
+    ],
+    "content_format_signals": {
+      "pages_with_numbered_lists": 1,
+      "pages_with_faq": 1,
+      "pages_with_tables": 2,
+      "avg_h2_count": 4.3,
+      "dominant_pattern": null
+    }
+  },
+  "competitor_analysis": {
+    "page_structures": [
+      {
+        "url": "https://example.com/page",
+        "domain": "example.com",
+        "total_word_count": 2500,
+        "section_count": 5,
+        "detected_modules": [
+          "faq",
+          "list",
+          "table"
+        ],
+        "sections": [
+          {
+            "heading": "Intro",
+            "level": 0,
+            "word_count": 200,
+            "sentence_count": 8,
+            "has_numbers": false,
+            "has_lists": true,
+            "depth_score": "detailed"
+          },
+          {
+            "heading": "Section 1",
+            "level": 2,
+            "word_count": 800,
+            "sentence_count": 30,
+            "has_numbers": true,
+            "has_lists": true,
+            "depth_score": "detailed"
+          }
+        ]
+      },
+      {
+        "url": "https://test.de/page",
+        "domain": "test.de",
+        "total_word_count": 1800,
+        "section_count": 4,
+        "detected_modules": [
+          "list",
+          "table"
+        ],
+        "sections": [
+          {
+            "heading": "Section 1",
+            "level": 2,
+            "word_count": 600,
+            "sentence_count": 20,
+            "has_numbers": false,
+            "has_lists": true,
+            "depth_score": "detailed"
+          }
+        ]
+      },
+      {
+        "url": "https://third.com/page",
+        "domain": "third.com",
+        "total_word_count": 2000,
+        "section_count": 3,
+        "detected_modules": [
+          "list"
+        ],
+        "sections": [
+          {
+            "heading": "Section 1",
+            "level": 2,
+            "word_count": 700,
+            "sentence_count": 25,
+            "has_numbers": true,
+            "has_lists": true,
+            "depth_score": "detailed"
+          }
+        ]
+      }
+    ],
+    "common_modules": [
+      "list"
+    ],
+    "rare_modules": [
+      "faq"
+    ],
+    "avg_word_count": 2100
+  },
+  "faq_data": {
+    "questions": [
+      {
+        "priority": "pflicht",
+        "question": "Was ist test keyword?",
+        "relevance_score": 3
+      },
+      {
+        "priority": "empfohlen",
+        "question": "Wie funktioniert test keyword?",
+        "relevance_score": 2
+      }
+    ],
+    "paa_source": "serp"
+  },
+  "qualitative": {
+    "entity_clusters": null,
+    "unique_angles": null,
+    "content_format_recommendation": null,
+    "geo_audit": null,
+    "aio_strategy": null,
+    "briefing": null
+  }
+}

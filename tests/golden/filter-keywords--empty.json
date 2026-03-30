@@ -1,0 +1,14 @@
+{
+  "seed_keyword": "empty test",
+  "total_keywords": 0,
+  "filtered_keywords": 0,
+  "removed_count": 0,
+  "removal_summary": {
+    "ethics": 0,
+    "brand": 0,
+    "off_topic": 0,
+    "foreign_language": 0
+  },
+  "clusters": [],
+  "faq_selection": []
+}

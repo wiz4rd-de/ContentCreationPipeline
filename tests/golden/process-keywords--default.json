@@ -1,0 +1,195 @@
+{
+  "seed_keyword": "keyword recherche",
+  "total_keywords": 13,
+  "total_clusters": 6,
+  "clusters": [
+    {
+      "cluster_keyword": "how to find keywords",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "how to find keywords",
+          "search_volume": 5000,
+          "cpc": 1.2,
+          "monthly_searches": [],
+          "difficulty": 70,
+          "intent": "informational",
+          "opportunity_score": 70.42
+        }
+      ],
+      "cluster_opportunity": 70.42
+    },
+    {
+      "cluster_keyword": "best keyword research tool",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "best keyword research tool",
+          "search_volume": 3000,
+          "cpc": 3.5,
+          "monthly_searches": [],
+          "difficulty": 80,
+          "intent": "commercial",
+          "opportunity_score": 37.04
+        }
+      ],
+      "cluster_opportunity": 37.04
+    },
+    {
+      "cluster_keyword": "keyword recherche",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 6,
+      "keywords": [
+        {
+          "keyword": "keyword recherche",
+          "search_volume": 1200,
+          "cpc": 2.5,
+          "monthly_searches": [
+            {
+              "year": 2025,
+              "month": 1,
+              "search_volume": 1100
+            },
+            {
+              "year": 2025,
+              "month": 2,
+              "search_volume": 1300
+            }
+          ],
+          "difficulty": 42,
+          "intent": null,
+          "opportunity_score": 27.91
+        },
+        {
+          "keyword": "keyword recherche anleitung",
+          "search_volume": 400,
+          "cpc": 0.8,
+          "monthly_searches": [],
+          "difficulty": 20,
+          "intent": "informational",
+          "opportunity_score": 19.05
+        },
+        {
+          "keyword": "keyword recherche tipps",
+          "search_volume": 250,
+          "cpc": 0.6,
+          "monthly_searches": [],
+          "difficulty": 15,
+          "intent": "informational",
+          "opportunity_score": 15.63
+        },
+        {
+          "keyword": "beste keyword recherche tool",
+          "search_volume": 600,
+          "cpc": 3.1,
+          "monthly_searches": [],
+          "difficulty": 38,
+          "intent": "commercial",
+          "opportunity_score": 15.38
+        },
+        {
+          "keyword": "keyword recherche kostenlos",
+          "search_volume": 350,
+          "cpc": 0.5,
+          "monthly_searches": [],
+          "difficulty": 30,
+          "intent": null,
+          "opportunity_score": 11.29
+        },
+        {
+          "keyword": "keyword recherche guide",
+          "search_volume": 180,
+          "cpc": 0.7,
+          "monthly_searches": [],
+          "difficulty": 25,
+          "intent": "informational",
+          "opportunity_score": 6.92
+        }
+      ],
+      "cluster_opportunity": 16.03
+    },
+    {
+      "cluster_keyword": "keyword analyse tool",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 3,
+      "keywords": [
+        {
+          "keyword": "keyword analyse tool",
+          "search_volume": 800,
+          "cpc": 1.8,
+          "monthly_searches": [
+            {
+              "year": 2025,
+              "month": 1,
+              "search_volume": 750
+            }
+          ],
+          "difficulty": 55,
+          "intent": null,
+          "opportunity_score": 14.29
+        },
+        {
+          "keyword": "buy keyword tool",
+          "search_volume": 200,
+          "cpc": 4,
+          "monthly_searches": [],
+          "difficulty": 45,
+          "intent": "transactional",
+          "opportunity_score": 4.35
+        },
+        {
+          "keyword": "keyword vergleich tool",
+          "search_volume": 150,
+          "cpc": 2,
+          "monthly_searches": [],
+          "difficulty": 50,
+          "intent": "commercial",
+          "opportunity_score": 2.94
+        }
+      ],
+      "cluster_opportunity": 7.19
+    },
+    {
+      "cluster_keyword": "seo keywords kaufen",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "seo keywords kaufen",
+          "search_volume": 300,
+          "cpc": 5,
+          "monthly_searches": [],
+          "difficulty": 65,
+          "intent": "transactional",
+          "opportunity_score": 4.55
+        }
+      ],
+      "cluster_opportunity": 4.55
+    },
+    {
+      "cluster_keyword": "unknown topic xyz",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "unknown topic xyz",
+          "search_volume": 100,
+          "cpc": 0.3,
+          "monthly_searches": [],
+          "difficulty": 10,
+          "intent": null,
+          "opportunity_score": 9.09
+        }
+      ],
+      "cluster_opportunity": 9.09
+    }
+  ]
+}
