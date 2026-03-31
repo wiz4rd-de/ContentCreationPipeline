@@ -1,0 +1,25 @@
+{
+  "seed_keyword": "empty test",
+  "total_keywords": 1,
+  "total_clusters": 1,
+  "clusters": [
+    {
+      "cluster_keyword": "empty test",
+      "cluster_label": null,
+      "strategic_notes": null,
+      "keyword_count": 1,
+      "keywords": [
+        {
+          "keyword": "empty test",
+          "search_volume": null,
+          "cpc": null,
+          "monthly_searches": null,
+          "difficulty": null,
+          "intent": "commercial",
+          "opportunity_score": null
+        }
+      ],
+      "cluster_opportunity": 0
+    }
+  ]
+}
