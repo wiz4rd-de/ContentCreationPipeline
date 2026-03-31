@@ -243,10 +243,12 @@ async def fetch_keywords(
     try:
         from seo_pipeline.keywords.merge_keywords import merge_keywords
 
+        related_data = json.loads(related_path.read_text(encoding="utf-8"))
+        suggestions_data = json.loads(suggestions_path.read_text(encoding="utf-8"))
         merged_output = merge_keywords(
-            related_path=str(related_path),
-            suggestions_path=str(suggestions_path),
-            seed_keyword=seed_keyword,
+            related_raw=related_data,
+            suggestions_raw=suggestions_data,
+            seed=seed_keyword,
         )
         text = (
             json.dumps(merged_output, indent=2)
