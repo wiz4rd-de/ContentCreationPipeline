@@ -658,6 +658,7 @@ dependencies = [
     { name = "httpx" },
     { name = "lxml" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "readability-lxml" },
 ]
 
@@ -684,6 +685,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "python-dotenv", specifier = ">=1.0" },
     { name = "readability-lxml" },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "typer", extras = ["all"], marker = "extra == 'cli'", specifier = ">=0.9" },
