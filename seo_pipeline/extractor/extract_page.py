@@ -96,8 +96,8 @@ def extract_page_from_html(html: str, url: str) -> dict:
                 internal += 1
             else:
                 external += 1
-        except Exception:
-            # Skip malformed URLs
+        except ValueError:
+            # Skip malformed URLs (urlparse raises ValueError)
             pass
 
     # Readability extraction for main content
