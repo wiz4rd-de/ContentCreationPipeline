@@ -4,9 +4,9 @@ Provides pure, deterministic tokenization and stopword-removal utilities
 used by analysis and keyword extraction.
 """
 
+import json
 import re
 from importlib import resources
-from typing import Set
 
 
 def tokenize(text: str) -> list[str]:
@@ -31,7 +31,7 @@ def tokenize(text: str) -> list[str]:
     return [w for w in cleaned.split() if len(w) > 1]
 
 
-def remove_stopwords(tokens: list[str], stopword_set: Set[str]) -> list[str]:
+def remove_stopwords(tokens: list[str], stopword_set: set[str]) -> list[str]:
     """Filter tokens not present in the given stopword set.
 
     Pure function — takes an explicit Set rather than closing over module state.
@@ -46,7 +46,7 @@ def remove_stopwords(tokens: list[str], stopword_set: Set[str]) -> list[str]:
     return [t for t in tokens if t not in stopword_set]
 
 
-def load_stopword_set(language: str) -> Set[str]:
+def load_stopword_set(language: str) -> set[str]:
     """Load stopwords.json and return a combined set.
 
     For language 'de', combines both 'de' and 'en' arrays.
@@ -58,31 +58,10 @@ def load_stopword_set(language: str) -> Set[str]:
     Returns:
         A set of stopwords for the given language.
     """
-    import json
-    import os
-
-    # Load stopwords.json using importlib.resources
-    try:
-        # Try to load as a package resource
-        if hasattr(resources, 'files'):
-            # Python 3.9+
-            stopwords_path = resources.files('seo_pipeline').joinpath(
-                'data/stopwords.json'
-            )
-            data = json.loads(stopwords_path.read_text(encoding='utf-8'))
-        else:
-            # Fallback for older Python
-            import importlib
-            with importlib.resources.open_text(
-                'seo_pipeline.data', 'stopwords.json'
-            ) as f:
-                data = json.load(f)
-    except (FileNotFoundError, AttributeError, ModuleNotFoundError):
-        # Fallback to direct file path if resource loading fails
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        stopwords_path = os.path.join(current_dir, '../data/stopwords.json')
-        with open(stopwords_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+    stopwords_path = resources.files('seo_pipeline').joinpath(
+        'data/stopwords.json'
+    )
+    data = json.loads(stopwords_path.read_text(encoding='utf-8'))
 
     words = data.get(language, []).copy()
     if language == 'de':
