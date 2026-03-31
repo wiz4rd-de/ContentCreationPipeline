@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
+from dotenv import dotenv_values
+
 
 class CheckResult(NamedTuple):
     """Result of a single pre-flight check."""
@@ -32,33 +34,6 @@ def check_api_env(project_root: str) -> CheckResult:
         ok=False,
         message="api.env not found. Copy the template: cp api.env.example api.env",
     )
-
-
-def parse_env_content(content: str) -> dict[str, str]:
-    """Parse the raw content of an api.env file into a key/value map.
-
-    Skips empty lines and comment lines.
-
-    Args:
-        content: Raw file content.
-
-    Returns:
-        A dictionary mapping env variable names to their values.
-    """
-    env = {}
-    for line in content.split("\n"):
-        trimmed = line.strip()
-        # Skip empty lines and comments
-        if not trimmed or trimmed.startswith("#"):
-            continue
-        # Split on first = only
-        eq_idx = trimmed.find("=")
-        if eq_idx == -1:
-            continue
-        key = trimmed[:eq_idx]
-        value = trimmed[eq_idx + 1 :]
-        env[key] = value
-    return env
 
 
 def check_auth(env: dict[str, str]) -> CheckResult:
@@ -166,8 +141,7 @@ def run_preflight(project_root: str) -> bool:
     if api_env_result.ok:
         # Only parse env content if file exists — otherwise checks 2-4 are meaningless
         env_path = Path(project_root) / "api.env"
-        content = env_path.read_text(encoding="utf-8")
-        env = parse_env_content(content)
+        env = dotenv_values(env_path)
 
         # Check 2: DATAFORSEO_AUTH is set
         auth_result = check_auth(env)

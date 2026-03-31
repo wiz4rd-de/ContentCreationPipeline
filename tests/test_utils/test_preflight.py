@@ -9,7 +9,6 @@ from seo_pipeline.utils.preflight import (
     check_auth_format,
     check_base,
     check_base64,
-    parse_env_content,
     run_preflight,
 )
 
@@ -33,31 +32,6 @@ class TestCheckApiEnv:
             assert result.ok is False
             assert "api.env not found" in result.message
             assert "cp api.env.example api.env" in result.message
-
-
-class TestParseEnvContent:
-    """Tests for parse_env_content."""
-
-    def test_parses_key_value_lines_into_map(self):
-        """Parses KEY=VALUE lines into a map."""
-        env = parse_env_content(
-            "DATAFORSEO_AUTH=abc123\nDATAFORSEO_BASE=https://api.example.com\n"
-        )
-        assert env["DATAFORSEO_AUTH"] == "abc123"
-        assert env["DATAFORSEO_BASE"] == "https://api.example.com"
-
-    def test_skips_comment_lines_and_empty_lines(self):
-        """Skips comment lines and empty lines."""
-        env = parse_env_content(
-            "# comment\n\nDATAFORSEO_AUTH=secret\n\n# another\nDATAFORSEO_BASE=https://base.example.com\n"
-        )
-        assert env["DATAFORSEO_AUTH"] == "secret"
-        assert env["DATAFORSEO_BASE"] == "https://base.example.com"
-
-    def test_preserves_values_containing_equals_signs(self):
-        """Preserves values containing = signs (e.g. base64 tokens)."""
-        env = parse_env_content("DATAFORSEO_AUTH=abc123==\n")
-        assert env["DATAFORSEO_AUTH"] == "abc123=="
 
 
 class TestCheckAuth:
