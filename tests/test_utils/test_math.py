@@ -1,6 +1,6 @@
 """Tests for the math utility module."""
 
-from seo_pipeline.utils.math import js_round
+from seo_pipeline.utils.math import js_round, normalize_number
 
 
 class TestJsRound:
@@ -84,3 +84,41 @@ class TestJsRound:
         assert js_round(-0.4) == 0
         assert js_round(-0.49) == 0
         assert js_round(-0.51) == -1
+
+
+class TestNormalizeNumber:
+    """Tests for the normalize_number function."""
+
+    def test_whole_float_becomes_int(self):
+        """Whole-number floats should be converted to int."""
+        assert normalize_number(4.0) == 4
+        assert isinstance(normalize_number(4.0), int)
+
+    def test_fractional_float_stays_float(self):
+        """Non-whole floats should remain as float."""
+        assert normalize_number(4.5) == 4.5
+        assert isinstance(normalize_number(4.5), float)
+
+    def test_int_stays_int(self):
+        """Integers should pass through unchanged."""
+        assert normalize_number(4) == 4
+        assert isinstance(normalize_number(4), int)
+
+    def test_none_returns_none(self):
+        """None should pass through unchanged."""
+        assert normalize_number(None) is None
+
+    def test_zero_float(self):
+        """0.0 should become int 0."""
+        assert normalize_number(0.0) == 0
+        assert isinstance(normalize_number(0.0), int)
+
+    def test_negative_whole_float(self):
+        """Negative whole-number floats should become int."""
+        assert normalize_number(-3.0) == -3
+        assert isinstance(normalize_number(-3.0), int)
+
+    def test_large_whole_float(self):
+        """Large whole-number floats should become int."""
+        assert normalize_number(1000000.0) == 1000000
+        assert isinstance(normalize_number(1000000.0), int)

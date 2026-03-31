@@ -9,6 +9,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -403,34 +404,34 @@ def process_serp(raw: dict, top_n: int = 10) -> dict:
 
 def main() -> None:
     """CLI entry point for process_serp."""
-    args = sys.argv[1:]
-    file_path = next((a for a in args if not a.startswith("--")), None)
+    parser = argparse.ArgumentParser(
+        description="Extract structured data from raw DataForSEO SERP JSON"
+    )
+    parser.add_argument(
+        "input_file", nargs="?", default=None, help="Path to raw SERP JSON file"
+    )
+    parser.add_argument(
+        "--top", type=int, default=10, help="Number of top competitors (default: 10)"
+    )
+    parser.add_argument("--output", help="Path to write output JSON file")
 
-    top_idx = args.index("--top") if "--top" in args else -1
-    top_n = int(args[top_idx + 1]) if top_idx != -1 else 10
+    args = parser.parse_args()
 
-    output_idx = args.index("--output") if "--output" in args else -1
-    output_path = args[output_idx + 1] if output_idx != -1 else None
-
-    if not file_path:
-        print(
-            "Usage: python -m seo_pipeline.serp.process_serp"
-            " <raw-serp.json> [--top N] [--output path]",
-            file=sys.stderr,
-        )
+    if not args.input_file:
+        parser.print_usage(sys.stderr)
         sys.exit(1)
 
-    raw = json.loads(Path(file_path).read_text(encoding="utf-8"))
+    raw = json.loads(Path(args.input_file).read_text(encoding="utf-8"))
 
     try:
-        output = process_serp(raw, top_n=top_n)
+        output = process_serp(raw, top_n=args.top)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
     json_str = json.dumps(output, indent=2, ensure_ascii=False)
-    if output_path:
-        Path(output_path).write_text(json_str, encoding="utf-8")
+    if args.output:
+        Path(args.output).write_text(json_str, encoding="utf-8")
     else:
         print(json_str)
 

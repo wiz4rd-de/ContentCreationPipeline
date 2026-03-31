@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 from seo_pipeline.keywords.process_keywords import (
-    _normalize_number,
     build_volume_map,
     classify_intent,
     compute_opportunity_score,
@@ -12,35 +11,36 @@ from seo_pipeline.keywords.process_keywords import (
     process_keywords,
     tokenize_keyword,
 )
+from seo_pipeline.utils.math import normalize_number
 
 FIXTURES = Path("test/fixtures/process-keywords")
 GOLDEN = Path("test/golden")
 
 
-# --- _normalize_number ---
+# --- normalize_number ---
 
 
 class TestNormalizeNumber:
-    """Tests for the _normalize_number helper."""
+    """Tests for the normalize_number helper."""
 
     def test_whole_float_becomes_int(self):
-        assert _normalize_number(4.0) == 4
-        assert isinstance(_normalize_number(4.0), int)
+        assert normalize_number(4.0) == 4
+        assert isinstance(normalize_number(4.0), int)
 
     def test_fractional_float_stays_float(self):
-        assert _normalize_number(4.5) == 4.5
-        assert isinstance(_normalize_number(4.5), float)
+        assert normalize_number(4.5) == 4.5
+        assert isinstance(normalize_number(4.5), float)
 
     def test_int_stays_int(self):
-        assert _normalize_number(4) == 4
-        assert isinstance(_normalize_number(4), int)
+        assert normalize_number(4) == 4
+        assert isinstance(normalize_number(4), int)
 
     def test_none_stays_none(self):
-        assert _normalize_number(None) is None
+        assert normalize_number(None) is None
 
     def test_zero_float_becomes_int(self):
-        assert _normalize_number(0.0) == 0
-        assert isinstance(_normalize_number(0.0), int)
+        assert normalize_number(0.0) == 0
+        assert isinstance(normalize_number(0.0), int)
 
 
 # --- tokenize_keyword ---

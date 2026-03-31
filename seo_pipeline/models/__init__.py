@@ -40,7 +40,12 @@ from seo_pipeline.models.analysis import (
     WdfIdfScore,
     WdfIdfTerm,
 )
-from seo_pipeline.models.common import Heading, HtmlSignals, LinkCount
+from seo_pipeline.models.common import (
+    Heading,
+    HtmlSignals,
+    LinkCount,
+    PipelineBaseModel,
+)
 from seo_pipeline.models.keywords import (
     FaqItem,
     FilteredKeywords,
@@ -72,6 +77,7 @@ from seo_pipeline.models.serp import (
 
 __all__ = [
     # common
+    "PipelineBaseModel",
     "Heading",
     "LinkCount",
     "HtmlSignals",

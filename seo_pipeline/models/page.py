@@ -1,11 +1,16 @@
 """Data models for extracted page content and metadata."""
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-from seo_pipeline.models.common import Heading, HtmlSignals, LinkCount
+from seo_pipeline.models.common import (
+    Heading,
+    HtmlSignals,
+    LinkCount,
+    PipelineBaseModel,
+)
 
 
-class ExtractedPage(BaseModel):
+class ExtractedPage(PipelineBaseModel):
     """Extracted page content and metadata.
 
     Attributes:
@@ -52,10 +57,8 @@ class ExtractedPage(BaseModel):
         )
     )
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ExtractedPageError(BaseModel):
+class ExtractedPageError(PipelineBaseModel):
     """Error response from page extraction.
 
     Attributes:
@@ -65,5 +68,3 @@ class ExtractedPageError(BaseModel):
 
     error: str
     url: str
-
-    model_config = ConfigDict(populate_by_name=True)

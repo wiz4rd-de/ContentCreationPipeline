@@ -1,11 +1,15 @@
 """Data models for SERP processing in the SEO Pipeline."""
 
-from pydantic import BaseModel, ConfigDict, Field, model_serializer
+from typing import Any
+
+from pydantic import Field, model_serializer
+
+from seo_pipeline.models.common import PipelineBaseModel
 
 # --- SERP Feature sub-models ---
 
 
-class AiOverviewReference(BaseModel):
+class AiOverviewReference(PipelineBaseModel):
     """A reference cited in the AI Overview.
 
     Attributes:
@@ -18,10 +22,8 @@ class AiOverviewReference(BaseModel):
     url: str | None = Field(default=None)
     title: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class AiOverview(BaseModel):
+class AiOverview(PipelineBaseModel):
     """AI Overview (AIO) feature from the SERP.
 
     Handles both present and absent states. When present is False,
@@ -41,10 +43,8 @@ class AiOverview(BaseModel):
     text: str | None = Field(default=None)
     references_count: int = Field(default=0)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class FeaturedSnippet(BaseModel):
+class FeaturedSnippet(PipelineBaseModel):
     """Featured snippet feature from the SERP.
 
     Serializes with exclude_unset so that ``{"present": false}`` roundtrips
@@ -62,8 +62,6 @@ class FeaturedSnippet(BaseModel):
     source_domain: str | None = Field(default=None)
     source_url: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         """Only include fields that were explicitly set."""
@@ -71,7 +69,7 @@ class FeaturedSnippet(BaseModel):
         return {k: v for k, v in full.items() if k in self.model_fields_set}
 
 
-class PaaQuestion(BaseModel):
+class PaaQuestion(PipelineBaseModel):
     """A People Also Ask question from the SERP.
 
     Attributes:
@@ -86,10 +84,8 @@ class PaaQuestion(BaseModel):
     url: str | None = Field(default=None)
     domain: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class KnowledgeGraph(BaseModel):
+class KnowledgeGraph(PipelineBaseModel):
     """Knowledge Graph panel from the SERP.
 
     Serializes with exclude_unset so that ``{"present": false}`` roundtrips
@@ -105,8 +101,6 @@ class KnowledgeGraph(BaseModel):
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         """Only include fields that were explicitly set."""
@@ -114,7 +108,7 @@ class KnowledgeGraph(BaseModel):
         return {k: v for k, v in full.items() if k in self.model_fields_set}
 
 
-class CommercialSignals(BaseModel):
+class CommercialSignals(PipelineBaseModel):
     """Commercial intent signals detected in the SERP.
 
     Attributes:
@@ -129,10 +123,8 @@ class CommercialSignals(BaseModel):
     commercial_units_present: bool
     popular_products_present: bool
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class LocalSignals(BaseModel):
+class LocalSignals(PipelineBaseModel):
     """Local search signals detected in the SERP.
 
     Attributes:
@@ -145,10 +137,8 @@ class LocalSignals(BaseModel):
     map_present: bool
     hotels_pack_present: bool
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class RelatedSearch(BaseModel):
+class RelatedSearch(PipelineBaseModel):
     """A related search suggestion.
 
     Attributes:
@@ -157,10 +147,8 @@ class RelatedSearch(BaseModel):
 
     query: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class Discussion(BaseModel):
+class Discussion(PipelineBaseModel):
     """A discussion/forum result from the SERP.
 
     Attributes:
@@ -175,10 +163,8 @@ class Discussion(BaseModel):
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class VideoResult(BaseModel):
+class VideoResult(PipelineBaseModel):
     """A video result from the SERP.
 
     Attributes:
@@ -193,10 +179,8 @@ class VideoResult(BaseModel):
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class TopStory(BaseModel):
+class TopStory(PipelineBaseModel):
     """A top story result from the SERP.
 
     Attributes:
@@ -211,10 +195,8 @@ class TopStory(BaseModel):
     title: str | None = Field(default=None)
     description: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class SerpFeatures(BaseModel):
+class SerpFeatures(PipelineBaseModel):
     """Composite model of all SERP features.
 
     Can be empty ({}) when no features are detected. All fields
@@ -238,7 +220,7 @@ class SerpFeatures(BaseModel):
     ai_overview: AiOverview | None = Field(default=None)
     featured_snippet: FeaturedSnippet | None = Field(default=None)
     people_also_ask: list[PaaQuestion] = Field(default_factory=list)
-    people_also_search: list = Field(default_factory=list)
+    people_also_search: list[str] = Field(default_factory=list)
     related_searches: list[RelatedSearch] = Field(default_factory=list)
     discussions_and_forums: list[Discussion] = Field(default_factory=list)
     video: list[VideoResult] = Field(default_factory=list)
@@ -248,13 +230,11 @@ class SerpFeatures(BaseModel):
     local_signals: LocalSignals | None = Field(default=None)
     other_features_present: list[str] = Field(default_factory=list)
 
-    model_config = ConfigDict(populate_by_name=True)
-
 
 # --- Competitor and Rating models ---
 
 
-class Rating(BaseModel):
+class Rating(PipelineBaseModel):
     """A rating attached to a SERP result.
 
     Attributes:
@@ -267,10 +247,8 @@ class Rating(BaseModel):
     votes_count: int | None = Field(default=None)
     rating_max: float | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class SerpCompetitor(BaseModel):
+class SerpCompetitor(PipelineBaseModel):
     """A competitor result from the SERP.
 
     Uses a single model with optional qualitative fields that are absent
@@ -315,22 +293,20 @@ class SerpCompetitor(BaseModel):
     cited_in_ai_overview: bool
     word_count: int | None = Field(default=None)
     h1: str | None = Field(default=None)
-    headings: list | None = Field(default=None)
-    link_count: dict | None = Field(default=None)
+    headings: list[dict[str, Any]] | None = Field(default=None)
+    link_count: dict[str, int] | None = Field(default=None)
     meta_description: str | None = Field(default=None)
     format: str | None = Field(default=None)
-    topics: list | None = Field(default=None)
+    topics: list[str] | None = Field(default=None)
     unique_angle: str | None = Field(default=None)
-    strengths: list | None = Field(default=None)
-    weaknesses: list | None = Field(default=None)
-
-    model_config = ConfigDict(populate_by_name=True)
+    strengths: list[str] | None = Field(default=None)
+    weaknesses: list[str] | None = Field(default=None)
 
 
 # --- Top-level output models ---
 
 
-class SerpProcessed(BaseModel):
+class SerpProcessed(PipelineBaseModel):
     """Top-level output model for process-serp.
 
     Attributes:
@@ -351,10 +327,8 @@ class SerpProcessed(BaseModel):
     serp_features: SerpFeatures
     competitors: list[SerpCompetitor] = Field(default_factory=list)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class CompetitorsData(BaseModel):
+class CompetitorsData(PipelineBaseModel):
     """Output model for assemble-competitors.
 
     Extends process-serp output with a date field and qualitative
@@ -382,8 +356,6 @@ class CompetitorsData(BaseModel):
     item_types_present: list[str] = Field(default_factory=list)
     serp_features: SerpFeatures
     competitors: list[SerpCompetitor] = Field(default_factory=list)
-    common_themes: list | None = Field(default=None)
-    content_gaps: list | None = Field(default=None)
-    opportunities: list | None = Field(default=None)
-
-    model_config = ConfigDict(populate_by_name=True)
+    common_themes: list[str] | None = Field(default=None)
+    content_gaps: list[str] | None = Field(default=None)
+    opportunities: list[str] | None = Field(default=None)

@@ -10,6 +10,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -458,7 +459,6 @@ async def fetch_serp(
 
 def _monotonic_ms() -> float:
     """Return monotonic clock time in milliseconds."""
-    import time
     return time.monotonic() * 1000
 
 

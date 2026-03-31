@@ -10,12 +10,12 @@ from seo_pipeline.keywords.prepare_strategist_data import (
     _extract_paa_questions,
     _extract_serp_snippets,
     _flatten_keywords,
-    _is_foreign_language,
     _process_competitor_keywords,
     _sort_by_volume_desc,
     _year_normalized_key,
     prepare_strategist_data,
 )
+from seo_pipeline.utils.text import is_foreign_language
 
 
 class TestYearNormalization:
@@ -62,28 +62,28 @@ class TestForeignLanguageDetection:
 
     def test_english_keyword_is_latin(self):
         """Test that English keywords are detected as Latin."""
-        assert not _is_foreign_language("seo reporting")
+        assert not is_foreign_language("seo reporting")
 
     def test_german_keyword_is_latin(self):
         """Test that German keywords (with umlauts) are Latin."""
-        assert not _is_foreign_language("seo bericht erstellen")
+        assert not is_foreign_language("seo bericht erstellen")
 
     def test_cyrillic_keyword_is_foreign(self):
         """Test that Cyrillic keywords are detected as foreign."""
-        assert _is_foreign_language("сео репортинг")
+        assert is_foreign_language("сео репортинг")
 
     def test_chinese_keyword_is_foreign(self):
         """Test that Chinese keywords are detected as foreign."""
-        assert _is_foreign_language("广告分析")
+        assert is_foreign_language("广告分析")
 
     def test_mixed_latin_and_cyrillic_is_foreign(self):
         """Test that mixed Latin and Cyrillic is detected as foreign."""
-        assert _is_foreign_language("seo репортинг")
+        assert is_foreign_language("seo репортинг")
 
     def test_hyphens_and_apostrophes_allowed(self):
         """Test that hyphens and apostrophes are allowed."""
-        assert not _is_foreign_language("seo-reporting")
-        assert not _is_foreign_language("don't worry")
+        assert not is_foreign_language("seo-reporting")
+        assert not is_foreign_language("don't worry")
 
 
 class TestFlattenKeywords:

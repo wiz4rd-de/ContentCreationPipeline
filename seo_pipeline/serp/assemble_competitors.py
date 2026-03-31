@@ -13,6 +13,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from datetime import datetime
@@ -156,54 +157,36 @@ def assemble_competitors(
 
 def main() -> None:
     """CLI entry point: read files and output assembled data."""
-    args = sys.argv[1:]
+    parser = argparse.ArgumentParser(
+        description="Assemble competitor data skeleton "
+        "from SERP + page extractor outputs"
+    )
+    parser.add_argument("serp_file", help="Path to processed SERP JSON file")
+    parser.add_argument(
+        "pages_dir", help="Directory containing extracted page JSON files"
+    )
+    parser.add_argument("--date", help="Analysis date (YYYY-MM-DD, default: today)")
+    parser.add_argument("--output", help="Path to write output JSON file")
 
-    # Parse positional and flag arguments
-    positional = [arg for arg in args if not arg.startswith("--")]
-    if len(positional) < 2:
-        print(
-            "Usage: python -m seo_pipeline.serp.assemble_competitors "
-            "<serp-processed.json> <pages-dir/> [--date YYYY-MM-DD] [--output path]",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    serp_file = positional[0]
-    pages_dir = positional[1]
-
-    # Parse optional flags
-    date = None
-    output_path = None
-
-    try:
-        date_idx = args.index("--date")
-        date = args[date_idx + 1]
-    except (ValueError, IndexError):
-        pass
-
-    try:
-        output_idx = args.index("--output")
-        output_path = args[output_idx + 1]
-    except (ValueError, IndexError):
-        pass
+    args = parser.parse_args()
 
     # Read SERP data
     try:
-        serp = json.loads(Path(serp_file).read_text(encoding="utf-8"))
+        serp = json.loads(Path(args.serp_file).read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
-        print(f"Error reading {serp_file}: {e}", file=sys.stderr)
+        print(f"Error reading {args.serp_file}: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Assemble competitors
-    result = assemble_competitors(serp, pages_dir, date)
+    result = assemble_competitors(serp, args.pages_dir, args.date)
     output_json = json.dumps(result, indent=2, ensure_ascii=False)
 
     # Write output
-    if output_path:
+    if args.output:
         try:
-            Path(output_path).write_text(output_json, encoding="utf-8")
+            Path(args.output).write_text(output_json, encoding="utf-8")
         except OSError as e:
-            print(f"Error writing to {output_path}: {e}", file=sys.stderr)
+            print(f"Error writing to {args.output}: {e}", file=sys.stderr)
             sys.exit(1)
     else:
         print(output_json)

@@ -18,6 +18,8 @@ _UMLAUT_MAP = {
     'ß': 'ss',   # U+00DF
 }
 
+_UMLAUT_TABLE = str.maketrans(_UMLAUT_MAP)
+
 
 def slugify(input_str: str) -> str:
     """Convert a string to a URL-safe slug.
@@ -45,9 +47,8 @@ def slugify(input_str: str) -> str:
 
     s = input_str
 
-    # Replace German umlauts before lowercasing
-    for umlaut, digraph in _UMLAUT_MAP.items():
-        s = s.replace(umlaut, digraph)
+    # Replace German umlauts before lowercasing (single-pass via translate table)
+    s = s.translate(_UMLAUT_TABLE)
 
     s = s.lower()
 

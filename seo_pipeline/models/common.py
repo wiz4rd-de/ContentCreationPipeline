@@ -3,7 +3,17 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class Heading(BaseModel):
+class PipelineBaseModel(BaseModel):
+    """Base model for all pipeline data contracts.
+
+    Provides shared configuration: populate_by_name=True allows
+    instantiation using either field names or aliases.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class Heading(PipelineBaseModel):
     """Heading extracted from a webpage.
 
     Attributes:
@@ -14,10 +24,8 @@ class Heading(BaseModel):
     level: int
     text: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class LinkCount(BaseModel):
+class LinkCount(PipelineBaseModel):
     """Count of links on a page.
 
     Attributes:
@@ -28,10 +36,8 @@ class LinkCount(BaseModel):
     internal: int
     external: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class HtmlSignals(BaseModel):
+class HtmlSignals(PipelineBaseModel):
     """Structural signals detected in the HTML content.
 
     Attributes:
@@ -51,5 +57,3 @@ class HtmlSignals(BaseModel):
     video_embeds: int
     forms: int
     images_in_content: int
-
-    model_config = ConfigDict(populate_by_name=True)

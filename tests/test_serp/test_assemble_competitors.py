@@ -150,7 +150,7 @@ class TestCli:
         )
 
         assert result.returncode != 0
-        assert "Usage:" in result.stderr
+        assert "usage:" in result.stderr.lower()
 
 
 # --- Unit tests for get_page_fields ---

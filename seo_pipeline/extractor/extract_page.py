@@ -10,6 +10,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -95,8 +96,8 @@ def extract_page_from_html(html: str, url: str) -> dict:
                 internal += 1
             else:
                 external += 1
-        except Exception:
-            # Skip malformed URLs
+        except ValueError:
+            # Skip malformed URLs (urlparse raises ValueError)
             pass
 
     # Readability extraction for main content
@@ -177,37 +178,29 @@ def extract_page(url: str) -> dict:
 
 def main() -> None:
     """CLI entry point for extract_page."""
-    args = sys.argv[1:]
-    url = None
-    output_path = None
+    parser = argparse.ArgumentParser(
+        description="Fetch a URL and extract structured page metadata"
+    )
+    parser.add_argument("url", nargs="?", default=None, help="URL to extract")
+    parser.add_argument("--output", help="Path to write output JSON file")
 
-    i = 0
-    while i < len(args):
-        if args[i] == "--output" and i + 1 < len(args):
-            output_path = args[i + 1]
-            i += 2
-        elif not args[i].startswith("--"):
-            url = args[i]
-            i += 1
-        else:
-            i += 1
+    args = parser.parse_args()
 
-    if not url:
+    if not args.url:
         msg = (
             "Usage: python -m seo_pipeline.extractor.extract_page"
             " <URL> [--output <path>]"
         )
-        error_json = json.dumps({"error": msg})
-        print(error_json)
+        print(json.dumps({"error": msg}))
         sys.exit(1)
 
-    print(f"Extracting: {url} ...", file=sys.stderr)
+    print(f"Extracting: {args.url} ...", file=sys.stderr)
 
-    result = extract_page(url)
+    result = extract_page(args.url)
 
     output = json.dumps(result, indent=2, ensure_ascii=False)
-    if output_path:
-        Path(output_path).write_text(output, encoding="utf-8")
+    if args.output:
+        Path(args.output).write_text(output, encoding="utf-8")
     else:
         print(output)
 

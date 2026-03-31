@@ -21,18 +21,10 @@ def resolve_location(market: str) -> int:
         ValueError: if the market code is unknown
     """
     # Load location codes from data file
-    if hasattr(importlib.resources, 'files'):
-        # Python 3.9+
-        data_path = importlib.resources.files('seo_pipeline').joinpath(
-            'data', 'location_codes.json'
-        )
-        content = data_path.read_text(encoding='utf-8')
-    else:
-        # Fallback for older Python versions
-        import pkg_resources
-        content = pkg_resources.resource_string(
-            'seo_pipeline', 'data/location_codes.json'
-        ).decode('utf-8')
+    data_path = importlib.resources.files('seo_pipeline').joinpath(
+        'data', 'location_codes.json'
+    )
+    content = data_path.read_text(encoding='utf-8')
 
     codes = json.loads(content)
 
