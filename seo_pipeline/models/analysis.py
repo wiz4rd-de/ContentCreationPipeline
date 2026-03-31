@@ -6,14 +6,16 @@ WDF*IDF scoring, and the top-level BriefingData aggregation.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field, model_serializer
+from pydantic import Field, model_serializer
+
+from seo_pipeline.models.common import PipelineBaseModel
 
 # ---------------------------------------------------------------------------
 # Content Topics group
 # ---------------------------------------------------------------------------
 
 
-class ProofKeyword(BaseModel):
+class ProofKeyword(PipelineBaseModel):
     """A proof keyword with TF-IDF metrics.
 
     Field order matches golden output: term, document_frequency, total_pages,
@@ -28,15 +30,13 @@ class ProofKeyword(BaseModel):
     idf_boost: float | None = Field(default=None)
     idf_score: float | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         full = handler(self)
         return {k: v for k, v in full.items() if k in self.model_fields_set}
 
 
-class EntityCandidate(BaseModel):
+class EntityCandidate(PipelineBaseModel):
     """An entity candidate extracted from competitor content.
 
     In content-topics output: term, document_frequency, pages.
@@ -49,15 +49,13 @@ class EntityCandidate(BaseModel):
     prominence: str | None = Field(default=None)
     prominence_source: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         full = handler(self)
         return {k: v for k, v in full.items() if k in self.model_fields_set}
 
 
-class SectionWeight(BaseModel):
+class SectionWeight(PipelineBaseModel):
     """Weight and occurrence data for a heading cluster."""
 
     heading_cluster: str
@@ -67,10 +65,8 @@ class SectionWeight(BaseModel):
     avg_content_percentage: float
     weight: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ContentFormatSignals(BaseModel):
+class ContentFormatSignals(PipelineBaseModel):
     """Content format signals aggregated across competitors."""
 
     pages_with_numbered_lists: int
@@ -79,10 +75,8 @@ class ContentFormatSignals(BaseModel):
     avg_h2_count: float
     dominant_pattern: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ContentTopics(BaseModel):
+class ContentTopics(PipelineBaseModel):
     """Top-level output of analyze-content-topics."""
 
     proof_keywords: list[ProofKeyword]
@@ -90,15 +84,13 @@ class ContentTopics(BaseModel):
     section_weights: list[SectionWeight]
     content_format_signals: ContentFormatSignals
 
-    model_config = ConfigDict(populate_by_name=True)
-
 
 # ---------------------------------------------------------------------------
 # Page Structure group
 # ---------------------------------------------------------------------------
 
 
-class PageStructureSection(BaseModel):
+class PageStructureSection(PipelineBaseModel):
     """A section within a competitor's page structure."""
 
     heading: str
@@ -109,10 +101,8 @@ class PageStructureSection(BaseModel):
     has_lists: bool
     depth_score: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class CompetitorPageStructure(BaseModel):
+class CompetitorPageStructure(PipelineBaseModel):
     """Page structure analysis for a single competitor."""
 
     url: str
@@ -122,10 +112,8 @@ class CompetitorPageStructure(BaseModel):
     detected_modules: list[str]
     sections: list[PageStructureSection]
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class CrossCompetitorAnalysis(BaseModel):
+class CrossCompetitorAnalysis(PipelineBaseModel):
     """Cross-competitor module analysis."""
 
     common_modules: list[str]
@@ -134,16 +122,12 @@ class CrossCompetitorAnalysis(BaseModel):
     avg_word_count: int | float
     avg_sections: int | float
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class PageStructure(BaseModel):
+class PageStructure(PipelineBaseModel):
     """Top-level output of analyze-page-structure."""
 
     competitors: list[CompetitorPageStructure]
     cross_competitor: CrossCompetitorAnalysis
-
-    model_config = ConfigDict(populate_by_name=True)
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +135,7 @@ class PageStructure(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Entity(BaseModel):
+class Entity(PipelineBaseModel):
     """An entity with prominence data."""
 
     entity: str
@@ -160,24 +144,20 @@ class Entity(BaseModel):
     prominence_source: str
     synonyms: list[str]
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         full = handler(self)
         return {k: v for k, v in full.items() if k in self.model_fields_set}
 
 
-class EntityCluster(BaseModel):
+class EntityCluster(PipelineBaseModel):
     """A cluster of entities under a category."""
 
     category_name: str
     entities: list[Entity]
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ProminenceCorrection(BaseModel):
+class ProminenceCorrection(PipelineBaseModel):
     """Debug record for a prominence correction."""
 
     entity: str
@@ -186,24 +166,18 @@ class ProminenceCorrection(BaseModel):
     code: str
     delta: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ProminenceDebug(BaseModel):
+class ProminenceDebug(PipelineBaseModel):
     """Debug data for entity prominence computation."""
 
     corrections: list[ProminenceCorrection]
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class EntityProminence(BaseModel):
+class EntityProminence(PipelineBaseModel):
     """Top-level output of compute-entity-prominence."""
 
     entity_clusters: list[EntityCluster]
     debug: ProminenceDebug | None = Field(default=None, alias="_debug")
-
-    model_config = ConfigDict(populate_by_name=True)
 
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
@@ -219,7 +193,7 @@ class EntityProminence(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Claim(BaseModel):
+class Claim(PipelineBaseModel):
     """A single extracted factual claim."""
 
     id: str
@@ -229,26 +203,20 @@ class Claim(BaseModel):
     line: int
     section: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ClaimsMeta(BaseModel):
+class ClaimsMeta(PipelineBaseModel):
     """Metadata for claims extraction."""
 
     draft: str
     extracted_at: str
     total_claims: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ClaimsOutput(BaseModel):
+class ClaimsOutput(PipelineBaseModel):
     """Top-level output of extract-claims."""
 
     meta: ClaimsMeta
     claims: list[Claim]
-
-    model_config = ConfigDict(populate_by_name=True)
 
 
 # ---------------------------------------------------------------------------
@@ -256,7 +224,7 @@ class ClaimsOutput(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class WdfIdfTerm(BaseModel):
+class WdfIdfTerm(PipelineBaseModel):
     """A single term's WDF*IDF scores."""
 
     term: str
@@ -265,10 +233,8 @@ class WdfIdfTerm(BaseModel):
     delta: float
     signal: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class WdfIdfMeta(BaseModel):
+class WdfIdfMeta(PipelineBaseModel):
     """Metadata for WDF*IDF scoring."""
 
     draft: str
@@ -278,16 +244,12 @@ class WdfIdfMeta(BaseModel):
     competitor_count: int
     idf_source: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class WdfIdfScore(BaseModel):
+class WdfIdfScore(PipelineBaseModel):
     """Top-level output of score-draft-wdfidf."""
 
     meta: WdfIdfMeta
     terms: list[WdfIdfTerm]
-
-    model_config = ConfigDict(populate_by_name=True)
 
 
 # ---------------------------------------------------------------------------
@@ -295,16 +257,14 @@ class WdfIdfScore(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class BriefingDataSources(BaseModel):
+class BriefingDataSources(PipelineBaseModel):
     """Data sources metadata within briefing meta."""
 
     competitor_urls: list[str]
     location_code: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingMeta(BaseModel):
+class BriefingMeta(PipelineBaseModel):
     """Metadata for the briefing data assembly."""
 
     seed_keyword: str
@@ -318,10 +278,8 @@ class BriefingMeta(BaseModel):
     phase1_completed_at: str
     data_sources: BriefingDataSources
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingStats(BaseModel):
+class BriefingStats(PipelineBaseModel):
     """Summary statistics for the briefing."""
 
     total_keywords: int
@@ -329,10 +287,8 @@ class BriefingStats(BaseModel):
     total_clusters: int
     competitor_count: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingKeywordClusterSummary(BaseModel):
+class BriefingKeywordClusterSummary(PipelineBaseModel):
     """Flattened cluster summary in briefing keyword_data (no individual keywords)."""
 
     cluster_keyword: str
@@ -342,10 +298,8 @@ class BriefingKeywordClusterSummary(BaseModel):
     rank: int
     total_search_volume: int | float
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingKeywordData(BaseModel):
+class BriefingKeywordData(PipelineBaseModel):
     """Keyword data section in BriefingData (flattened summaries)."""
 
     clusters: list[BriefingKeywordClusterSummary]
@@ -353,10 +307,8 @@ class BriefingKeywordData(BaseModel):
     filtered_count: int
     removal_summary: dict[str, int]
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingSerpFeatures(BaseModel):
+class BriefingSerpFeatures(PipelineBaseModel):
     """Boolean-flag SERP features for briefing data.
 
     Unlike the full SerpFeatures model which has nested objects, briefing
@@ -376,20 +328,16 @@ class BriefingSerpFeatures(BaseModel):
     local_signals: bool
     other_features_present: bool
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingAioReference(BaseModel):
+class BriefingAioReference(PipelineBaseModel):
     """AI Overview reference in briefing serp_data."""
 
     domain: str
     title: str
     url: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingAio(BaseModel):
+class BriefingAio(PipelineBaseModel):
     """AI Overview section in briefing serp_data."""
 
     present: bool
@@ -398,29 +346,23 @@ class BriefingAio(BaseModel):
     text: str | None = Field(default=None)
     title: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingHeading(BaseModel):
+class BriefingHeading(PipelineBaseModel):
     """Heading in briefing competitor data."""
 
     level: int
     text: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingRating(BaseModel):
+class BriefingRating(PipelineBaseModel):
     """Rating in briefing competitor data."""
 
     rating_max: float | int
     value: float
     votes_count: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingCompetitor(BaseModel):
+class BriefingCompetitor(PipelineBaseModel):
     """Competitor in briefing serp_data.
 
     Fields are declared in alphabetical order to match golden output.
@@ -450,8 +392,6 @@ class BriefingCompetitor(BaseModel):
     weaknesses: str | None = Field(default=None)
     word_count: int
 
-    model_config = ConfigDict(populate_by_name=True)
-
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
         """Emit keys in alphabetical order."""
@@ -459,17 +399,15 @@ class BriefingCompetitor(BaseModel):
         return dict(sorted(full.items()))
 
 
-class BriefingSerpData(BaseModel):
+class BriefingSerpData(PipelineBaseModel):
     """SERP data section in BriefingData."""
 
     competitors: list[BriefingCompetitor]
     serp_features: BriefingSerpFeatures
     aio: BriefingAio
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingContentAnalysis(BaseModel):
+class BriefingContentAnalysis(PipelineBaseModel):
     """Content analysis section in BriefingData.
 
     Uses ProofKeyword (without idf_boost/idf_score) and EntityCandidate
@@ -481,10 +419,8 @@ class BriefingContentAnalysis(BaseModel):
     section_weights: list[SectionWeight]
     content_format_signals: ContentFormatSignals
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingCompetitorAnalysis(BaseModel):
+class BriefingCompetitorAnalysis(PipelineBaseModel):
     """Competitor analysis section in BriefingData."""
 
     page_structures: list[CompetitorPageStructure]
@@ -492,29 +428,23 @@ class BriefingCompetitorAnalysis(BaseModel):
     rare_modules: list[str]
     avg_word_count: int | float
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingFaqQuestion(BaseModel):
+class BriefingFaqQuestion(PipelineBaseModel):
     """FAQ question in briefing faq_data."""
 
     priority: str
     question: str
     relevance_score: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingFaqData(BaseModel):
+class BriefingFaqData(PipelineBaseModel):
     """FAQ data section in BriefingData."""
 
     questions: list[BriefingFaqQuestion]
     paa_source: str
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingQualitative(BaseModel):
+class BriefingQualitative(PipelineBaseModel):
     """Qualitative analysis section (all nullable, populated by LLM)."""
 
     entity_clusters: list | None = Field(default=None)
@@ -524,10 +454,8 @@ class BriefingQualitative(BaseModel):
     aio_strategy: str | None = Field(default=None)
     briefing: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class BriefingData(BaseModel):
+class BriefingData(PipelineBaseModel):
     """Top-level briefing data model.
 
     Aggregates all Phase 1 analysis outputs into a single structure.
@@ -541,5 +469,3 @@ class BriefingData(BaseModel):
     competitor_analysis: BriefingCompetitorAnalysis
     faq_data: BriefingFaqData
     qualitative: BriefingQualitative
-
-    model_config = ConfigDict(populate_by_name=True)

@@ -1,9 +1,11 @@
 """Data models for keyword processing in the SEO Pipeline."""
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from seo_pipeline.models.common import PipelineBaseModel
 
 
-class Keyword(BaseModel):
+class Keyword(PipelineBaseModel):
     """A keyword with optional metrics and filtering information.
 
     Attributes:
@@ -30,10 +32,8 @@ class Keyword(BaseModel):
     filter_reason: str | None = Field(default=None)
     source: str | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class KeywordCluster(BaseModel):
+class KeywordCluster(PipelineBaseModel):
     """A cluster of related keywords.
 
     Attributes:
@@ -52,10 +52,8 @@ class KeywordCluster(BaseModel):
     keywords: list[Keyword]
     cluster_opportunity: float | None = Field(default=None)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class ProcessedKeywords(BaseModel):
+class ProcessedKeywords(PipelineBaseModel):
     """Processed keywords with clustering information.
 
     Attributes:
@@ -70,10 +68,8 @@ class ProcessedKeywords(BaseModel):
     total_clusters: int | None = Field(default=None)
     clusters: list[KeywordCluster] = Field(default_factory=list)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class FaqItem(BaseModel):
+class FaqItem(PipelineBaseModel):
     """A frequently asked question item.
 
     Attributes:
@@ -86,10 +82,8 @@ class FaqItem(BaseModel):
     priority: str
     relevance_score: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class RemovalSummary(BaseModel):
+class RemovalSummary(PipelineBaseModel):
     """Summary of keyword removal counts by reason.
 
     Attributes:
@@ -104,10 +98,8 @@ class RemovalSummary(BaseModel):
     off_topic: int
     foreign_language: int
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class FilteredKeywords(BaseModel):
+class FilteredKeywords(PipelineBaseModel):
     """Processed keywords after filtering.
 
     Contains filtering results and FAQ selection. Field order is important for
@@ -131,10 +123,8 @@ class FilteredKeywords(BaseModel):
     clusters: list[KeywordCluster] = Field(default_factory=list)
     faq_selection: list[FaqItem] = Field(default_factory=list)
 
-    model_config = ConfigDict(populate_by_name=True)
 
-
-class StrategistData(BaseModel):
+class StrategistData(PipelineBaseModel):
     """Comprehensive data for content strategist analysis.
 
     Attributes:
@@ -158,5 +148,3 @@ class StrategistData(BaseModel):
     serp_snippets: list = Field(default_factory=list)
     competitor_keywords: list = Field(default_factory=list)
     stats: dict = Field(default_factory=dict)
-
-    model_config = ConfigDict(populate_by_name=True)
