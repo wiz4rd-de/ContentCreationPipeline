@@ -24,13 +24,11 @@ def _load_blocklist(blocklist_path: str | None = None) -> dict[str, list[str]]:
         Dict mapping category to list of blocked terms.
     """
     if blocklist_path:
-        with open(blocklist_path, encoding="utf-8") as f:
-            return json.load(f)
+        return json.loads(Path(blocklist_path).read_text(encoding="utf-8"))
 
     # Use default blocklist
     default_path = Path(__file__).parent.parent / "data" / "blocklist_default.json"
-    with open(default_path, encoding="utf-8") as f:
-        return json.load(f)
+    return json.loads(default_path.read_text(encoding="utf-8"))
 
 
 def _build_blocklist_entries(blocklist: dict) -> list[dict]:

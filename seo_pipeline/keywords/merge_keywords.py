@@ -109,10 +109,8 @@ def main() -> None:
             )
             sys.exit(1)
 
-        with open(related_path, "r", encoding="utf-8") as f:
-            related_raw = json.load(f)
-        with open(suggestions_path, "r", encoding="utf-8") as f:
-            suggestions_raw = json.load(f)
+        related_raw = json.loads(related_path.read_text(encoding="utf-8"))
+        suggestions_raw = json.loads(suggestions_path.read_text(encoding="utf-8"))
 
         result = merge_keywords(related_raw, suggestions_raw, args.seed)
         print(json.dumps(result, indent=2))

@@ -378,10 +378,8 @@ def main() -> None:
             )
             sys.exit(1)
 
-        with open(related_path, encoding="utf-8") as f:
-            related_raw = json.load(f)
-        with open(suggestions_path, encoding="utf-8") as f:
-            suggestions_raw = json.load(f)
+        related_raw = json.loads(related_path.read_text(encoding="utf-8"))
+        suggestions_raw = json.loads(suggestions_path.read_text(encoding="utf-8"))
 
         volume_raw = None
         if args.volume:
@@ -391,8 +389,7 @@ def main() -> None:
                     f"Error: volume file not found: {args.volume}", file=sys.stderr
                 )
                 sys.exit(1)
-            with open(volume_path, encoding="utf-8") as f:
-                volume_raw = json.load(f)
+            volume_raw = json.loads(volume_path.read_text(encoding="utf-8"))
 
         brands = None
         if args.brands:
