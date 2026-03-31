@@ -1,5 +1,7 @@
 """Data models for keyword processing in the SEO Pipeline."""
 
+from typing import Any
+
 from pydantic import Field
 
 from seo_pipeline.models.common import PipelineBaseModel
@@ -24,7 +26,7 @@ class Keyword(PipelineBaseModel):
     keyword: str
     search_volume: int | None = Field(default=None)
     cpc: float | None = Field(default=None)
-    monthly_searches: list | None = Field(default=None)
+    monthly_searches: list[dict[str, Any]] | None = Field(default=None)
     difficulty: int | None = Field(default=None)
     intent: str | None = Field(default=None)
     opportunity_score: float | None = Field(default=None)
@@ -140,11 +142,11 @@ class StrategistData(PipelineBaseModel):
     """
 
     seed_keyword: str
-    top_keywords: list = Field(default_factory=list)
-    all_keywords: list = Field(default_factory=list)
+    top_keywords: list[dict[str, Any]] = Field(default_factory=list)
+    all_keywords: list[dict[str, Any]] = Field(default_factory=list)
     autocomplete: list[str] = Field(default_factory=list)
     content_ideas: list[str] = Field(default_factory=list)
-    paa_questions: list = Field(default_factory=list)
-    serp_snippets: list = Field(default_factory=list)
-    competitor_keywords: list = Field(default_factory=list)
-    stats: dict = Field(default_factory=dict)
+    paa_questions: list[dict[str, Any]] = Field(default_factory=list)
+    serp_snippets: list[dict[str, Any]] = Field(default_factory=list)
+    competitor_keywords: list[dict[str, Any]] = Field(default_factory=list)
+    stats: dict[str, Any] = Field(default_factory=dict)

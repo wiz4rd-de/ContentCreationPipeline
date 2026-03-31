@@ -1,5 +1,7 @@
 """Data models for SERP processing in the SEO Pipeline."""
 
+from typing import Any
+
 from pydantic import Field, model_serializer
 
 from seo_pipeline.models.common import PipelineBaseModel
@@ -218,7 +220,7 @@ class SerpFeatures(PipelineBaseModel):
     ai_overview: AiOverview | None = Field(default=None)
     featured_snippet: FeaturedSnippet | None = Field(default=None)
     people_also_ask: list[PaaQuestion] = Field(default_factory=list)
-    people_also_search: list = Field(default_factory=list)
+    people_also_search: list[str] = Field(default_factory=list)
     related_searches: list[RelatedSearch] = Field(default_factory=list)
     discussions_and_forums: list[Discussion] = Field(default_factory=list)
     video: list[VideoResult] = Field(default_factory=list)
@@ -291,14 +293,14 @@ class SerpCompetitor(PipelineBaseModel):
     cited_in_ai_overview: bool
     word_count: int | None = Field(default=None)
     h1: str | None = Field(default=None)
-    headings: list | None = Field(default=None)
-    link_count: dict | None = Field(default=None)
+    headings: list[dict[str, Any]] | None = Field(default=None)
+    link_count: dict[str, int] | None = Field(default=None)
     meta_description: str | None = Field(default=None)
     format: str | None = Field(default=None)
-    topics: list | None = Field(default=None)
+    topics: list[str] | None = Field(default=None)
     unique_angle: str | None = Field(default=None)
-    strengths: list | None = Field(default=None)
-    weaknesses: list | None = Field(default=None)
+    strengths: list[str] | None = Field(default=None)
+    weaknesses: list[str] | None = Field(default=None)
 
 
 # --- Top-level output models ---
@@ -354,6 +356,6 @@ class CompetitorsData(PipelineBaseModel):
     item_types_present: list[str] = Field(default_factory=list)
     serp_features: SerpFeatures
     competitors: list[SerpCompetitor] = Field(default_factory=list)
-    common_themes: list | None = Field(default=None)
-    content_gaps: list | None = Field(default=None)
-    opportunities: list | None = Field(default=None)
+    common_themes: list[str] | None = Field(default=None)
+    content_gaps: list[str] | None = Field(default=None)
+    opportunities: list[str] | None = Field(default=None)
