@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from seo_pipeline.keywords.extract_keywords import extract_keywords
-from seo_pipeline.utils.math import js_round
+from seo_pipeline.utils.math import js_round, normalize_number
 
 # Word-boundary regex patterns for DE + EN intent classification.
 # Order matters: first match wins (transactional > commercial > informational).
@@ -31,17 +31,6 @@ INTENT_PATTERNS = {
         re.IGNORECASE,
     ),
 }
-
-
-def _normalize_number(value: int | float | None) -> int | float | None:
-    """Convert whole-number floats to int for JSON serialization parity with Node.js.
-
-    JavaScript's JSON.stringify renders 4.0 as 4. Python's json.dumps renders
-    4.0 as 4.0. This normalizes so Python output matches Node.js byte-for-byte.
-    """
-    if isinstance(value, float) and value == int(value) and not (value != value):
-        return int(value)
-    return value
 
 
 def build_volume_map(raw: dict) -> dict:
@@ -243,7 +232,7 @@ def process_keywords(
         merged.append({
             "keyword": kw["keyword"],
             "search_volume": search_volume,
-            "cpc": _normalize_number(cpc),
+            "cpc": normalize_number(cpc),
             "monthly_searches": kw.get("monthly_searches"),
             "difficulty": kw.get("difficulty"),
         })
@@ -332,7 +321,7 @@ def process_keywords(
             kw["opportunity_score"] if kw["opportunity_score"] is not None else 0
             for kw in cluster["keywords"]
         )
-        cluster["cluster_opportunity"] = _normalize_number(
+        cluster["cluster_opportunity"] = normalize_number(
             js_round((score_sum / len(cluster["keywords"])) * 100) / 100
             if cluster["keywords"]
             else 0

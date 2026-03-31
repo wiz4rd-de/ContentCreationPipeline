@@ -8,11 +8,11 @@ from seo_pipeline.keywords.filter_keywords import (
     _build_blocklist_entries,
     _category_to_reason,
     _filter_keyword,
-    _is_foreign_language,
     _load_blocklist,
     _tokenize_question,
     filter_keywords,
 )
+from seo_pipeline.utils.text import is_foreign_language
 
 FIXTURES = Path("test/fixtures/filter-keywords")
 GOLDEN = Path("tests/golden")
@@ -44,40 +44,40 @@ class TestIsForeignLanguage:
     """Tests for foreign-language detection."""
 
     def test_latin_keyword_not_foreign(self):
-        assert not _is_foreign_language("thailand")
-        assert not _is_foreign_language("urlaub")
-        assert not _is_foreign_language("hotel")
+        assert not is_foreign_language("thailand")
+        assert not is_foreign_language("urlaub")
+        assert not is_foreign_language("hotel")
 
     def test_extended_latin_not_foreign(self):
-        assert not _is_foreign_language("café")
-        assert not _is_foreign_language("résumé")
-        assert not _is_foreign_language("naïve")
+        assert not is_foreign_language("café")
+        assert not is_foreign_language("résumé")
+        assert not is_foreign_language("naïve")
 
     def test_latin_with_punctuation_not_foreign(self):
-        assert not _is_foreign_language("it's")
-        assert not _is_foreign_language("well-known")
-        assert not _is_foreign_language("test-case")
-        assert not _is_foreign_language("word,another")
+        assert not is_foreign_language("it's")
+        assert not is_foreign_language("well-known")
+        assert not is_foreign_language("test-case")
+        assert not is_foreign_language("word,another")
 
     def test_digits_not_foreign(self):
-        assert not _is_foreign_language("2024")
-        assert not _is_foreign_language("test123")
+        assert not is_foreign_language("2024")
+        assert not is_foreign_language("test123")
 
     def test_thai_is_foreign(self):
         # Thai script (ท่องเที่ยวไทย)
-        assert _is_foreign_language("ท่องเที่ยวไทย")
+        assert is_foreign_language("ท่องเที่ยวไทย")
 
     def test_cyrillic_is_foreign(self):
         # Cyrillic (привет)
-        assert _is_foreign_language("привет")
+        assert is_foreign_language("привет")
 
     def test_arabic_is_foreign(self):
         # Arabic (مرحبا)
-        assert _is_foreign_language("مرحبا")
+        assert is_foreign_language("مرحبا")
 
     def test_chinese_is_foreign(self):
         # Chinese (你好)
-        assert _is_foreign_language("你好")
+        assert is_foreign_language("你好")
 
 
 # --- _tokenize_question ---

@@ -11,10 +11,7 @@ import json
 import re
 from pathlib import Path
 
-# Foreign-language heuristic: detect non-Latin characters.
-# Allows basic Latin, extended Latin, Latin Extended Additional, whitespace,
-# hyphens, apostrophes, digits, and common punctuation.
-FOREIGN_RE = re.compile(r'[^\x20-\u024F\u1E00-\u1EFF\s\-\'0-9.,;:?&()/""]')
+from seo_pipeline.utils.text import is_foreign_language
 
 
 def _load_blocklist(blocklist_path: str | None = None) -> dict[str, list[str]]:
@@ -73,18 +70,6 @@ def _category_to_reason(category: str) -> str:
     return "off_topic"
 
 
-def _is_foreign_language(keyword: str) -> bool:
-    """Check if keyword contains non-Latin characters.
-
-    Args:
-        keyword: Keyword string to check.
-
-    Returns:
-        True if keyword contains non-Latin characters.
-    """
-    return bool(FOREIGN_RE.search(keyword))
-
-
 def _filter_keyword(
     kw: dict, blocklist_entries: list[dict], brand_list: list[str]
 ) -> dict:
@@ -113,7 +98,7 @@ def _filter_keyword(
             return {"filter_status": "removed", "filter_reason": "brand"}
 
     # 3. Foreign-language heuristic
-    if _is_foreign_language(kw["keyword"]):
+    if is_foreign_language(kw["keyword"]):
         return {"filter_status": "removed", "filter_reason": "foreign_language"}
 
     return {"filter_status": "keep", "filter_reason": None}
