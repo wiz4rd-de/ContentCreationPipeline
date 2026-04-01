@@ -3,12 +3,28 @@
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from seo_pipeline.llm.config import LLMConfig
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
+
+
+def _enforce_additional_properties_false(schema: Any) -> Any:
+    """Recursively set additionalProperties: false on all object schemas.
+
+    Required by Anthropic's structured output API.
+    """
+    if isinstance(schema, dict):
+        if schema.get("type") == "object":
+            schema.setdefault("additionalProperties", False)
+        for value in schema.values():
+            _enforce_additional_properties_false(value)
+    elif isinstance(schema, list):
+        for item in schema:
+            _enforce_additional_properties_false(item)
+    return schema
 
 
 def complete(
@@ -50,16 +66,18 @@ def complete(
         kwargs["api_base"] = config.api_base
 
     if response_model is not None:
-        schema = response_model.model_json_schema()
-        kwargs["response_format"] = {
-            "type": "json_schema",
-            "json_schema": {"name": response_model.__name__, "schema": schema},
-        }
+        kwargs["response_format"] = {"type": "json_object"}
 
     response = litellm.completion(**kwargs)
     content = response.choices[0].message.content
 
     if response_model is not None:
-        return response_model.model_validate(json.loads(content))
+        # Strip markdown code fences that some models wrap JSON in
+        stripped = content.strip()
+        if stripped.startswith("```"):
+            stripped = stripped.split("\n", 1)[-1]
+            if stripped.endswith("```"):
+                stripped = stripped[: stripped.rfind("```")]
+        return response_model.model_validate(json.loads(stripped))
 
     return content

@@ -15,7 +15,7 @@ class TestLLMConfigModel:
         assert cfg.api_key is None
         assert cfg.api_base is None
         assert cfg.temperature == 0.3
-        assert cfg.max_tokens == 4096
+        assert cfg.max_tokens == 8192
 
     def test_full_config(self):
         cfg = LLMConfig(
@@ -89,7 +89,7 @@ class TestFromEnv:
         assert cfg.model == "gpt-4o"
         assert cfg.api_key == "sk-openai-test"
         assert cfg.temperature == 0.3  # default
-        assert cfg.max_tokens == 4096  # default
+        assert cfg.max_tokens == 8192  # default
 
     def test_env_vars_override_file(self, monkeypatch, tmp_path):
         env_file = tmp_path / "api.env"

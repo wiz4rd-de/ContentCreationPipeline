@@ -29,7 +29,7 @@ Ask the user for:
 
 ## Pipeline
 
-`$OUT` = the run-specific output directory (derived by `fetch-serp.mjs`, **never constructed manually**).
+`$OUT` = the run-specific output directory (derived by `seo-pipeline fetch-serp`, **never constructed manually**).
 
 All output goes to `$OUT`.
 
@@ -41,10 +41,10 @@ Run each script in order. If `briefing-data.json` already exists in the output d
 
 #### Step 0: Fetch SERP (determines $OUT)
 
-**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (ö→oe, ä→ae, ü→ue, ß→ss) — let `fetch-serp.mjs` handle this via its built-in `slugify`.
+**Do NOT construct `$OUT` yourself.** German umlauts must be transliterated correctly (oe, ae, ue, ss) -- let `seo-pipeline fetch-serp` handle this via its built-in `slugify`.
 
 ```bash
-node src/serp/fetch-serp.mjs "<seed-keyword>" \
+uv run seo-pipeline fetch-serp "<seed-keyword>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
   --outdir $OUT/
 ```
@@ -55,20 +55,20 @@ The script creates `$OUT` and outputs the path to stderr. Use that path as `$OUT
 
 #### Step 1: SERP Processing
 ```bash
-node src/serp/process-serp.mjs $OUT/serp-raw.json --top 10 --output $OUT/serp-processed.json
+uv run seo-pipeline process-serp $OUT/serp-raw.json --top 10 --output $OUT/serp-processed.json
 ```
 Input: raw DataForSEO SERP JSON (positional arg). `--top N` limits organic results (default 10). Writes structured JSON to the specified file via `--output`.
 
 #### Step 2: Page Extraction
 ```bash
 # For each competitor URL from serp-processed.json:
-node src/extractor/extract-page.mjs "<competitor-url>" --output $OUT/pages/<competitor-slug>.json
+uv run seo-pipeline extract-page "<competitor-url>" --output $OUT/pages/<competitor-slug>.json
 ```
 Input: positional URL arg. Writes JSON to the specified file via `--output`.
 
 #### Step 3: Keyword Processing
 ```bash
-node src/keywords/process-keywords.mjs \
+uv run seo-pipeline process-keywords \
   --related $OUT/keywords-related-raw.json \
   --suggestions $OUT/keywords-suggestions-raw.json \
   --seed "<seed-keyword>" \
@@ -80,7 +80,7 @@ Merges raw DataForSEO responses, clusters related keywords, computes difficulty 
 
 #### Step 4: Keyword Filtering
 ```bash
-node src/keywords/filter-keywords.mjs \
+uv run seo-pipeline filter-keywords \
   --keywords $OUT/keywords-processed.json \
   --serp $OUT/serp-processed.json \
   --seed "<seed-keyword>" \
@@ -92,19 +92,19 @@ Applies ethics, brand, and off-topic filters. Prioritizes FAQ questions with tok
 
 #### Step 5: Page Structure Analysis
 ```bash
-node src/analysis/analyze-page-structure.mjs --pages-dir $OUT/pages/ --output $OUT/page-structure.json
+uv run seo-pipeline analyze-page-structure --pages-dir $OUT/pages/ --output $OUT/page-structure.json
 ```
 Detects modules (FAQ, table, list, video, image_gallery, form), computes content depth scores, classifies modules as common or rare across competitors. Writes JSON to the specified file via `--output`.
 
 #### Step 6: Content Topic Analysis
 ```bash
-node src/analysis/analyze-content-topics.mjs --pages-dir $OUT/pages/ --seed "<seed-keyword>" --output $OUT/content-topics.json
+uv run seo-pipeline analyze-content-topics --pages-dir $OUT/pages/ --seed "<seed-keyword>" --output $OUT/content-topics.json
 ```
 TF-IDF entity extraction, Jaccard heading clustering, section weight analysis, proof keyword identification. Writes JSON to the specified file via `--output`.
 
 #### Step 7: Briefing Data Assembly
 ```bash
-node src/analysis/assemble-briefing-data.mjs --dir $OUT/ \
+uv run seo-pipeline assemble-briefing-data --dir $OUT/ \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
   --user-domain "$USER_DOMAIN" --business-context "$BUSINESS_CONTEXT"
 ```
@@ -119,7 +119,7 @@ Consolidates all pipeline outputs into a single `briefing-data.json` with:
 #### Step 8: Briefing Summary
 
 ```bash
-node src/analysis/summarize-briefing.mjs --file $OUT/briefing-data.json
+uv run seo-pipeline summarize-briefing --file $OUT/briefing-data.json
 ```
 
 Prints a compact summary of the assembled data. Show this output to the user and confirm before proceeding to Phase 2. Do NOT read `briefing-data.json` directly — the summary script extracts all necessary stats.
@@ -153,7 +153,7 @@ If yes:
 #### 4a. Deterministic claim extraction (in main context)
 
 ```bash
-node src/analysis/extract-claims.mjs --draft $OUT/draft-<slug>.md --output $OUT/claims-extracted.json
+uv run seo-pipeline extract-claims --draft $OUT/draft-<slug>.md --output $OUT/claims-extracted.json
 ```
 
 #### 4b. Spawn fact-check subagent
@@ -206,13 +206,13 @@ All files in `$OUT`.
 ## Data Flow
 
 ```
-process-serp.mjs ──────────────┐
-extract-page.mjs (per URL) ────┤
-process-keywords.mjs ──────────┤
-filter-keywords.mjs ───────────┤──> assemble-briefing-data.mjs ──> briefing-data.json
-analyze-page-structure.mjs ────┤                                         |
-analyze-content-topics.mjs ────┘                                         v
-                                                              summarize-briefing.mjs
+process-serp ──────────────────┐
+extract-page (per URL) ────────┤
+process-keywords ──────────────┤
+filter-keywords ───────────────┤──> assemble-briefing-data ──> briefing-data.json
+analyze-page-structure ────────┤                                       |
+analyze-content-topics ────────┘                                       v
+                                                            summarize-briefing
                                                                    |
                                                                    v
                                                               content-briefing skill
@@ -230,7 +230,7 @@ analyze-content-topics.mjs ────┘                                      
                                                            draft-<slug>.md
                                                                    |
                                                                    v
-                                                       extract-claims.mjs
+                                                       extract-claims
                                                                    |
                                                                    v
                                                          claims-extracted.json

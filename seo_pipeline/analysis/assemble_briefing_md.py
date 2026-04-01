@@ -64,11 +64,19 @@ def assemble_briefing_md(
 
     template = None
     if template_path:
-        template = Path(template_path).read_text(encoding="utf-8")
+        p = Path(template_path)
+        if not p.exists():
+            print(f"Error: template file not found: {template_path}", file=sys.stderr)
+            sys.exit(1)
+        template = p.read_text(encoding="utf-8")
 
     tone_of_voice = None
     if tov_path:
-        tone_of_voice = Path(tov_path).read_text(encoding="utf-8")
+        p = Path(tov_path)
+        if not p.exists():
+            print(f"Error: tone-of-voice file not found: {tov_path}", file=sys.stderr)
+            sys.exit(1)
+        tone_of_voice = p.read_text(encoding="utf-8")
 
     messages = build_briefing_assembly_prompt(briefing_data, template, tone_of_voice)
     markdown: str = complete(messages=messages)

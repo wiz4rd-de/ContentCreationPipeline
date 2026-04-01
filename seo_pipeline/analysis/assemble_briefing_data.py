@@ -116,7 +116,7 @@ def _build_cluster_ranking(data: dict[str, Any]) -> list[dict[str, Any]]:
     for cluster in source["clusters"]:
         raw_kw = cluster.get("keywords")
         keywords = raw_kw if isinstance(raw_kw, list) else []
-        total_volume = sum(kw.get("search_volume", 0) for kw in keywords)
+        total_volume = sum(kw.get("search_volume") or 0 for kw in keywords)
         ranked.append({
             "cluster_keyword": cluster["cluster_keyword"],
             "cluster_label": cluster.get("cluster_label"),

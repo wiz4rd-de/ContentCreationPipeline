@@ -392,7 +392,7 @@ class BriefingCompetitor(PipelineBaseModel):
     unique_angle: str | None = Field(default=None)
     url: str
     weaknesses: str | None = Field(default=None)
-    word_count: int
+    word_count: int | None = Field(default=None)
 
     @model_serializer(mode="wrap")
     def _serialize(self, handler):
