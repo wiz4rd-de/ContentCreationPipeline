@@ -33,7 +33,7 @@ All data extraction happens through deterministic scripts. No LLM interpretation
 ### 1.1 Load config and prior data
 
 ```sh
-source api.env   # provides $SEO_MARKET and $SEO_LANGUAGE (API credentials are loaded internally by fetch-serp.mjs)
+source api.env   # provides $SEO_MARKET and $SEO_LANGUAGE (API credentials are loaded internally by the fetch-serp subcommand)
 ```
 
 Check `output/` for existing keyword research files. If one exists for the topic, offer to use it.
@@ -43,7 +43,7 @@ Check `output/` for existing keyword research files. If one exists for the topic
 For each primary keyword, retrieve the top 10 search results using the async SERP workflow:
 
 ```sh
-node src/serp/fetch-serp.mjs "<KEYWORD>" \
+uv run seo-pipeline fetch-serp "<KEYWORD>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" \
   [--outdir output/YYYY-MM-DD_<slug>/] \
   [--depth 10] [--force] [--max-age N]
@@ -59,19 +59,19 @@ node src/serp/fetch-serp.mjs "<KEYWORD>" \
 
 This single command handles everything:
 - Reads API credentials from `api.env` (no need to pass auth headers)
-- Resolves the location code from `$SEO_MARKET` internally (no separate `resolve-location.mjs` call needed)
+- Resolves the location code from `$SEO_MARKET` internally (no separate resolve-location call needed)
 - Posts a task to the async `task_post` endpoint, polls for completion, and retrieves results via `task_get/advanced`
 - Saves the raw response to `$outdir/serp-raw.json`
 - Outputs the raw JSON to stdout for pipeline chaining
 
-> **Note:** `resolve-location.mjs` still exists in `src/utils/` and can be used standalone if needed by other parts of the pipeline.
+> **Note:** Location resolution is built into the fetch-serp subcommand and does not require a separate call.
 
 ### 1.3 Process SERP data (deterministic)
 
 Run the deterministic SERP parser to extract structured data from the raw API response:
 
 ```sh
-node src/serp/process-serp.mjs output/YYYY-MM-DD_<slug>/serp-raw.json --top <N> \
+uv run seo-pipeline process-serp output/YYYY-MM-DD_<slug>/serp-raw.json --top <N> \
   --output output/YYYY-MM-DD_<slug>/serp-processed.json
 ```
 
@@ -86,7 +86,7 @@ This produces a structured JSON with:
 For each competitor URL from `serp-processed.json`, run the page extractor:
 
 ```sh
-node src/extractor/extract-page.mjs "<URL>" --output output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
+uv run seo-pipeline extract-page "<URL>" --output output/YYYY-MM-DD_<slug>/pages/<DOMAIN>.json
 ```
 
 This returns JSON with: title, meta_description, canonical_url, og_title, og_description, h1, headings, word_count, link_count, main_content_preview.
@@ -96,7 +96,7 @@ This returns JSON with: title, meta_description, canonical_url, og_title, og_des
 Merge SERP processed data with page extractor outputs into the final data skeleton:
 
 ```sh
-node src/serp/assemble-competitors.mjs \
+uv run seo-pipeline assemble-competitors \
   output/YYYY-MM-DD_<slug>/serp-processed.json \
   output/YYYY-MM-DD_<slug>/pages/ \
   --date YYYY-MM-DD \
@@ -164,7 +164,7 @@ Print a concise competitive landscape summary to the conversation, including:
 
 ## SERP Feature Reference
 
-The pipeline uses the async `task_post`/`task_get/advanced` workflow (via `fetch-serp.mjs`) instead of the synchronous `live/advanced` endpoint. The response structure is identical -- both nest results at `tasks[0].result[0]`. The async workflow is cheaper and avoids timeout issues on slow queries. The endpoint can return up to 50 different item types. The deterministic parser (`process-serp.mjs`) handles these automatically. For reference, the categories are:
+The pipeline uses the async `task_post`/`task_get/advanced` workflow (via `seo-pipeline fetch-serp`) instead of the synchronous `live/advanced` endpoint. The response structure is identical -- both nest results at `tasks[0].result[0]`. The async workflow is cheaper and avoids timeout issues on slow queries. The endpoint can return up to 50 different item types. The deterministic parser (`seo-pipeline process-serp`) handles these automatically. For reference, the categories are:
 
 #### Core ranking items
 - **`organic`** — competitor URLs, titles, descriptions, rank positions

@@ -18,10 +18,10 @@ Ask the user for:
 
 ### 1. Deterministic claim extraction
 
-Run the extractor script from `src/analysis/extract-claims.mjs`:
+Run the extractor:
 
 ```bash
-node src/analysis/extract-claims.mjs --draft $OUT/draft-<slug>.md --output $OUT/claims-extracted.json
+uv run seo-pipeline extract-claims --draft $OUT/draft-<slug>.md --output $OUT/claims-extracted.json
 ```
 
 Read `$OUT/claims-extracted.json` using the Read tool to get the initial claim list. This file contains:
