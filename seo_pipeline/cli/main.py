@@ -635,9 +635,11 @@ def run_pipeline(
     ),
     tov: Optional[Path] = typer.Option(
         None, help="Path to tone-of-voice file (passed to assemble-briefing-md and write-draft)",
+        exists=True, file_okay=True, dir_okay=False,
     ),
     template: Optional[Path] = typer.Option(
         None, help="Path to briefing template file (passed to assemble-briefing-md)",
+        exists=True, file_okay=True, dir_okay=False,
     ),
 ) -> None:
     """Run the full SEO content pipeline end-to-end for a keyword."""

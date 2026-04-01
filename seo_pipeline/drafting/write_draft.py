@@ -57,7 +57,11 @@ def write_draft(
 
     tone_of_voice = None
     if tov_path:
-        tone_of_voice = Path(tov_path).read_text(encoding="utf-8")
+        p = Path(tov_path)
+        if not p.exists():
+            print(f"Error: tone-of-voice file not found: {tov_path}", file=sys.stderr)
+            sys.exit(1)
+        tone_of_voice = p.read_text(encoding="utf-8")
 
     messages = build_draft_prompt(briefing_markdown, tone_of_voice, instructions)
     draft_content: str = complete(messages=messages)
