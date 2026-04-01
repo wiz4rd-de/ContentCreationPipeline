@@ -447,13 +447,18 @@ class BriefingFaqData(PipelineBaseModel):
 
 
 class BriefingQualitative(PipelineBaseModel):
-    """Qualitative analysis section (all nullable, populated by LLM)."""
+    """Qualitative analysis section (all nullable, populated by LLM).
+
+    Field types match ``QualitativeResponse`` so that merge_qualitative can
+    write structured LLM output into briefing-data.json and it round-trips
+    through ``BriefingData.model_validate()`` without loss.
+    """
 
     entity_clusters: list[dict[str, Any]] | None = Field(default=None)
-    unique_angles: list[str] | None = Field(default=None)
-    content_format_recommendation: str | None = Field(default=None)
+    unique_angles: list[dict[str, str]] | None = Field(default=None)
+    content_format_recommendation: dict[str, Any] | None = Field(default=None)
     geo_audit: dict[str, Any] | None = Field(default=None)
-    aio_strategy: str | None = Field(default=None)
+    aio_strategy: dict[str, Any] | None = Field(default=None)
     briefing: str | None = Field(default=None)
 
 
