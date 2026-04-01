@@ -21,6 +21,10 @@ dependencies = [
 cli = ["typer[all]>=0.9"]
 api = ["fastapi>=0.100", "uvicorn[standard]"]
 dev = ["pytest>=8.0", "pytest-asyncio", "ruff"]
+llm = ["litellm>=1.40"]
+anthropic = ["litellm>=1.40", "anthropic>=0.25"]
+openai = ["litellm>=1.40", "openai>=1.30"]
+google = ["litellm>=1.40", "google-generativeai>=0.5"]
 
 [project.scripts]
 seo-pipeline = "seo_pipeline.cli.main:app"
