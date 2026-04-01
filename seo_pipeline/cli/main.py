@@ -633,6 +633,12 @@ def run_pipeline(
     llm_model: Optional[str] = typer.Option(
         None, help="LLM model name",
     ),
+    tov: Optional[Path] = typer.Option(
+        None, help="Path to tone-of-voice file (passed to assemble-briefing-md and write-draft)",
+    ),
+    template: Optional[Path] = typer.Option(
+        None, help="Path to briefing template file (passed to assemble-briefing-md)",
+    ),
 ) -> None:
     """Run the full SEO content pipeline end-to-end for a keyword."""
     import os
@@ -810,12 +816,47 @@ def run_pipeline(
     _log(summary)
 
     # --- Stage 10: LLM stages (qualitative + briefing md + draft) ---
-    _log("Stage 10/10: LLM stages (fill-qualitative, assemble-briefing-md, "
-         "write-draft)...")
-    _log("  These stages require LLM configuration. Run them individually:")
-    _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
-    _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
-    _log(f"  uv run seo-pipeline assemble-briefing-md --dir {out_dir}")
-    _log(f"  uv run seo-pipeline write-draft --brief {out_dir}/brief-{slug}.md")
+    _log("Stage 10/10: LLM stages (fill-qualitative, assemble-briefing-md, write-draft)...")
+
+    from seo_pipeline.llm.config import LLMConfig
+
+    try:
+        LLMConfig.from_env()
+        llm_configured = True
+    except ValueError:
+        llm_configured = False
+
+    if llm_configured:
+        from seo_pipeline.analysis.fill_qualitative import (
+            fill_qualitative as _fill_qualitative,
+        )
+        from seo_pipeline.analysis.merge_qualitative import (
+            merge_qualitative as _merge_qualitative,
+        )
+        from seo_pipeline.analysis.assemble_briefing_md import (
+            assemble_briefing_md as _assemble_briefing_md,
+        )
+        from seo_pipeline.drafting.write_draft import write_draft as _write_draft
+
+        _fill_qualitative(str(out_dir))
+        _merge_qualitative(str(out_dir))
+        _assemble_briefing_md(
+            str(out_dir),
+            template_path=str(template) if template else None,
+            tov_path=str(tov) if tov else None,
+        )
+        brief_path = out_dir / f"brief-{slug}.md"
+        _write_draft(
+            str(brief_path),
+            tov_path=str(tov) if tov else None,
+        )
+    else:
+        _log("  LLM not configured — run these stages manually:")
+        tov_flag = f" --tov {tov}" if tov else ""
+        template_flag = f" --template {template}" if template else ""
+        _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
+        _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
+        _log(f"  uv run seo-pipeline assemble-briefing-md --dir {out_dir}{template_flag}{tov_flag}")
+        _log(f"  uv run seo-pipeline write-draft --brief {out_dir}/brief-{slug}.md{tov_flag}")
 
     _log(f"\nPipeline complete. Output directory: {out_dir}")
