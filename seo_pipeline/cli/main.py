@@ -730,8 +730,8 @@ def run_pipeline(
     )
 
     _log("Stage 5/10: Processing keywords...")
-    related_path = out_dir / "related_keywords.json"
-    suggestions_path = out_dir / "keyword_suggestions.json"
+    related_path = out_dir / "keywords-related-raw.json"
+    suggestions_path = out_dir / "keywords-suggestions-raw.json"
     if related_path.exists() and suggestions_path.exists():
         related_raw = json.loads(related_path.read_text(encoding="utf-8"))
         suggestions_raw = json.loads(suggestions_path.read_text(encoding="utf-8"))
