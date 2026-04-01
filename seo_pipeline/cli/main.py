@@ -618,7 +618,7 @@ def write_draft(
 def run_pipeline(
     keyword: str = typer.Argument(..., help="Seed keyword"),
     location: str = typer.Option(
-        "2276", help="Market location code (default: Germany)",
+        "de", help="Market key (e.g. de, us, gb) — passed to resolve_location()",
     ),
     language: str = typer.Option("de", help="Language code"),
     output_dir: Optional[Path] = typer.Option(
