@@ -222,6 +222,44 @@ class ClaimsOutput(PipelineBaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Fact-check group
+# ---------------------------------------------------------------------------
+
+
+class VerifiedClaim(PipelineBaseModel):
+    """A claim that has been fact-checked against web sources."""
+
+    id: str
+    category: str
+    value: str
+    sentence: str
+    line: int
+    section: str | None = Field(default=None)
+    verdict: str  # "correct" | "incorrect" | "uncertain" | "unverifiable"
+    corrected_value: str | None = Field(default=None)
+    sources: list[str] = Field(default_factory=list)
+    notes: str | None = Field(default=None)
+
+
+class FactCheckMeta(PipelineBaseModel):
+    """Metadata for the fact-check pipeline run."""
+
+    draft: str
+    checked_at: str
+    total_claims_extracted: int
+    total_claims_supplemented: int
+    total_claims_checked: int
+    corrections_applied: int
+
+
+class FactCheckOutput(PipelineBaseModel):
+    """Top-level output of the fact-check pipeline."""
+
+    meta: FactCheckMeta
+    verified_claims: list[VerifiedClaim]
+
+
+# ---------------------------------------------------------------------------
 # WDF*IDF group
 # ---------------------------------------------------------------------------
 
