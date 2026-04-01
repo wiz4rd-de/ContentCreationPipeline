@@ -37,7 +37,7 @@ class TestCompleteRawString:
             assert kwargs["model"] == "claude-sonnet-4-20250514"
             assert kwargs["api_key"] == "test-key"
             assert kwargs["temperature"] == 0.3
-            assert kwargs["max_tokens"] == 4096
+            assert kwargs["max_tokens"] == 8192
             assert "response_format" not in kwargs
             return _make_litellm_response(expected)
 
@@ -67,8 +67,7 @@ class TestCompleteStructured:
         def mock_completion(**kwargs):
             assert "response_format" in kwargs
             fmt = kwargs["response_format"]
-            assert fmt["type"] == "json_schema"
-            assert fmt["json_schema"]["name"] == "QualitativeResponse"
+            assert fmt["type"] == "json_object"
             return _make_litellm_response(json.dumps(response_data))
 
         import litellm

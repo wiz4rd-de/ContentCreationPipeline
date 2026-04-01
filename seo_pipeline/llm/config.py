@@ -35,7 +35,7 @@ class LLMConfig(PipelineBaseModel):
     api_key: str | None = None
     api_base: str | None = None
     temperature: float = 0.3
-    max_tokens: int = 4096
+    max_tokens: int = 8192
 
     def litellm_model(self) -> str:
         """Return the model string with the correct LiteLLM prefix."""
@@ -92,5 +92,5 @@ class LLMConfig(PipelineBaseModel):
             api_key=_get("LLM_API_KEY"),
             api_base=_get("LLM_API_BASE"),
             temperature=float(temperature_str) if temperature_str else 0.3,
-            max_tokens=int(max_tokens_str) if max_tokens_str else 4096,
+            max_tokens=int(max_tokens_str) if max_tokens_str else 8192,
         )
