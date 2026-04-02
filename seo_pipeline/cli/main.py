@@ -689,6 +689,12 @@ def run_pipeline(
         None, help="Path to briefing template file (passed to assemble-briefing-md)",
         exists=True, file_okay=True, dir_okay=False,
     ),
+    user_domain: Optional[str] = typer.Option(
+        None, help="User domain to exclude from competitor analysis",
+    ),
+    business_context: Optional[str] = typer.Option(
+        None, help="Business context for briefing generation",
+    ),
 ) -> None:
     """Run the full SEO content pipeline end-to-end for a keyword."""
     import os
@@ -848,6 +854,7 @@ def run_pipeline(
     _log("Stage 8/11: Assembling briefing data...")
     briefing = _assemble_briefing_data(
         out_dir, market=location, language=language,
+        user_domain=user_domain, business_context=business_context,
     )
     briefing_dict = _normalize_tree(briefing)
     briefing_path = out_dir / "briefing-data.json"
