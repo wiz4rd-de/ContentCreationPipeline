@@ -333,7 +333,7 @@ def fact_check(
     for vc in verified:
         if vc.verdict == "incorrect" and vc.corrected_value:
             new_text = draft_text.replace(
-                vc.value, vc.corrected_value, 1
+                vc.value, vc.corrected_value
             )
             if new_text != draft_text:
                 draft_text = new_text
