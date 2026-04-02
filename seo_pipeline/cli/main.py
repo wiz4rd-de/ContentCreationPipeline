@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
@@ -33,8 +34,18 @@ def main(
         False, "--version", callback=_version_callback, is_eager=True,
         help="Show version and exit.",
     ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v",
+        help="Enable verbose logging (INFO level).",
+    ),
 ) -> None:
     """SEO content creation pipeline."""
+    if verbose:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+            datefmt="%H:%M:%S",
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -467,6 +478,42 @@ def extract_claims(
 
 
 @app.command()
+def fact_check(
+    draft: str = typer.Option(
+        ..., help="Path to the draft markdown file",
+    ),
+    dir: Optional[Path] = typer.Option(
+        None, help="Output directory (defaults to draft's parent)",
+    ),
+) -> None:
+    """Run full fact-check pipeline on a draft."""
+    from seo_pipeline.analysis.fact_check import (
+        fact_check as _fact_check,
+    )
+    from seo_pipeline.llm.config import LLMConfig
+    from seo_pipeline.utils.load_api_config import load_env as _load_env
+
+    out_dir = dir or Path(draft).parent
+    env_path = str(
+        Path(__file__).resolve().parent.parent.parent / "api.env"
+    )
+    api_cfg = _load_env(env_path)
+    llm_cfg = LLMConfig.from_env()
+    result = _fact_check(
+        str(draft), str(out_dir), llm_cfg, api_cfg,
+    )
+    logger = logging.getLogger(__name__)
+    if logger.isEnabledFor(logging.DEBUG):
+        output_json = (
+            json.dumps(
+                result.model_dump(), indent=2, ensure_ascii=False,
+            )
+            + "\n"
+        )
+        typer.echo(output_json, nl=False)
+
+
+@app.command()
 def score_draft_wdfidf(
     draft: Path = typer.Option(..., help="Path to draft text file"),
     pages_dir: Path = typer.Option(
@@ -634,7 +681,8 @@ def run_pipeline(
         None, help="LLM model name",
     ),
     tov: Optional[Path] = typer.Option(
-        None, help="Path to tone-of-voice file (passed to assemble-briefing-md and write-draft)",
+        None,
+        help="Path to tone-of-voice file (passed to briefing-md and write-draft)",
         exists=True, file_okay=True, dir_okay=False,
     ),
     template: Optional[Path] = typer.Option(
@@ -668,7 +716,7 @@ def run_pipeline(
     from seo_pipeline.serp.fetch_serp import fetch_serp as _fetch_serp
 
     if not skip_fetch:
-        _log("Stage 1/10: Fetching SERP data...")
+        _log("Stage 1/11: Fetching SERP data...")
         asyncio.run(
             _fetch_serp(
                 keyword, location, language,
@@ -676,7 +724,7 @@ def run_pipeline(
             )
         )
     else:
-        _log("Stage 1/10: Skipping SERP fetch (cached)...")
+        _log("Stage 1/11: Skipping SERP fetch (cached)...")
         serp_raw_path = out_dir / "serp-raw.json"
         if not serp_raw_path.exists():
             typer.echo(f"Error: cached serp-raw.json not found at {serp_raw_path}",
@@ -686,7 +734,7 @@ def run_pipeline(
     # --- Stage 2: Process SERP ---
     from seo_pipeline.serp.process_serp import process_serp as _process_serp
 
-    _log("Stage 2/10: Processing SERP data...")
+    _log("Stage 2/11: Processing SERP data...")
     serp_raw_path = out_dir / "serp-raw.json"
     serp_raw = json.loads(serp_raw_path.read_text(encoding="utf-8"))
     serp_processed = _process_serp(serp_raw, top_n=10)
@@ -700,7 +748,7 @@ def run_pipeline(
     from seo_pipeline.extractor.extract_page import extract_page as _extract_page
 
     competitors = serp_processed.get("competitors", [])
-    _log(f"Stage 3/10: Extracting {len(competitors)} competitor pages...")
+    _log(f"Stage 3/11: Extracting {len(competitors)} competitor pages...")
     for comp in competitors:
         comp_url = comp.get("url")
         if not comp_url:
@@ -721,7 +769,7 @@ def run_pipeline(
     )
 
     if not skip_fetch:
-        _log("Stage 4/10: Fetching keywords...")
+        _log("Stage 4/11: Fetching keywords...")
         env_path = str(Path(__file__).resolve().parent.parent.parent / "api.env")
         asyncio.run(
             _fetch_keywords(
@@ -730,14 +778,14 @@ def run_pipeline(
             )
         )
     else:
-        _log("Stage 4/10: Skipping keyword fetch (cached)...")
+        _log("Stage 4/11: Skipping keyword fetch (cached)...")
 
     # --- Stage 5: Process keywords ---
     from seo_pipeline.keywords.process_keywords import (
         process_keywords as _process_keywords,
     )
 
-    _log("Stage 5/10: Processing keywords...")
+    _log("Stage 5/11: Processing keywords...")
     related_path = out_dir / "keywords-related-raw.json"
     suggestions_path = out_dir / "keywords-suggestions-raw.json"
     if related_path.exists() and suggestions_path.exists():
@@ -758,7 +806,7 @@ def run_pipeline(
         filter_keywords as _filter_keywords,
     )
 
-    _log("Stage 6/10: Filtering keywords...")
+    _log("Stage 6/11: Filtering keywords...")
     kw_filtered = _filter_keywords(kw_processed, serp_processed, keyword)
     kw_filtered_path = out_dir / "keywords-filtered.json"
     kw_filtered_path.write_text(
@@ -774,7 +822,7 @@ def run_pipeline(
         analyze_page_structure as _analyze_page_structure,
     )
 
-    _log("Stage 7/10: Running content analysis...")
+    _log("Stage 7/11: Running content analysis...")
     topics = _analyze_content_topics(pages_dir, keyword, language=language)
     topics_path = out_dir / "content-topics.json"
     topics_path.write_text(
@@ -797,7 +845,7 @@ def run_pipeline(
         assemble_briefing_data as _assemble_briefing_data,
     )
 
-    _log("Stage 8/10: Assembling briefing data...")
+    _log("Stage 8/11: Assembling briefing data...")
     briefing = _assemble_briefing_data(
         out_dir, market=location, language=language,
     )
@@ -813,12 +861,15 @@ def run_pipeline(
         summarize_briefing as _summarize_briefing,
     )
 
-    _log("Stage 9/10: Summarizing briefing...")
+    _log("Stage 9/11: Summarizing briefing...")
     summary = _summarize_briefing(str(briefing_path))
     _log(summary)
 
     # --- Stage 10: LLM stages (qualitative + briefing md + draft) ---
-    _log("Stage 10/10: LLM stages (fill-qualitative, assemble-briefing-md, write-draft)...")
+    _log(
+        "Stage 10/11: LLM stages "
+        "(fill-qualitative, assemble-briefing-md, write-draft)..."
+    )
 
     from seo_pipeline.llm.config import LLMConfig
 
@@ -829,14 +880,14 @@ def run_pipeline(
         llm_configured = False
 
     if llm_configured:
+        from seo_pipeline.analysis.assemble_briefing_md import (
+            assemble_briefing_md as _assemble_briefing_md,
+        )
         from seo_pipeline.analysis.fill_qualitative import (
             fill_qualitative as _fill_qualitative,
         )
         from seo_pipeline.analysis.merge_qualitative import (
             merge_qualitative as _merge_qualitative,
-        )
-        from seo_pipeline.analysis.assemble_briefing_md import (
-            assemble_briefing_md as _assemble_briefing_md,
         )
         from seo_pipeline.drafting.write_draft import write_draft as _write_draft
 
@@ -852,13 +903,56 @@ def run_pipeline(
             str(brief_path),
             tov_path=str(tov) if tov else None,
         )
+
+        # --- Stage 11: Fact-check draft ---
+        _log("Stage 11/11: Fact-checking draft...")
+        from seo_pipeline.analysis.fact_check import (
+            fact_check as _fact_check,
+        )
+        from seo_pipeline.utils.load_api_config import (
+            load_env as _load_env,
+        )
+
+        env_path_str = str(
+            Path(__file__).resolve().parent.parent.parent / "api.env"
+        )
+        try:
+            api_cfg = _load_env(env_path_str)
+            draft_path = out_dir / f"draft-{slug}.md"
+            if draft_path.exists():
+                _fact_check(
+                    str(draft_path),
+                    str(out_dir),
+                    LLMConfig.from_env(),
+                    api_cfg,
+                )
+            else:
+                _log(
+                    "  Warning: draft not found, "
+                    "skipping fact-check"
+                )
+        except Exception as exc:
+            _log(
+                f"  Warning: fact-check failed ({exc}), "
+                "continuing..."
+            )
     else:
         _log("  LLM not configured — run these stages manually:")
         tov_flag = f" --tov {tov}" if tov else ""
         template_flag = f" --template {template}" if template else ""
         _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
         _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
-        _log(f"  uv run seo-pipeline assemble-briefing-md --dir {out_dir}{template_flag}{tov_flag}")
-        _log(f"  uv run seo-pipeline write-draft --brief {out_dir}/brief-{slug}.md{tov_flag}")
+        _log(
+            f"  uv run seo-pipeline assemble-briefing-md"
+            f" --dir {out_dir}{template_flag}{tov_flag}"
+        )
+        _log(
+            f"  uv run seo-pipeline write-draft"
+            f" --brief {out_dir}/brief-{slug}.md{tov_flag}"
+        )
+        _log(
+            f"  uv run seo-pipeline fact-check"
+            f" --draft {out_dir}/draft-{slug}.md"
+        )
 
     _log(f"\nPipeline complete. Output directory: {out_dir}")

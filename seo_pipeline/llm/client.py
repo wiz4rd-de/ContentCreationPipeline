@@ -3,28 +3,104 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from typing import TYPE_CHECKING, Any
 
 from seo_pipeline.llm.config import LLMConfig
+
+logger = logging.getLogger(__name__)
+
+# Rate limiting — space calls to stay under provider limits
+_MIN_CALL_INTERVAL = 12.0  # seconds between calls (60s / 5 req)
+_last_call_time: float = 0.0
+
+# Retry settings — handles 429s that still slip through and transient errors
+_MAX_RETRIES = 5
+_DEFAULT_RATE_LIMIT_WAIT = 12.0  # 60s / 5 req — conservative default
+_RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 529}
+_TRANSIENT_BACKOFF = 2.0  # initial backoff for 5xx errors
 
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
 
-def _enforce_additional_properties_false(schema: Any) -> Any:
-    """Recursively set additionalProperties: false on all object schemas.
+def _enforce_strict_schema(schema: Any) -> Any:
+    """Recursively enforce strict JSON schema constraints.
 
+    - Sets additionalProperties: false on all object schemas.
+    - Ensures all properties are listed in required.
     Required by Anthropic's structured output API.
     """
     if isinstance(schema, dict):
         if schema.get("type") == "object":
             schema.setdefault("additionalProperties", False)
+            if "properties" in schema:
+                schema["required"] = list(schema["properties"].keys())
         for value in schema.values():
-            _enforce_additional_properties_false(value)
+            _enforce_strict_schema(value)
     elif isinstance(schema, list):
         for item in schema:
-            _enforce_additional_properties_false(item)
+            _enforce_strict_schema(item)
     return schema
+
+
+def _throttle() -> None:
+    """Sleep if needed to respect _MIN_CALL_INTERVAL between LLM calls."""
+    global _last_call_time
+    now = time.monotonic()
+    elapsed = now - _last_call_time
+    if _last_call_time > 0 and elapsed < _MIN_CALL_INTERVAL:
+        wait = _MIN_CALL_INTERVAL - elapsed
+        logger.info("Rate-limiting: waiting %.1fs before next LLM call", wait)
+        time.sleep(wait)
+    _last_call_time = time.monotonic()
+
+
+def _get_wait_seconds(exc: Exception, transient_backoff: float) -> float:
+    """Determine how long to wait before retrying.
+
+    For 429: use retry-after header if present, else _DEFAULT_RATE_LIMIT_WAIT.
+    For 5xx: use exponential backoff.
+    """
+    status = getattr(exc, "status_code", None)
+    if status == 429:
+        response = getattr(exc, "response", None)
+        headers = getattr(response, "headers", None) if response else None
+        if headers:
+            retry_after = headers.get("retry-after")
+            if retry_after:
+                try:
+                    return float(retry_after)
+                except ValueError:
+                    pass
+        return _DEFAULT_RATE_LIMIT_WAIT
+    return transient_backoff
+
+
+def _completion_with_retry(litellm: Any, kwargs: dict) -> Any:
+    """Call litellm.completion with retry on rate-limit and transient errors.
+
+    429s wait for the retry-after duration (or 12s default).
+    5xx errors use exponential backoff (2s, 4s, 8s, ...).
+    """
+    transient_backoff = _TRANSIENT_BACKOFF
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            return litellm.completion(**kwargs)
+        except Exception as exc:
+            status = getattr(exc, "status_code", None)
+            if status not in _RETRYABLE_STATUS_CODES or attempt == _MAX_RETRIES:
+                raise
+            wait = _get_wait_seconds(exc, transient_backoff)
+            logger.warning(
+                "LLM call returned %s, waiting %.1fs before retry (attempt %d/%d)",
+                status, wait, attempt, _MAX_RETRIES,
+            )
+            time.sleep(wait)
+            if status != 429:
+                transient_backoff *= 2
+    raise RuntimeError("retry loop exited unexpectedly")
 
 
 def complete(
@@ -66,9 +142,20 @@ def complete(
         kwargs["api_base"] = config.api_base
 
     if response_model is not None:
-        kwargs["response_format"] = {"type": "json_object"}
+        schema = _enforce_strict_schema(
+            response_model.model_json_schema()
+        )
+        kwargs["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {
+                "name": response_model.__name__,
+                "strict": True,
+                "schema": schema,
+            },
+        }
 
-    response = litellm.completion(**kwargs)
+    _throttle()
+    response = _completion_with_retry(litellm, kwargs)
     content = response.choices[0].message.content
 
     if response_model is not None:
