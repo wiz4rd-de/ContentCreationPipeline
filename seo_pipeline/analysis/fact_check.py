@@ -300,23 +300,32 @@ def fact_check(
     # Step 1: Extract regex-based claims
     claims_output = extract_claims(draft_path)
     regex_claims = claims_output.claims
+    logger.info("Extracted %d claims via regex", len(regex_claims))
 
     # Step 2: Supplement with LLM
     draft_text = draft_path_obj.read_text(encoding="utf-8")
+    logger.info("Supplementing claims via LLM...")
     supplemented = supplement_claims(
         draft_text, regex_claims, llm_config
     )
+    logger.info("LLM added %d supplemental claims", len(supplemented))
 
     # Step 3: Prioritize and cap
     all_claims = regex_claims + supplemented
     all_claims.sort(key=_claim_priority)
     capped_claims = all_claims[:40]
+    logger.info("Checking %d claims (capped at 40)", len(capped_claims))
 
     # Step 4: Search and verify
     verified: list[VerifiedClaim] = []
-    for claim in capped_claims:
+    for i, claim in enumerate(capped_claims, 1):
+        logger.info(
+            "[%d/%d] %s: %s", i, len(capped_claims),
+            claim.id, claim.value[:60],
+        )
         snippets = search_claim(claim.value, api_config)
         vc = verify_claim(claim, snippets, llm_config)
+        logger.info("  → %s", vc.verdict)
         verified.append(vc)
 
     # Step 5: Apply corrections

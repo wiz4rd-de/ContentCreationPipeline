@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Optional
@@ -33,8 +34,18 @@ def main(
         False, "--version", callback=_version_callback, is_eager=True,
         help="Show version and exit.",
     ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v",
+        help="Enable verbose logging (INFO level).",
+    ),
 ) -> None:
     """SEO content creation pipeline."""
+    if verbose:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+            datefmt="%H:%M:%S",
+        )
 
 
 # ---------------------------------------------------------------------------
