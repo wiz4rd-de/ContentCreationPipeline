@@ -1,8 +1,9 @@
-"""Page extractor using BeautifulSoup + readability-lxml.
+"""Page extractor using BeautifulSoup + trafilatura.
 
 Fetches a URL and extracts structured page metadata, headings,
-link counts, readability content, and HTML signals. Deterministic
-HTML parsing with tolerance for readability content differences.
+link counts, main content, and HTML signals. Uses trafilatura with
+favor_recall=True for content extraction to match Node.js pipeline
+word counts more closely than readability-lxml.
 
 Usage:
     python -m seo_pipeline.extractor.extract_page <URL> [--output path]
@@ -12,14 +13,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
+import trafilatura
 from bs4 import BeautifulSoup
-from readability import Document as ReadabilityDocument
+
+logger = logging.getLogger(__name__)
 
 USER_AGENT = "Mozilla/5.0 (compatible; ContentExtractor/1.0)"
 TIMEOUT_SECONDS = 15
@@ -100,23 +104,25 @@ def extract_page_from_html(html: str, url: str) -> dict:
             # Skip malformed URLs (urlparse raises ValueError)
             pass
 
-    # Readability extraction for main content
-    doc = ReadabilityDocument(html, url=url)
-    article_html = doc.summary() or ""
-    readability_title = doc.short_title() or ""
+    # Content extraction via trafilatura (favor_recall=True for broad extraction)
+    main_text_raw = trafilatura.extract(
+        html,
+        url=url,
+        favor_recall=True,
+        include_tables=True,
+        include_comments=False,
+    ) or ""
 
-    # Extract text from readability HTML
-    if article_html:
-        content_soup = BeautifulSoup(article_html, "lxml")
-        main_text_raw = content_soup.get_text()
-    else:
-        main_text_raw = ""
+    # Title from trafilatura metadata, falling back to <title> tag
+    meta = trafilatura.extract_metadata(html, default_url=url)
+    readability_title = (meta.title if meta and meta.title else "") or title
 
     word_count = len(main_text_raw.split()) if main_text_raw.strip() else 0
     main_content_text = re.sub(r"\s+", " ", main_text_raw).strip()
     main_content_preview = main_content_text[:300]
 
-    # HTML signals from readability-extracted content
+    # HTML signals counted from the full page body, since trafilatura
+    # does not preserve structural HTML elements in its output
     html_signals = {
         "faq_sections": 0,
         "tables": 0,
@@ -126,19 +132,19 @@ def extract_page_from_html(html: str, url: str) -> dict:
         "forms": 0,
         "images_in_content": 0,
     }
-    if article_html:
-        content_soup = BeautifulSoup(article_html, "lxml")
+    body_tag = soup.find("body")
+    if body_tag:
         html_signals["faq_sections"] = len(
-            content_soup.find_all(["details", "summary"])
+            body_tag.find_all(["details", "summary"])
         )
-        html_signals["tables"] = len(content_soup.find_all("table"))
-        html_signals["ordered_lists"] = len(content_soup.find_all("ol"))
-        html_signals["unordered_lists"] = len(content_soup.find_all("ul"))
+        html_signals["tables"] = len(body_tag.find_all("table"))
+        html_signals["ordered_lists"] = len(body_tag.find_all("ol"))
+        html_signals["unordered_lists"] = len(body_tag.find_all("ul"))
         html_signals["video_embeds"] = len(
-            content_soup.find_all(["iframe", "video"])
+            body_tag.find_all(["iframe", "video"])
         )
-        html_signals["forms"] = len(content_soup.find_all("form"))
-        html_signals["images_in_content"] = len(content_soup.find_all("img"))
+        html_signals["forms"] = len(body_tag.find_all("form"))
+        html_signals["images_in_content"] = len(body_tag.find_all("img"))
 
     return {
         "url": url,
@@ -163,6 +169,7 @@ def extract_page(url: str) -> dict:
 
     On any error, returns {"error": message, "url": url}.
     """
+    logger.info("Fetching %s", url)
     try:
         response = httpx.get(
             url,
@@ -170,9 +177,19 @@ def extract_page(url: str) -> dict:
             follow_redirects=True,
             timeout=TIMEOUT_SECONDS,
         )
+        logger.info("Response %d for %s", response.status_code, url)
         html = response.text
-        return extract_page_from_html(html, url)
+        result = extract_page_from_html(html, url)
+        logger.info(
+            "Extracted: %d words, %d headings, h1=%r from %s",
+            result.get("word_count", 0),
+            len(result.get("headings", [])),
+            result.get("h1", ""),
+            url,
+        )
+        return result
     except Exception as err:
+        logger.info("Extraction failed for %s: %s", url, err)
         return {"error": str(err), "url": url}
 
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from seo_pipeline.llm.client import complete
 from seo_pipeline.llm.prompts.qualitative import build_qualitative_prompt
 from seo_pipeline.models.analysis import BriefingData
 from seo_pipeline.models.llm_responses import QualitativeResponse
+
+logger = logging.getLogger(__name__)
 
 
 def fill_qualitative(dir_path: str) -> None:
@@ -36,14 +39,17 @@ def fill_qualitative(dir_path: str) -> None:
         print(f"Error: briefing-data.json not found in {dir_path}", file=sys.stderr)
         sys.exit(1)
 
+    logger.info("Loading briefing data from %s", briefing_path)
     briefing_data = BriefingData.model_validate(
         json.loads(briefing_path.read_text(encoding="utf-8")),
     )
 
     messages = build_qualitative_prompt(briefing_data)
+    logger.info("LLM call start: qualitative analysis")
     result: QualitativeResponse = complete(
         messages=messages, response_model=QualitativeResponse,
     )
+    logger.info("LLM call complete: qualitative analysis")
 
     qualitative_dict = result.model_dump(mode="json")
     qualitative_path = directory / "qualitative.json"
@@ -51,7 +57,7 @@ def fill_qualitative(dir_path: str) -> None:
         json.dumps(qualitative_dict, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print(f"fill-qualitative: wrote {qualitative_path}")
+    logger.info("Wrote %s", qualitative_path)
 
     merge_qualitative(dir_path)
 

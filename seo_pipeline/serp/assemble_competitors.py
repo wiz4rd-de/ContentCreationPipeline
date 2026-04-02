@@ -15,9 +15,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def get_page_fields(page_data: dict | None) -> dict:
@@ -101,11 +104,22 @@ def assemble_competitors(
 
     # Load all page data from directory
     page_data = load_page_data(pages_dir)
+    serp_competitors = serp.get("competitors", [])
+
+    logger.info(
+        "Assembling competitors: %d from SERP, %d page files loaded",
+        len(serp_competitors),
+        len(page_data),
+    )
 
     # Build competitors list with merged fields
     competitors = []
-    for comp in serp.get("competitors", []):
-        page_fields = get_page_fields(page_data.get(comp["domain"]))
+    page_matches = 0
+    for comp in serp_competitors:
+        domain_page = page_data.get(comp["domain"])
+        if domain_page is not None:
+            page_matches += 1
+        page_fields = get_page_fields(domain_page)
 
         competitor = {
             # Deterministic fields from SERP
@@ -135,6 +149,12 @@ def assemble_competitors(
             "weaknesses": None,
         }
         competitors.append(competitor)
+
+    logger.info(
+        "Assembly complete: %d competitors, %d with page data",
+        len(competitors),
+        page_matches,
+    )
 
     # Build output with top-level qualitative null placeholders
     output = {

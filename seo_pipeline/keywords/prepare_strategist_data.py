@@ -6,10 +6,13 @@ consolidates SERP features, PAA questions, and competitor keywords into a struct
 skeleton for the LLM content strategist step.
 """
 
+import logging
 import re
 
 from seo_pipeline.utils.math import js_round
 from seo_pipeline.utils.text import is_foreign_language
+
+logger = logging.getLogger(__name__)
 
 
 def _year_normalized_key(keyword: str) -> str:
@@ -308,6 +311,8 @@ def prepare_strategist_data(
         Dict with seed_keyword, top_keywords, all_keywords, autocomplete,
         content_ideas, paa_questions, serp_snippets, competitor_keywords, and stats.
     """
+    logger.info("Preparing strategist data for seed %r", seed_keyword.strip())
+
     # Flatten keywords from clusters
     all_raw_keywords = _flatten_keywords(keywords_data)
 
@@ -375,6 +380,13 @@ def prepare_strategist_data(
         serp_snippets,
         competitor_keywords,
         all_raw_keywords,
+    )
+
+    logger.info(
+        "Strategist data ready: %d keywords, %d PAA questions, %d SERP snippets",
+        len(all_keywords),
+        len(paa_questions),
+        len(serp_snippets),
     )
 
     return {

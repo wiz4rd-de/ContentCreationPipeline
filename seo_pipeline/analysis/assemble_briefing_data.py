@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from datetime import datetime, timezone
@@ -20,6 +21,8 @@ from pathlib import Path
 from typing import Any
 
 from seo_pipeline.utils.math import normalize_number
+
+logger = logging.getLogger(__name__)
 
 PIPELINE_VERSION = "0.2.0"
 
@@ -349,6 +352,15 @@ def assemble_briefing_data(
         The assembled briefing data structure.
     """
     data = _load_inputs(directory)
+
+    found = [k for k, v in data.items() if v is not None]
+    missing = [k for k, v in data.items() if v is None]
+    logger.info(
+        "Briefing assembly: found %d/%d input files (missing: %s)",
+        len(found),
+        len(data),
+        ", ".join(missing) if missing else "none",
+    )
 
     date_str = _extract_date_from_dir(directory)
     current_year = int(date_str[:4])

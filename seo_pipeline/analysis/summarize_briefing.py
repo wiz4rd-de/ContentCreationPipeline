@@ -11,9 +11,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 _DIVIDER = "\u2500" * 35
 
@@ -25,7 +28,16 @@ def summarize_briefing(file_path: str) -> str:
         print(f"File not found: {path.resolve()}", file=sys.stderr)
         sys.exit(1)
 
+    logger.info("Summarizing briefing from %s", file_path)
     data = json.loads(path.read_text(encoding="utf-8"))
+    meta = data.get("meta") or {}
+    kw = data.get("keyword_data") or {}
+    logger.info(
+        "Briefing summary: seed=%r, %d keywords, %d clusters",
+        meta.get("seed_keyword"),
+        kw.get("total_keywords", 0),
+        len(kw.get("clusters", [])) if isinstance(kw.get("clusters"), list) else 0,
+    )
     return _format_summary(data)
 
 

@@ -2,10 +2,13 @@
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 
 from seo_pipeline.keywords.extract_keywords import extract_keywords
+
+logger = logging.getLogger(__name__)
 
 
 def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
@@ -36,6 +39,12 @@ def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
     # Extract keywords from both sources
     related_keywords = extract_keywords(related_raw)
     suggestions_keywords = extract_keywords(suggestions_raw)
+
+    logger.info(
+        "Merging keywords: %d related, %d suggestions",
+        len(related_keywords),
+        len(suggestions_keywords),
+    )
 
     # Deduplicate case-insensitively, preferring related_keywords on collision
     seen = {}  # lowercase keyword -> merged record
@@ -68,6 +77,13 @@ def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
             -(kw["search_volume"] if kw["search_volume"] is not None else -1),
             kw["keyword"].lower(),
         )
+    )
+
+    dedup_count = len(related_keywords) + len(suggestions_keywords) - len(merged)
+    logger.info(
+        "Merge complete: %d unique keywords (%d duplicates removed)",
+        len(merged),
+        dedup_count,
     )
 
     # Output

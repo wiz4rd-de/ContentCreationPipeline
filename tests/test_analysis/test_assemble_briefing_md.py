@@ -158,18 +158,17 @@ class TestAssembleBriefingMd:
         assert raw.endswith("\n")
         json.loads(raw)
 
-    def test_output_in_stdout(
-        self, work_dir: Path, capsys: pytest.CaptureFixture[str],
+    def test_output_in_log(
+        self, work_dir: Path, caplog: pytest.LogCaptureFixture,
     ) -> None:
-        with patch(
+        with caplog.at_level("INFO"), patch(
             "seo_pipeline.analysis.assemble_briefing_md.complete",
             return_value=CANNED_MARKDOWN,
         ):
             assemble_briefing_md(str(work_dir))
 
-        captured = capsys.readouterr()
-        assert "brief-test-keyword.md" in captured.out
-        assert "qualitative.briefing" in captured.out
+        assert "brief-test-keyword.md" in caplog.text
+        assert "qualitative.briefing" in caplog.text
 
 
 class TestAssembleBriefingMdCLI:

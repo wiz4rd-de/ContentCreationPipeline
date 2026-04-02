@@ -214,21 +214,19 @@ class TestWriteDraft:
         with pytest.raises(SystemExit):
             write_draft("/nonexistent/brief-foo.md")
 
-    def test_stdout_output(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str],
+    def test_log_output(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture,
     ) -> None:
         brief_file = tmp_path / "brief-kw.md"
         brief_file.write_text(SAMPLE_BRIEFING, encoding="utf-8")
 
-        with patch(
+        with caplog.at_level("INFO"), patch(
             "seo_pipeline.drafting.write_draft.complete",
             return_value=CANNED_DRAFT,
         ):
             write_draft(str(brief_file))
 
-        captured = capsys.readouterr()
-        assert "write-draft" in captured.out
-        assert "draft-kw.md" in captured.out
+        assert "draft-kw.md" in caplog.text
 
 
 class TestWriteDraftCLI:

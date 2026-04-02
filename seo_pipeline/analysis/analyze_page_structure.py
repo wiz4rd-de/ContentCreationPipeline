@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from collections import Counter
@@ -27,6 +28,8 @@ from seo_pipeline.models.analysis import (
     PageStructureSection,
 )
 from seo_pipeline.utils.math import js_round, normalize_number
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -195,6 +198,7 @@ def analyze_page_structure(pages_dir: Path) -> PageStructure:
         module frequency analysis.
     """
     page_files = sorted(p for p in pages_dir.iterdir() if p.suffix == ".json")
+    logger.info("Page structure: analyzing %d page files", len(page_files))
 
     empty_cross = CrossCompetitorAnalysis(
         common_modules=[],
@@ -309,6 +313,16 @@ def analyze_page_structure(pages_dir: Path) -> PageStructure:
         module_frequency=module_frequency,
         avg_word_count=avg_word_count,
         avg_sections=avg_sections,
+    )
+
+    mod_summary = (
+        ", ".join(f"{k}={v}" for k, v in module_frequency.items())
+        if module_frequency else "none"
+    )
+    logger.info(
+        "Page structure complete: %d competitors, modules: %s",
+        total_competitors,
+        mod_summary,
     )
 
     return PageStructure(competitors=competitors, cross_competitor=cross_competitor)

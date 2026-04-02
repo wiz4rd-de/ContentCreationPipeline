@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
@@ -25,6 +26,8 @@ from seo_pipeline.models.analysis import (
     ProminenceCorrection,
     ProminenceDebug,
 )
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Synonym matching
@@ -91,9 +94,10 @@ def compute_entity_prominence(
 
     total_pages = len(page_texts)
 
-    print(
-        f"Computing entity prominence across {len(page_files)} pages...",
-        file=sys.stderr,
+    logger.info(
+        "Entity prominence: %d clusters, %d pages",
+        len(entities_data.get("entity_clusters", [])),
+        total_pages,
     )
 
     corrections: list[dict[str, Any]] = []
@@ -144,6 +148,12 @@ def compute_entity_prominence(
                 entities=output_entities,
             )
         )
+
+    logger.info(
+        "Entity prominence complete: %d clusters, %d corrections",
+        len(output_clusters),
+        len(corrections),
+    )
 
     result = EntityProminence(entity_clusters=output_clusters)
 

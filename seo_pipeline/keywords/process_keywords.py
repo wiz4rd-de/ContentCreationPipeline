@@ -8,12 +8,15 @@ output.
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
 
 from seo_pipeline.keywords.extract_keywords import extract_keywords
 from seo_pipeline.utils.math import js_round, normalize_number
+
+logger = logging.getLogger(__name__)
 
 # Word-boundary regex patterns for DE + EN intent classification.
 # Order matters: first match wins (transactional > commercial > informational).
@@ -182,6 +185,8 @@ def process_keywords(
     """
     brand_list = [b.lower().strip() for b in (brands or []) if b.strip()]
 
+    logger.info("Processing keywords for seed %r", seed.strip())
+
     # Build volume lookup
     volume_map = build_volume_map(volume_raw) if volume_raw else {}
 
@@ -326,6 +331,12 @@ def process_keywords(
             if cluster["keywords"]
             else 0
         )
+
+    logger.info(
+        "Processing complete: %d unique keywords, %d clusters",
+        len(merged),
+        len(clusters),
+    )
 
     # 7. Output JSON skeleton
     return {

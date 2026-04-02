@@ -34,18 +34,23 @@ def main(
         False, "--version", callback=_version_callback, is_eager=True,
         help="Show version and exit.",
     ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v",
-        help="Enable verbose logging (INFO level).",
+    verbose: int = typer.Option(
+        0, "--verbose", "-v", count=True,
+        help="-v for INFO, -vv for DEBUG.",
     ),
 ) -> None:
     """SEO content creation pipeline."""
-    if verbose:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-            datefmt="%H:%M:%S",
-        )
+    if verbose >= 2:
+        level = logging.DEBUG
+    elif verbose == 1:
+        level = logging.INFO
+    else:
+        return
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -689,6 +694,12 @@ def run_pipeline(
         None, help="Path to briefing template file (passed to assemble-briefing-md)",
         exists=True, file_okay=True, dir_okay=False,
     ),
+    user_domain: Optional[str] = typer.Option(
+        None, help="User domain to exclude from competitor analysis",
+    ),
+    business_context: Optional[str] = typer.Option(
+        None, help="Business context for briefing generation",
+    ),
 ) -> None:
     """Run the full SEO content pipeline end-to-end for a keyword."""
     import os
@@ -848,6 +859,7 @@ def run_pipeline(
     _log("Stage 8/11: Assembling briefing data...")
     briefing = _assemble_briefing_data(
         out_dir, market=location, language=language,
+        user_domain=user_domain, business_context=business_context,
     )
     briefing_dict = _normalize_tree(briefing)
     briefing_path = out_dir / "briefing-data.json"
@@ -892,7 +904,6 @@ def run_pipeline(
         from seo_pipeline.drafting.write_draft import write_draft as _write_draft
 
         _fill_qualitative(str(out_dir))
-        _merge_qualitative(str(out_dir))
         _assemble_briefing_md(
             str(out_dir),
             template_path=str(template) if template else None,
@@ -940,11 +951,13 @@ def run_pipeline(
         _log("  LLM not configured — run these stages manually:")
         tov_flag = f" --tov {tov}" if tov else ""
         template_flag = f" --template {template}" if template else ""
+        ud_flag = f" --user-domain {user_domain}" if user_domain else ""
+        bc_flag = f" --business-context '{business_context}'" if business_context else ""
         _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
         _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
         _log(
             f"  uv run seo-pipeline assemble-briefing-md"
-            f" --dir {out_dir}{template_flag}{tov_flag}"
+            f" --dir {out_dir}{template_flag}{tov_flag}{ud_flag}{bc_flag}"
         )
         _log(
             f"  uv run seo-pipeline write-draft"
