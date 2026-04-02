@@ -36,14 +36,22 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------
 
 
+class _SupplementClaim(PipelineBaseModel):
+    category: str
+    value: str
+    sentence: str
+    line: int
+    section: str | None
+
+
 class _SupplementResponse(PipelineBaseModel):
-    claims: list[dict]
+    claims: list[_SupplementClaim]
 
 
 class _VerdictResponse(PipelineBaseModel):
     verdict: str
-    corrected_value: str | None = Field(default=None)
-    notes: str | None = Field(default=None)
+    corrected_value: str | None
+    notes: str | None
 
 
 # -----------------------------------------------------------------------
@@ -119,11 +127,11 @@ def supplement_claims(
             result.append(
                 Claim(
                     id=f"s{i + 1:03d}",
-                    category=raw.get("category", "supplemented"),
-                    value=raw.get("value", ""),
-                    sentence=raw.get("sentence", ""),
-                    line=raw.get("line", 0),
-                    section=raw.get("section"),
+                    category=raw.category or "supplemented",
+                    value=raw.value,
+                    sentence=raw.sentence,
+                    line=raw.line,
+                    section=raw.section,
                 )
             )
         return result

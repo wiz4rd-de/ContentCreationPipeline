@@ -67,7 +67,9 @@ class TestCompleteStructured:
         def mock_completion(**kwargs):
             assert "response_format" in kwargs
             fmt = kwargs["response_format"]
-            assert fmt["type"] == "json_object"
+            assert fmt["type"] == "json_schema"
+            assert "json_schema" in fmt
+            assert fmt["json_schema"]["strict"] is True
             return _make_litellm_response(json.dumps(response_data))
 
         import litellm
@@ -171,6 +173,103 @@ class TestCompleteApiBase:
             config=cfg,
         )
         assert "api_base" not in captured
+
+
+class TestCompleteRetry:
+    """complete() retries on rate-limit and transient errors."""
+
+    def test_retries_on_429_then_succeeds(self, monkeypatch, llm_config):
+        call_count = 0
+
+        class RateLimitError(Exception):
+            status_code = 429
+
+        def mock_completion(**kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise RateLimitError("rate limited")
+            return _make_litellm_response("ok")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+        monkeypatch.setattr("seo_pipeline.llm.client._DEFAULT_RATE_LIMIT_WAIT", 0.01)
+
+        result = complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        assert result == "ok"
+        assert call_count == 3
+
+    def test_429_uses_retry_after_header(self, monkeypatch, llm_config):
+        """When retry-after header is present, use that duration."""
+        call_count = 0
+        wait_times: list[float] = []
+        original_sleep = __import__("time").sleep
+
+        class FakeResponse:
+            headers = {"retry-after": "0.01"}
+
+        class RateLimitError(Exception):
+            status_code = 429
+            response = FakeResponse()
+
+        def mock_completion(**kwargs):
+            nonlocal call_count
+            call_count += 1
+            if call_count < 2:
+                raise RateLimitError("rate limited")
+            return _make_litellm_response("ok")
+
+        def mock_sleep(seconds):
+            wait_times.append(seconds)
+            original_sleep(seconds)
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+        monkeypatch.setattr("seo_pipeline.llm.client.time.sleep", mock_sleep)
+
+        result = complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        assert result == "ok"
+        assert wait_times == [0.01]
+
+    def test_raises_non_retryable_error(self, monkeypatch, llm_config):
+        class AuthError(Exception):
+            status_code = 401
+
+        def mock_completion(**kwargs):
+            raise AuthError("unauthorized")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        with pytest.raises(AuthError):
+            complete(
+                messages=[{"role": "user", "content": "test"}],
+                config=llm_config,
+            )
+
+    def test_raises_after_max_retries(self, monkeypatch, llm_config):
+        class RateLimitError(Exception):
+            status_code = 429
+
+        def mock_completion(**kwargs):
+            raise RateLimitError("rate limited")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+        monkeypatch.setattr("seo_pipeline.llm.client._DEFAULT_RATE_LIMIT_WAIT", 0.01)
+        monkeypatch.setattr("seo_pipeline.llm.client._MAX_RETRIES", 2)
+
+        with pytest.raises(RateLimitError):
+            complete(
+                messages=[{"role": "user", "content": "test"}],
+                config=llm_config,
+            )
 
 
 class TestCompleteDefaultConfig:
