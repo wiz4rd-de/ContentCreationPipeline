@@ -947,11 +947,13 @@ def run_pipeline(
         _log("  LLM not configured — run these stages manually:")
         tov_flag = f" --tov {tov}" if tov else ""
         template_flag = f" --template {template}" if template else ""
+        ud_flag = f" --user-domain {user_domain}" if user_domain else ""
+        bc_flag = f" --business-context '{business_context}'" if business_context else ""
         _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
         _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
         _log(
             f"  uv run seo-pipeline assemble-briefing-md"
-            f" --dir {out_dir}{template_flag}{tov_flag}"
+            f" --dir {out_dir}{template_flag}{tov_flag}{ud_flag}{bc_flag}"
         )
         _log(
             f"  uv run seo-pipeline write-draft"
