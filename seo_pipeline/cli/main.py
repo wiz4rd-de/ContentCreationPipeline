@@ -502,13 +502,15 @@ def fact_check(
     result = _fact_check(
         str(draft), str(out_dir), llm_cfg, api_cfg,
     )
-    output_json = (
-        json.dumps(
-            result.model_dump(), indent=2, ensure_ascii=False,
+    logger = logging.getLogger(__name__)
+    if logger.isEnabledFor(logging.DEBUG):
+        output_json = (
+            json.dumps(
+                result.model_dump(), indent=2, ensure_ascii=False,
+            )
+            + "\n"
         )
-        + "\n"
-    )
-    typer.echo(output_json, nl=False)
+        typer.echo(output_json, nl=False)
 
 
 @app.command()
