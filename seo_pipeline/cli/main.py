@@ -34,18 +34,23 @@ def main(
         False, "--version", callback=_version_callback, is_eager=True,
         help="Show version and exit.",
     ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v",
-        help="Enable verbose logging (INFO level).",
+    verbose: int = typer.Option(
+        0, "--verbose", "-v", count=True,
+        help="-v for INFO, -vv for DEBUG.",
     ),
 ) -> None:
     """SEO content creation pipeline."""
-    if verbose:
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-            datefmt="%H:%M:%S",
-        )
+    if verbose >= 2:
+        level = logging.DEBUG
+    elif verbose == 1:
+        level = logging.INFO
+    else:
+        return
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
 
 # ---------------------------------------------------------------------------
