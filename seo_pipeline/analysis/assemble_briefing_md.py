@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -20,6 +21,8 @@ from seo_pipeline.llm.client import complete
 from seo_pipeline.llm.prompts.qualitative import build_briefing_assembly_prompt
 from seo_pipeline.models.analysis import BriefingData
 from seo_pipeline.utils.slugify import slugify
+
+logger = logging.getLogger(__name__)
 
 
 def assemble_briefing_md(
@@ -42,6 +45,7 @@ def assemble_briefing_md(
         print(f"Error: briefing-data.json not found in {dir_path}", file=sys.stderr)
         sys.exit(1)
 
+    logger.info("Loading briefing data from %s", briefing_path)
     raw_briefing = json.loads(briefing_path.read_text(encoding="utf-8"))
     briefing_data = BriefingData.model_validate(raw_briefing)
 
@@ -55,12 +59,14 @@ def assemble_briefing_md(
         if getattr(qual, field_name) is None:
             missing.append(field_name)
     if missing:
+        logger.info("Validation failed: missing fields %s", missing)
         print(
-            f"Error: qualitative fields not populated: {', '.join(missing)}. "
-            "Run fill_qualitative first.",
+            f"Error: qualitative fields not populated: "
+            f"{', '.join(missing)}. Run fill_qualitative first.",
             file=sys.stderr,
         )
         sys.exit(1)
+    logger.info("All qualitative fields validated")
 
     template = None
     if template_path:
@@ -78,21 +84,25 @@ def assemble_briefing_md(
             sys.exit(1)
         tone_of_voice = p.read_text(encoding="utf-8")
 
-    messages = build_briefing_assembly_prompt(briefing_data, template, tone_of_voice)
+    messages = build_briefing_assembly_prompt(
+        briefing_data, template, tone_of_voice,
+    )
+    logger.info("LLM call start: briefing assembly")
     markdown: str = complete(messages=messages)
+    logger.info("LLM call complete: briefing assembly")
 
     slug = slugify(briefing_data.meta.seed_keyword)
     md_path = directory / f"brief-{slug}.md"
     md_path.write_text(markdown, encoding="utf-8")
-    print(f"assemble-briefing-md: wrote {md_path}")
+    logger.info("Wrote %s (%d chars)", md_path, len(markdown))
 
-    # Update qualitative.briefing in briefing-data.json with a summary reference
+    # Update qualitative.briefing in briefing-data.json
     raw_briefing["qualitative"]["briefing"] = f"brief-{slug}.md"
     briefing_path.write_text(
         json.dumps(raw_briefing, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    print("assemble-briefing-md: updated qualitative.briefing in briefing-data.json")
+    logger.info("Updated qualitative.briefing in briefing-data.json")
 
 
 def _build_parser() -> argparse.ArgumentParser:

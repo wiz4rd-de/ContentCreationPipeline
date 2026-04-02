@@ -14,12 +14,15 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import sys
 from pathlib import Path
 
 from seo_pipeline.llm.client import complete
 from seo_pipeline.llm.prompts.draft import build_draft_prompt
+
+logger = logging.getLogger(__name__)
 
 
 def _slug_from_brief_path(brief_path: Path) -> str:
@@ -53,6 +56,7 @@ def write_draft(
         print(f"Error: briefing file not found: {brief_path}", file=sys.stderr)
         sys.exit(1)
 
+    logger.info("Loading briefing from %s", brief)
     briefing_markdown = brief.read_text(encoding="utf-8")
 
     tone_of_voice = None
@@ -63,13 +67,22 @@ def write_draft(
             sys.exit(1)
         tone_of_voice = p.read_text(encoding="utf-8")
 
-    messages = build_draft_prompt(briefing_markdown, tone_of_voice, instructions)
+    messages = build_draft_prompt(
+        briefing_markdown, tone_of_voice, instructions,
+    )
+    logger.info("LLM call start: draft generation")
     draft_content: str = complete(messages=messages)
+    logger.info("LLM call complete: draft generation")
 
     slug = _slug_from_brief_path(brief)
     output_path = brief.parent / f"draft-{slug}.md"
     output_path.write_text(draft_content, encoding="utf-8")
-    print(f"write-draft: wrote {output_path}")
+    logger.info(
+        "Wrote %s (%d chars, ~%d words)",
+        output_path,
+        len(draft_content),
+        len(draft_content.split()),
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:

@@ -136,18 +136,17 @@ class TestFillQualitative:
         # Parseable JSON
         json.loads(raw)
 
-    def test_output_in_stdout(
-        self, work_dir: Path, capsys: pytest.CaptureFixture[str],
+    def test_output_in_log(
+        self, work_dir: Path, caplog: pytest.LogCaptureFixture,
     ) -> None:
-        with patch(
+        with caplog.at_level("INFO"), patch(
             "seo_pipeline.analysis.fill_qualitative.complete",
             return_value=CANNED_QUALITATIVE,
         ):
             fill_qualitative(str(work_dir))
 
-        captured = capsys.readouterr()
-        assert "qualitative.json" in captured.out
-        assert "patched" in captured.out
+        assert "qualitative.json" in caplog.text
+        assert "patched" in caplog.text
 
 
 class TestFillQualitativeCLI:
