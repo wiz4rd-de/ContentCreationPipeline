@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from typing import TYPE_CHECKING, Any
 
@@ -12,12 +13,12 @@ from seo_pipeline.llm.config import LLMConfig
 logger = logging.getLogger(__name__)
 
 # Rate limiting — space calls to stay under provider limits
-_MIN_CALL_INTERVAL = 12.0  # seconds between calls (60s / 5 req)
+_MIN_CALL_INTERVAL = 15.0  # seconds between calls (60s / 5 req + grace)
 _last_call_time: float = 0.0
 
 # Retry settings — handles 429s that still slip through and transient errors
 _MAX_RETRIES = 5
-_DEFAULT_RATE_LIMIT_WAIT = 12.0  # 60s / 5 req — conservative default
+_DEFAULT_RATE_LIMIT_WAIT = 65.0  # token-based rate limits reset per minute
 _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 529}
 _TRANSIENT_BACKOFF = 2.0  # initial backoff for 5xx errors
 
@@ -34,7 +35,7 @@ def _enforce_strict_schema(schema: Any) -> Any:
     """
     if isinstance(schema, dict):
         if schema.get("type") == "object":
-            schema.setdefault("additionalProperties", False)
+            schema["additionalProperties"] = False
             if "properties" in schema:
                 schema["required"] = list(schema["properties"].keys())
         for value in schema.values():
@@ -156,7 +157,14 @@ def complete(
 
     _throttle()
     response = _completion_with_retry(litellm, kwargs)
-    content = response.choices[0].message.content
+    choice = response.choices[0]
+    content = choice.message.content
+
+    if choice.finish_reason == "length":
+        raise ValueError(
+            f"LLM response truncated (finish_reason='length'). "
+            f"Increase LLM_MAX_TOKENS (currently {config.max_tokens})."
+        )
 
     if response_model is not None:
         # Strip markdown code fences that some models wrap JSON in
@@ -165,6 +173,19 @@ def complete(
             stripped = stripped.split("\n", 1)[-1]
             if stripped.endswith("```"):
                 stripped = stripped[: stripped.rfind("```")]
-        return response_model.model_validate(json.loads(stripped))
+        # Fix trailing commas before } or ] (common Gemini issue)
+        stripped = re.sub(r",\s*([}\]])", r"\1", stripped)
+        # Fix single-quoted strings → double quotes
+        # Fix JS-style comments
+        stripped = re.sub(r"//.*$", "", stripped, flags=re.MULTILINE)
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            logger.error(
+                "Failed to parse LLM response as JSON. First 500 chars:\n%s",
+                stripped[:500],
+            )
+            raise
+        return response_model.model_validate(parsed)
 
     return content
