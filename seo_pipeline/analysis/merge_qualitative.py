@@ -12,8 +12,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def merge_qualitative(dir_path: str) -> None:
@@ -47,6 +50,11 @@ def merge_qualitative(dir_path: str) -> None:
         if value is not None:
             merged["qualitative"][key] = value
             patched += 1
+
+    logger.info(
+        "Merge qualitative: patched %d field(s) into briefing-data.json",
+        patched,
+    )
 
     output = json.dumps(merged, indent=2, ensure_ascii=False) + "\n"
     briefing_path.write_text(output, encoding="utf-8")

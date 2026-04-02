@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import math
 import sys
 from collections import Counter
@@ -26,6 +27,8 @@ from seo_pipeline.analysis.analyze_content_topics import (
 from seo_pipeline.models.analysis import WdfIdfMeta, WdfIdfScore, WdfIdfTerm
 from seo_pipeline.utils.math import js_round, normalize_number
 from seo_pipeline.utils.tokenizer import load_stopword_set, remove_stopwords, tokenize
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # WDF formula
@@ -109,6 +112,11 @@ def score_draft_wdfidf(
     # Extract draft terms
     draft_text = draft_path.read_text(encoding="utf-8")
     draft_counts, draft_word_count = _extract_terms(draft_text, stopword_set)
+    logger.info(
+        "WDF*IDF: draft has %d words, %d unique terms",
+        draft_word_count,
+        len(draft_counts),
+    )
 
     # Load competitor pages (sorted for determinism)
     page_files = sorted(p for p in pages_dir.iterdir() if p.suffix == ".json")
@@ -194,6 +202,15 @@ def score_draft_wdfidf(
 
     # Sort by absolute delta descending, then alphabetically
     results.sort(key=lambda r: (-abs(r["delta"]), r["term"]))
+
+    signal_counts = Counter(r["signal"] for r in results)
+    logger.info(
+        "WDF*IDF complete: %d terms (increase=%d, decrease=%d, ok=%d)",
+        len(results),
+        signal_counts.get("increase", 0),
+        signal_counts.get("decrease", 0),
+        signal_counts.get("ok", 0),
+    )
 
     meta = WdfIdfMeta(
         draft=str(draft_path),

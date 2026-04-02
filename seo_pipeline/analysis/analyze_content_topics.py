@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from collections import Counter, defaultdict
@@ -29,6 +30,8 @@ from seo_pipeline.models.analysis import (
 )
 from seo_pipeline.utils.math import js_round, normalize_number
 from seo_pipeline.utils.tokenizer import load_stopword_set, remove_stopwords, tokenize
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -238,6 +241,7 @@ def analyze_content_topics(
 
     # Load page files (sorted for determinism)
     page_files = sorted(p for p in pages_dir.iterdir() if p.suffix == ".json")
+    logger.info("Content topics: found %d page files in %s", len(page_files), pages_dir)
 
     if not page_files:
         return ContentTopics(
@@ -280,6 +284,11 @@ def analyze_content_topics(
         pages.append(page)
 
     total_pages = len(pages)
+    logger.info(
+        "Content topics: %d pages passed quality filter (of %d)",
+        total_pages,
+        len(page_files),
+    )
 
     # --- N-gram extraction and document frequency ---
     df_map: Counter[str] = Counter()
@@ -452,6 +461,14 @@ def analyze_content_topics(
         pages_with_tables=pages_with_tables,
         avg_h2_count=normalize_number(avg_h2_count),
         dominant_pattern=None,
+    )
+
+    logger.info(
+        "Content topics complete: %d proof keywords, "
+        "%d entity candidates, %d section weights",
+        len(proof_keywords),
+        len(entity_candidates),
+        len(section_weights),
     )
 
     return ContentTopics(

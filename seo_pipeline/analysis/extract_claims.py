@@ -12,12 +12,15 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from seo_pipeline.models.analysis import Claim, ClaimsMeta, ClaimsOutput
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Patterns
@@ -191,6 +194,7 @@ def extract_claims(draft_path: str | Path) -> ClaimsOutput:
         ClaimsOutput with metadata and list of extracted claims.
     """
     draft_text = Path(draft_path).read_text(encoding="utf-8")
+    logger.info("Extracting claims from %s (%d chars)", draft_path, len(draft_text))
     lines = draft_text.split("\n")
     skip_ranges = _find_skip_ranges(lines)
 
@@ -237,6 +241,16 @@ def extract_claims(draft_path: str | Path) -> ClaimsOutput:
 
     # Sort by line number, then by character position for determinism
     raw_claims.sort(key=lambda c: (c["line"], c["char_index"]))
+
+    # Count per category for logging
+    cat_counts: dict[str, int] = {}
+    for c in raw_claims:
+        cat_counts[c["category"]] = cat_counts.get(c["category"], 0) + 1
+    cat_summary = (
+        ", ".join(f"{k}={v}" for k, v in sorted(cat_counts.items()))
+        if cat_counts else "none"
+    )
+    logger.info("Claims extracted: %d total (%s)", len(raw_claims), cat_summary)
 
     # Assign sequential IDs
     claims = [
