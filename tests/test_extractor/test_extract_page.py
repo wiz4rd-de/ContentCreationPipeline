@@ -494,3 +494,60 @@ class TestCLI:
         data = json.loads(out_file.read_text())
         assert "error" in data
         assert data["url"] == "https://nonexistent.invalid.test/"
+
+
+# ---------------------------------------------------------------------------
+# Tests: parity with Node.js extractor
+# ---------------------------------------------------------------------------
+
+FIXTURE_DIR = Path(__file__).parent / "fixtures"
+PARITY_URL = "https://www.example-travel.de/hawaii/inselhopping"
+# Baseline from Node.js @mozilla/readability on parity_article.html
+NODE_WORD_COUNT = 776
+
+
+class TestExtractionParity:
+    """Verify trafilatura output is within tolerance of Node.js readability."""
+
+    @staticmethod
+    def _load_fixture():
+        html = (FIXTURE_DIR / "parity_article.html").read_text(encoding="utf-8")
+        return extract_page_from_html(html, PARITY_URL)
+
+    def test_word_count_within_5_percent_of_node(self):
+        """Python word count must be within +/-5% of the Node baseline."""
+        result = self._load_fixture()
+        lower = NODE_WORD_COUNT * 0.95
+        upper = NODE_WORD_COUNT * 1.05
+        assert lower <= result["word_count"] <= upper, (
+            f"Python word_count {result['word_count']} outside "
+            f"+/-5% of Node baseline {NODE_WORD_COUNT} "
+            f"(allowed range {lower:.0f}-{upper:.0f})"
+        )
+
+    def test_word_count_above_quality_threshold(self):
+        """Must exceed the 200-word quality filter used by analysis modules."""
+        result = self._load_fixture()
+        assert result["word_count"] >= 200
+
+    def test_readability_title_extracted(self):
+        result = self._load_fixture()
+        assert "Hawaii" in result["readability_title"]
+
+    def test_main_content_contains_article_text(self):
+        """Extracted content should include key phrases from the article body."""
+        result = self._load_fixture()
+        text = result["main_content_text"]
+        assert "Inselhopping" in text
+        assert "Kauai" in text
+        assert "Haleakala" in text
+
+    def test_html_signals_detected(self):
+        """The fixture has tables, lists, FAQ details, and images."""
+        result = self._load_fixture()
+        signals = result["html_signals"]
+        assert signals["tables"] >= 1
+        assert signals["ordered_lists"] >= 1
+        assert signals["unordered_lists"] >= 1
+        assert signals["faq_sections"] >= 1
+        assert signals["images_in_content"] >= 1
