@@ -18,6 +18,12 @@ def _make_litellm_response(content: str) -> SimpleNamespace:
     return SimpleNamespace(choices=[choice])
 
 
+@pytest.fixture(autouse=True)
+def _disable_throttle(monkeypatch):
+    """Disable rate-limit throttle in tests."""
+    monkeypatch.setattr("seo_pipeline.llm.client._MIN_CALL_INTERVAL", 0.0)
+
+
 @pytest.fixture()
 def llm_config():
     return LLMConfig(

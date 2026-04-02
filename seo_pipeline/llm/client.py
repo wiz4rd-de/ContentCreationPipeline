@@ -11,7 +11,11 @@ from seo_pipeline.llm.config import LLMConfig
 
 logger = logging.getLogger(__name__)
 
-# Retry settings
+# Rate limiting — space calls to stay under provider limits
+_MIN_CALL_INTERVAL = 12.0  # seconds between calls (60s / 5 req)
+_last_call_time: float = 0.0
+
+# Retry settings — handles 429s that still slip through and transient errors
 _MAX_RETRIES = 5
 _DEFAULT_RATE_LIMIT_WAIT = 12.0  # 60s / 5 req — conservative default
 _RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 529}
@@ -39,6 +43,18 @@ def _enforce_strict_schema(schema: Any) -> Any:
         for item in schema:
             _enforce_strict_schema(item)
     return schema
+
+
+def _throttle() -> None:
+    """Sleep if needed to respect _MIN_CALL_INTERVAL between LLM calls."""
+    global _last_call_time
+    now = time.monotonic()
+    elapsed = now - _last_call_time
+    if _last_call_time > 0 and elapsed < _MIN_CALL_INTERVAL:
+        wait = _MIN_CALL_INTERVAL - elapsed
+        logger.info("Rate-limiting: waiting %.1fs before next LLM call", wait)
+        time.sleep(wait)
+    _last_call_time = time.monotonic()
 
 
 def _get_wait_seconds(exc: Exception, transient_backoff: float) -> float:
@@ -138,6 +154,7 @@ def complete(
             },
         }
 
+    _throttle()
     response = _completion_with_retry(litellm, kwargs)
     content = response.choices[0].message.content
 
