@@ -8,10 +8,13 @@ Also computes FAQ prioritization by scoring PAA questions against keyword overla
 """
 
 import json
+import logging
 import re
 from pathlib import Path
 
 from seo_pipeline.utils.text import is_foreign_language
+
+logger = logging.getLogger(__name__)
 
 
 def _load_blocklist(blocklist_path: str | None = None) -> dict[str, list[str]]:
@@ -277,6 +280,18 @@ def filter_keywords(
         }
         for idx, faq in enumerate(scored_faqs)
     ]
+
+    logger.info(
+        "Filter complete: %d total, %d kept, %d removed "
+        "(ethics=%d, brand=%d, off_topic=%d, foreign=%d)",
+        total_keywords,
+        filtered_keywords,
+        removed_count,
+        removal_summary["ethics"],
+        removal_summary["brand"],
+        removal_summary["off_topic"],
+        removal_summary["foreign_language"],
+    )
 
     # --- Build output ---
 

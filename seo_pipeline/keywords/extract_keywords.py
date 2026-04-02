@@ -1,6 +1,10 @@
 """Extract and normalize keyword data from DataForSEO API responses."""
 
+import logging
+
 from seo_pipeline.utils.math import js_round
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_item(item: dict) -> dict | None:
@@ -83,6 +87,8 @@ def extract_keywords(
     if not isinstance(items, list):
         return []
 
+    logger.info("Extracting keywords from %d raw items", len(items))
+
     results = []
     for item in items:
         normalized = normalize_item(item)
@@ -107,4 +113,5 @@ def extract_keywords(
 
         results.append(record)
 
+    logger.info("Extracted %d keywords from %d items", len(results), len(items))
     return results
