@@ -11,9 +11,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def clean_aio_text(text: str) -> str:
@@ -375,8 +378,19 @@ def process_serp(raw: dict, top_n: int = 10) -> dict:
         raise ValueError(msg)
 
     items = result.get("items") or []
+    keyword = result.get("keyword")
+
+    logger.info("Processing SERP for keyword %r (%d items)", keyword, len(items))
 
     ai_overview = _extract_ai_overview(items)
+
+    competitors = _extract_competitors(items, ai_overview, top_n)
+    feature_types = {i.get("type") for i in items if i.get("type")} - {"organic"}
+    logger.info(
+        "SERP processed: %d competitors, features: %s",
+        len(competitors),
+        ", ".join(sorted(feature_types)) if feature_types else "none",
+    )
 
     return {
         "target_keyword": result.get("keyword"),
@@ -398,7 +412,7 @@ def process_serp(raw: dict, top_n: int = 10) -> dict:
             "local_signals": _extract_local_signals(items),
             "other_features_present": _extract_other_features(items),
         },
-        "competitors": _extract_competitors(items, ai_overview, top_n),
+        "competitors": competitors,
     }
 
 

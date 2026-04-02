@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import re
 import sys
 from pathlib import Path
@@ -21,6 +22,8 @@ from urllib.parse import urlparse
 import httpx
 import trafilatura
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 USER_AGENT = "Mozilla/5.0 (compatible; ContentExtractor/1.0)"
 TIMEOUT_SECONDS = 15
@@ -166,6 +169,7 @@ def extract_page(url: str) -> dict:
 
     On any error, returns {"error": message, "url": url}.
     """
+    logger.info("Fetching %s", url)
     try:
         response = httpx.get(
             url,
@@ -173,9 +177,19 @@ def extract_page(url: str) -> dict:
             follow_redirects=True,
             timeout=TIMEOUT_SECONDS,
         )
+        logger.info("Response %d for %s", response.status_code, url)
         html = response.text
-        return extract_page_from_html(html, url)
+        result = extract_page_from_html(html, url)
+        logger.info(
+            "Extracted: %d words, %d headings, h1=%r from %s",
+            result.get("word_count", 0),
+            len(result.get("headings", [])),
+            result.get("h1", ""),
+            url,
+        )
+        return result
     except Exception as err:
+        logger.info("Extraction failed for %s: %s", url, err)
         return {"error": str(err), "url": url}
 
 
