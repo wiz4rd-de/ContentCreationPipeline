@@ -904,7 +904,6 @@ def run_pipeline(
         from seo_pipeline.drafting.write_draft import write_draft as _write_draft
 
         _fill_qualitative(str(out_dir))
-        _merge_qualitative(str(out_dir))
         _assemble_briefing_md(
             str(out_dir),
             template_path=str(template) if template else None,

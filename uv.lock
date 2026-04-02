@@ -2299,6 +2299,7 @@ source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "httpx" },
+    { name = "litellm" },
     { name = "lxml" },
     { name = "pydantic" },
     { name = "python-dotenv" },
@@ -2308,7 +2309,6 @@ dependencies = [
 [package.optional-dependencies]
 anthropic = [
     { name = "anthropic" },
-    { name = "litellm" },
 ]
 api = [
     { name = "fastapi" },
@@ -2324,14 +2324,14 @@ dev = [
 ]
 google = [
     { name = "google-generativeai" },
-    { name = "litellm" },
-]
-llm = [
-    { name = "litellm" },
 ]
 openai = [
-    { name = "litellm" },
     { name = "openai" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "typer" },
 ]
 
 [package.metadata]
@@ -2341,10 +2341,7 @@ requires-dist = [
     { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.100" },
     { name = "google-generativeai", marker = "extra == 'google'", specifier = ">=0.5" },
     { name = "httpx" },
-    { name = "litellm", marker = "extra == 'anthropic'", specifier = ">=1.40" },
-    { name = "litellm", marker = "extra == 'google'", specifier = ">=1.40" },
-    { name = "litellm", marker = "extra == 'llm'", specifier = ">=1.40" },
-    { name = "litellm", marker = "extra == 'openai'", specifier = ">=1.40" },
+    { name = "litellm", specifier = ">=1.40" },
     { name = "lxml" },
     { name = "openai", marker = "extra == 'openai'", specifier = ">=1.30" },
     { name = "pydantic", specifier = ">=2.0" },
@@ -2356,7 +2353,10 @@ requires-dist = [
     { name = "typer", extras = ["all"], marker = "extra == 'cli'", specifier = ">=0.9" },
     { name = "uvicorn", extras = ["standard"], marker = "extra == 'api'" },
 ]
-provides-extras = ["cli", "api", "dev", "llm", "anthropic", "openai", "google"]
+provides-extras = ["cli", "api", "dev", "anthropic", "openai", "google"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "typer", specifier = ">=0.9" }]
 
 [[package]]
 name = "shellingham"
