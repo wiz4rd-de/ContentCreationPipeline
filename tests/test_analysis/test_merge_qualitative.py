@@ -23,10 +23,23 @@ def briefing_dir(tmp_path: Path) -> Path:
         },
     }
     qualitative = {
-        "entity_clusters": [{"name": "cluster1"}],
-        "unique_angles": "Some angles",
+        "entity_clusters": [
+            {
+                "category": "Tools",
+                "entities": ["google"],
+                "synonyms": [{"entity": "google", "synonyms": ["Google Search"]}],
+            },
+        ],
+        "unique_angles": [
+            {"angle": "AI-powered research", "rationale": "Emerging trend"},
+        ],
         "content_format_recommendation": None,
-        "geo_audit": {"status": "ok"},
+        "geo_audit": {
+            "must_haves": ["basics"],
+            "hidden_gems": ["long-tail"],
+            "hallucination_risks": ["wrong data"],
+            "information_gaps": ["voice search"],
+        },
         "aio_strategy": None,
         "briefing": "Final briefing text",
     }
@@ -49,9 +62,9 @@ class TestMergeQualitative:
         )
         qual = result["qualitative"]
         # Non-null fields patched
-        assert qual["entity_clusters"] == [{"name": "cluster1"}]
-        assert qual["unique_angles"] == "Some angles"
-        assert qual["geo_audit"] == {"status": "ok"}
+        assert qual["entity_clusters"][0]["category"] == "Tools"
+        assert qual["unique_angles"][0]["angle"] == "AI-powered research"
+        assert qual["geo_audit"]["must_haves"] == ["basics"]
         assert qual["briefing"] == "Final briefing text"
 
     def test_preserves_null_fields(self, briefing_dir: Path) -> None:

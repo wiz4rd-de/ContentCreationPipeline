@@ -23,7 +23,13 @@ CANNED_MARKDOWN = (
 
 # Qualitative data that satisfies the pre-condition check (all 5 fields non-null)
 POPULATED_QUALITATIVE = {
-    "entity_clusters": [{"category": "Tools", "entities": ["google"]}],
+    "entity_clusters": [
+        {
+            "category": "Tools",
+            "entities": ["google"],
+            "synonyms": [{"entity": "google", "synonyms": ["Google Search"]}],
+        },
+    ],
     "geo_audit": {
         "must_haves": ["basics"],
         "hidden_gems": ["advanced"],

@@ -23,7 +23,7 @@ CANNED_QUALITATIVE = QualitativeResponse.model_validate({
         {
             "category": "Tools",
             "entities": ["google", "semrush"],
-            "synonyms": {"google": ["Google Search"]},
+            "synonyms": [{"entity": "google", "synonyms": ["Google Search"]}],
         },
     ],
     "geo_audit": {

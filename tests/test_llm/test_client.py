@@ -69,11 +69,37 @@ class TestCompleteStructured:
 
     def test_returns_pydantic_model(self, monkeypatch, llm_config):
         response_data = {
-            "entity_clusters": [{"name": "test", "entities": ["a", "b"]}],
-            "geo_audit": {"market": "de", "signals": []},
-            "content_format_recommendation": {"format": "guide", "reason": "fits"},
-            "unique_angles": [{"angle": "fresh take", "source": "data"}],
-            "aio_strategy": {"approach": "concise", "target": "featured_snippet"},
+            "entity_clusters": [
+                {
+                    "category": "Tools",
+                    "entities": ["google", "semrush"],
+                    "synonyms": [
+                        {"entity": "google", "synonyms": ["Google Search"]},
+                    ],
+                },
+            ],
+            "geo_audit": {
+                "must_haves": ["keyword research"],
+                "hidden_gems": ["long-tail"],
+                "hallucination_risks": ["wrong volumes"],
+                "information_gaps": ["voice search"],
+            },
+            "content_format_recommendation": {
+                "format": "Hybrid",
+                "rationale": "Mix works best.",
+            },
+            "unique_angles": [
+                {"angle": "AI-powered research", "rationale": "Emerging trend"},
+            ],
+            "aio_strategy": {
+                "snippets": [
+                    {
+                        "topic": "keyword research",
+                        "pattern": "Keyword research is...",
+                        "target_section": "Introduction",
+                    },
+                ],
+            },
         }
 
         def mock_completion(**kwargs):
@@ -94,8 +120,9 @@ class TestCompleteStructured:
         )
         assert isinstance(result, QualitativeResponse)
         assert len(result.entity_clusters) == 1
-        assert result.geo_audit["market"] == "de"
-        assert result.aio_strategy["approach"] == "concise"
+        assert result.entity_clusters[0].category == "Tools"
+        assert result.geo_audit.must_haves == ["keyword research"]
+        assert result.aio_strategy.snippets[0].topic == "keyword research"
 
     def test_invalid_json_raises(self, monkeypatch, llm_config):
         def mock_completion(**kwargs):
