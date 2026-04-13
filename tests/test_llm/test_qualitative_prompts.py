@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from seo_pipeline.llm.prompts.qualitative import (
+    _strip_nulls,
     build_briefing_assembly_prompt,
     build_qualitative_prompt,
 )
@@ -140,3 +141,85 @@ class TestBuildBriefingAssemblyPrompt:
         messages = build_briefing_assembly_prompt(briefing_data, None, None)
         system_content = messages[0]["content"]
         assert "NOT re-count" in system_content or "do NOT" in system_content.lower()
+
+
+def _extract_briefing_json(user_content: str) -> dict:
+    """Extract the briefing JSON dict from a user message."""
+    start = user_content.index("{")
+    obj, _ = json.JSONDecoder().raw_decode(user_content, start)
+    return obj
+
+
+class TestStripNulls:
+    """Tests for the _strip_nulls helper."""
+
+    def test_removes_none_values_from_dict(self) -> None:
+        assert _strip_nulls({"a": 1, "b": None}) == {"a": 1}
+
+    def test_recurses_into_nested_dicts(self) -> None:
+        assert _strip_nulls({"a": {"b": None, "c": 2}}) == {"a": {"c": 2}}
+
+    def test_recurses_into_lists(self) -> None:
+        assert _strip_nulls([{"x": None}, {"y": 1}]) == [{}, {"y": 1}]
+
+    def test_leaves_non_none_scalars_intact(self) -> None:
+        assert _strip_nulls(0) == 0
+        assert _strip_nulls("") == ""
+        assert _strip_nulls(False) is False
+
+
+class TestSelectiveSerialization:
+    """Tests for selective field exclusion in prompt serialization."""
+
+    def test_qualitative_prompt_excludes_page_sections(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_qualitative_prompt(briefing_data)
+        data = _extract_briefing_json(messages[1]["content"])
+        for ps in data["competitor_analysis"]["page_structures"]:
+            assert "sections" not in ps
+
+    def test_qualitative_prompt_excludes_section_weights(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_qualitative_prompt(briefing_data)
+        data = _extract_briefing_json(messages[1]["content"])
+        assert "section_weights" not in data["content_analysis"]
+
+    def test_qualitative_prompt_excludes_qualitative(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_qualitative_prompt(briefing_data)
+        data = _extract_briefing_json(messages[1]["content"])
+        assert "qualitative" not in data
+
+    def test_qualitative_prompt_strips_nulls(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_qualitative_prompt(briefing_data)
+        data = _extract_briefing_json(messages[1]["content"])
+        # serp_data.competitors have many null fields in the fixture
+        for comp in data.get("serp_data", {}).get("competitors", []):
+            assert None not in comp.values()
+
+    def test_assembly_prompt_excludes_page_sections(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_briefing_assembly_prompt(briefing_data, None, None)
+        data = _extract_briefing_json(messages[1]["content"])
+        for ps in data["competitor_analysis"]["page_structures"]:
+            assert "sections" not in ps
+
+    def test_assembly_prompt_includes_section_weights(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_briefing_assembly_prompt(briefing_data, None, None)
+        data = _extract_briefing_json(messages[1]["content"])
+        assert "section_weights" in data["content_analysis"]
+
+    def test_assembly_prompt_includes_qualitative(
+        self, briefing_data: BriefingData,
+    ) -> None:
+        messages = build_briefing_assembly_prompt(briefing_data, None, None)
+        data = _extract_briefing_json(messages[1]["content"])
+        assert "qualitative" in data
