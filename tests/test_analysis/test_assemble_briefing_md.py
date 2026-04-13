@@ -168,7 +168,7 @@ class TestAssembleBriefingMd:
             assemble_briefing_md(str(work_dir))
 
         assert "brief-test-keyword.md" in caplog.text
-        assert "qualitative.briefing" in caplog.text
+        assert "briefing-data.json" in caplog.text
 
 
 class TestAssembleBriefingMdCLI:

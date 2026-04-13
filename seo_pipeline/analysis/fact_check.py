@@ -121,6 +121,7 @@ def supplement_claims(
             messages,
             config=llm_config,
             response_model=_SupplementResponse,
+            label="supplement_claims",
         )
         result: list[Claim] = []
         for i, raw in enumerate(response.claims):
@@ -251,6 +252,7 @@ def verify_claim(
             messages,
             config=llm_config,
             response_model=_VerdictResponse,
+            label="verify_claim",
         )
         return VerifiedClaim(
             id=claim.id,
@@ -303,8 +305,8 @@ def fact_check(
     logger.info("Extracted %d claims via regex", len(regex_claims))
 
     # Step 2: Supplement with LLM
+    logger.info("  reading: %s", draft_path_obj)
     draft_text = draft_path_obj.read_text(encoding="utf-8")
-    logger.info("Supplementing claims via LLM...")
     supplemented = supplement_claims(
         draft_text, regex_claims, llm_config
     )
@@ -366,12 +368,14 @@ def fact_check(
         + "\n",
         encoding="utf-8",
     )
+    logger.info("  writing: %s", json_path)
 
     # Write Markdown report
     md_path = out_dir_obj / "fact-check-report.md"
     md_path.write_text(
         _build_markdown_report(output), encoding="utf-8"
     )
+    logger.info("  writing: %s", md_path)
 
     return output
 

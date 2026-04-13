@@ -45,7 +45,7 @@ def assemble_briefing_md(
         print(f"Error: briefing-data.json not found in {dir_path}", file=sys.stderr)
         sys.exit(1)
 
-    logger.info("Loading briefing data from %s", briefing_path)
+    logger.info("  reading: %s", briefing_path)
     raw_briefing = json.loads(briefing_path.read_text(encoding="utf-8"))
     briefing_data = BriefingData.model_validate(raw_briefing)
 
@@ -75,6 +75,7 @@ def assemble_briefing_md(
             print(f"Error: template file not found: {template_path}", file=sys.stderr)
             sys.exit(1)
         template = p.read_text(encoding="utf-8")
+        logger.info("  reading: %s", p)
 
     tone_of_voice = None
     if tov_path:
@@ -83,18 +84,17 @@ def assemble_briefing_md(
             print(f"Error: tone-of-voice file not found: {tov_path}", file=sys.stderr)
             sys.exit(1)
         tone_of_voice = p.read_text(encoding="utf-8")
+        logger.info("  reading: %s", p)
 
     messages = build_briefing_assembly_prompt(
         briefing_data, template, tone_of_voice,
     )
-    logger.info("LLM call start: briefing assembly")
-    markdown: str = complete(messages=messages)
-    logger.info("LLM call complete: briefing assembly")
+    markdown: str = complete(messages=messages, label="assemble_briefing_md")
 
     slug = slugify(briefing_data.meta.seed_keyword)
     md_path = directory / f"brief-{slug}.md"
     md_path.write_text(markdown, encoding="utf-8")
-    logger.info("Wrote %s (%d chars)", md_path, len(markdown))
+    logger.info("  writing: %s", md_path)
 
     # Update qualitative.briefing in briefing-data.json
     raw_briefing["qualitative"]["briefing"] = f"brief-{slug}.md"
@@ -102,7 +102,7 @@ def assemble_briefing_md(
         json.dumps(raw_briefing, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
-    logger.info("Updated qualitative.briefing in briefing-data.json")
+    logger.info("  writing: %s", briefing_path)
 
 
 def _build_parser() -> argparse.ArgumentParser:

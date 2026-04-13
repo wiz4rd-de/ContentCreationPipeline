@@ -56,7 +56,7 @@ def write_draft(
         print(f"Error: briefing file not found: {brief_path}", file=sys.stderr)
         sys.exit(1)
 
-    logger.info("Loading briefing from %s", brief)
+    logger.info("  reading: %s", brief)
     briefing_markdown = brief.read_text(encoding="utf-8")
 
     tone_of_voice = None
@@ -66,23 +66,17 @@ def write_draft(
             print(f"Error: tone-of-voice file not found: {tov_path}", file=sys.stderr)
             sys.exit(1)
         tone_of_voice = p.read_text(encoding="utf-8")
+        logger.info("  reading: %s", p)
 
     messages = build_draft_prompt(
         briefing_markdown, tone_of_voice, instructions,
     )
-    logger.info("LLM call start: draft generation")
-    draft_content: str = complete(messages=messages)
-    logger.info("LLM call complete: draft generation")
+    draft_content: str = complete(messages=messages, label="write_draft")
 
     slug = _slug_from_brief_path(brief)
     output_path = brief.parent / f"draft-{slug}.md"
     output_path.write_text(draft_content, encoding="utf-8")
-    logger.info(
-        "Wrote %s (%d chars, ~%d words)",
-        output_path,
-        len(draft_content),
-        len(draft_content.split()),
-    )
+    logger.info("  writing: %s", output_path)
 
 
 def _build_parser() -> argparse.ArgumentParser:
