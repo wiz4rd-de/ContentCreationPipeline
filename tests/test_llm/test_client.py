@@ -11,11 +11,17 @@ from seo_pipeline.llm.config import LLMConfig
 from seo_pipeline.models.llm_responses import QualitativeResponse
 
 
-def _make_litellm_response(content: str) -> SimpleNamespace:
+def _make_litellm_response(
+    content: str,
+    finish_reason: str = "stop",
+    usage: SimpleNamespace | None = None,
+) -> SimpleNamespace:
     """Build a fake litellm response object."""
     message = SimpleNamespace(content=content)
-    choice = SimpleNamespace(message=message)
-    return SimpleNamespace(choices=[choice])
+    choice = SimpleNamespace(message=message, finish_reason=finish_reason)
+    if usage is None:
+        usage = SimpleNamespace(prompt_tokens=100, completion_tokens=50)
+    return SimpleNamespace(choices=[choice], usage=usage)
 
 
 @pytest.fixture(autouse=True)
@@ -295,3 +301,60 @@ class TestCompleteDefaultConfig:
 
         result = complete(messages=[{"role": "user", "content": "test"}])
         assert result == "ok"
+
+
+class TestTokenUsageLogging:
+    """complete() prints token usage to STDOUT after each LLM call."""
+
+    def test_prints_token_usage(self, monkeypatch, llm_config, capsys):
+        usage = SimpleNamespace(prompt_tokens=150, completion_tokens=75)
+
+        def mock_completion(**kwargs):
+            return _make_litellm_response("ok", usage=usage)
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        captured = capsys.readouterr()
+        assert "tokens used: input 150 / output 75" in captured.out
+
+    def test_no_crash_when_usage_missing(self, monkeypatch, llm_config, capsys):
+        """Defensive guard: no error when response.usage is absent."""
+
+        def mock_completion(**kwargs):
+            message = SimpleNamespace(content="ok")
+            choice = SimpleNamespace(message=message, finish_reason="stop")
+            # Response with no usage attribute
+            return SimpleNamespace(choices=[choice])
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        result = complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        assert result == "ok"
+        captured = capsys.readouterr()
+        assert "tokens used" not in captured.out
+
+    def test_handles_missing_token_fields(self, monkeypatch, llm_config, capsys):
+        """Usage object exists but individual token fields are missing."""
+        usage = SimpleNamespace()  # no prompt_tokens or completion_tokens
+
+        def mock_completion(**kwargs):
+            return _make_litellm_response("ok", usage=usage)
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        captured = capsys.readouterr()
+        assert "tokens used: input ? / output ?" in captured.out

@@ -157,6 +157,15 @@ def complete(
 
     _throttle()
     response = _completion_with_retry(litellm, kwargs)
+
+    # Log token usage to STDOUT (always, not gated by verbosity)
+    usage = getattr(response, "usage", None)
+    if usage is not None:
+        print(
+            f"tokens used: input {getattr(usage, 'prompt_tokens', '?')}"
+            f" / output {getattr(usage, 'completion_tokens', '?')}"
+        )
+
     choice = response.choices[0]
     content = choice.message.content
 
