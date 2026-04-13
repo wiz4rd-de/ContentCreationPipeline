@@ -6,11 +6,16 @@ WDF*IDF scoring, and the top-level BriefingData aggregation.
 
 from __future__ import annotations
 
-from typing import Any
-
-from pydantic import Field, model_serializer
+from pydantic import Field, model_serializer, model_validator
 
 from seo_pipeline.models.common import PipelineBaseModel
+from seo_pipeline.models.llm_responses import (
+    QualAioStrategy,
+    QualContentFormat,
+    QualEntityCluster,
+    QualGeoAudit,
+    QualUniqueAngle,
+)
 
 # ---------------------------------------------------------------------------
 # Content Topics group
@@ -492,12 +497,41 @@ class BriefingQualitative(PipelineBaseModel):
     through ``BriefingData.model_validate()`` without loss.
     """
 
-    entity_clusters: list[dict[str, Any]] | None = Field(default=None)
-    unique_angles: list[dict[str, str]] | None = Field(default=None)
-    content_format_recommendation: dict[str, Any] | None = Field(default=None)
-    geo_audit: dict[str, Any] | None = Field(default=None)
-    aio_strategy: dict[str, Any] | None = Field(default=None)
+    entity_clusters: list[QualEntityCluster] | None = Field(default=None)
+    unique_angles: list[QualUniqueAngle] | None = Field(default=None)
+    content_format_recommendation: QualContentFormat | None = Field(default=None)
+    geo_audit: QualGeoAudit | None = Field(default=None)
+    aio_strategy: QualAioStrategy | None = Field(default=None)
     briefing: str | None = Field(default=None)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_empty_dicts(cls, data: dict) -> dict:  # type: ignore[override]
+        """Coerce empty dicts from legacy data to None.
+
+        Before the typed sub-models were introduced, the LLM returned ``{}``
+        for qualitative fields.  Existing briefing-data.json files still have
+        these empty placeholders.  Convert ``{}`` to ``None`` for object
+        fields and filter ``{}`` entries from list fields (turning the list
+        to ``None`` if nothing remains).
+        """
+        if not isinstance(data, dict):
+            return data
+        object_fields = {
+            "content_format_recommendation",
+            "geo_audit",
+            "aio_strategy",
+        }
+        list_fields = {"entity_clusters", "unique_angles"}
+        for key in object_fields:
+            if isinstance(data.get(key), dict) and not data[key]:
+                data[key] = None
+        for key in list_fields:
+            val = data.get(key)
+            if isinstance(val, list):
+                filtered = [item for item in val if item != {}]
+                data[key] = filtered or None
+        return data
 
 
 class BriefingData(PipelineBaseModel):

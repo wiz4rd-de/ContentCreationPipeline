@@ -15,38 +15,52 @@ class TestQualitativeResponse:
     def sample_data(self):
         return {
             "entity_clusters": [
-                {"name": "Primary Topic", "entities": ["entity1", "entity2"]},
-                {"name": "Secondary", "entities": ["entity3"]},
+                {
+                    "category": "Primary Topic",
+                    "entities": ["entity1", "entity2"],
+                    "synonyms": [
+                        {"entity": "entity1", "synonyms": ["syn1", "syn2"]},
+                    ],
+                },
+                {
+                    "category": "Secondary",
+                    "entities": ["entity3"],
+                    "synonyms": [],
+                },
             ],
             "geo_audit": {
-                "market": "de",
-                "local_signals": ["Munich", "Berlin"],
-                "recommendation": "Add local schema markup",
+                "must_haves": ["local schema markup"],
+                "hidden_gems": ["Munich insider tips"],
+                "hallucination_risks": ["incorrect population data"],
+                "information_gaps": ["seasonal events"],
             },
             "content_format_recommendation": {
-                "primary_format": "comprehensive_guide",
-                "reason": "Topic requires depth",
-                "suggested_sections": ["intro", "comparison", "faq"],
+                "format": "comprehensive_guide",
+                "rationale": "Topic requires depth",
             },
             "unique_angles": [
-                {"angle": "Expert interviews", "source": "competitor gap"},
-                {"angle": "Data visualization", "source": "user intent"},
+                {"angle": "Expert interviews", "rationale": "competitor gap"},
+                {"angle": "Data visualization", "rationale": "user intent"},
             ],
             "aio_strategy": {
-                "approach": "concise_answer_box",
-                "target_position": "featured_snippet",
-                "key_question": "What is X?",
+                "snippets": [
+                    {
+                        "topic": "What is X?",
+                        "pattern": "X is a concise answer...",
+                        "target_section": "Introduction",
+                    },
+                ],
             },
         }
 
     def test_creation(self, sample_data):
         resp = QualitativeResponse(**sample_data)
         assert len(resp.entity_clusters) == 2
-        assert resp.geo_audit["market"] == "de"
+        assert resp.entity_clusters[0].category == "Primary Topic"
         fmt = resp.content_format_recommendation
-        assert fmt["primary_format"] == "comprehensive_guide"
+        assert fmt.format == "comprehensive_guide"
         assert len(resp.unique_angles) == 2
-        assert resp.aio_strategy["approach"] == "concise_answer_box"
+        assert resp.aio_strategy.snippets[0].topic == "What is X?"
 
     def test_serialization_roundtrip(self, sample_data):
         resp = QualitativeResponse(**sample_data)
@@ -69,10 +83,44 @@ class TestQualitativeResponse:
     def test_empty_lists_accepted(self):
         resp = QualitativeResponse(
             entity_clusters=[],
-            geo_audit={},
-            content_format_recommendation={},
+            geo_audit={
+                "must_haves": [],
+                "hidden_gems": [],
+                "hallucination_risks": [],
+                "information_gaps": [],
+            },
+            content_format_recommendation={
+                "format": "guide",
+                "rationale": "simple",
+            },
             unique_angles=[],
-            aio_strategy={},
+            aio_strategy={"snippets": []},
         )
         assert resp.entity_clusters == []
         assert resp.unique_angles == []
+
+
+class TestQualitativeResponseSchema:
+    """Regression: no bare type:object without properties in the schema."""
+
+    def test_no_bare_object_without_properties(self):
+        """Every 'type': 'object' node must have explicit 'properties'."""
+        schema = QualitativeResponse.model_json_schema()
+        self._check_node(schema)
+
+    def _check_node(self, node):
+        """Recursively check all nodes in the JSON schema."""
+        if not isinstance(node, dict):
+            return
+        if node.get("type") == "object":
+            # $ref nodes are resolved via $defs and don't need properties inline
+            if "$ref" not in node:
+                assert "properties" in node, (
+                    f"Found bare 'type': 'object' without 'properties': {node}"
+                )
+        for value in node.values():
+            if isinstance(value, dict):
+                self._check_node(value)
+            elif isinstance(value, list):
+                for item in value:
+                    self._check_node(item)

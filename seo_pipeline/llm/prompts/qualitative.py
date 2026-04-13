@@ -77,7 +77,7 @@ def build_qualitative_prompt(
         '    "category": "Category Name",\n'
         '    "entities": ["entity1", "entity2"],\n'
         '    "synonyms": '
-        '{ "entity1": ["synonym1", "synonym2"] }\n'
+        '[{ "entity": "entity1", "synonyms": ["synonym1", "synonym2"] }]\n'
         "  }\n"
         "]\n"
         "```\n"
