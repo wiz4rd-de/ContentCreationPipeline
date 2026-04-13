@@ -9,12 +9,44 @@ if TYPE_CHECKING:
     from seo_pipeline.models.analysis import BriefingData
 
 
-def _serialize_briefing(briefing_data: BriefingData) -> str:
-    """Serialize BriefingData to compact JSON for prompt inclusion."""
-    return json.dumps(
-        briefing_data.model_dump(mode="json"),
-        ensure_ascii=False,
-    )
+def _strip_nulls(obj: object) -> object:
+    """Recursively remove keys with None values from dicts."""
+    if isinstance(obj, dict):
+        return {k: _strip_nulls(v) for k, v in obj.items() if v is not None}
+    if isinstance(obj, list):
+        return [_strip_nulls(item) for item in obj]
+    return obj
+
+
+def _serialize_briefing(
+    briefing_data: BriefingData,
+    *,
+    exclude_page_sections: bool = False,
+    exclude_section_weights: bool = False,
+    exclude_qualitative: bool = False,
+    strip_nulls: bool = False,
+) -> str:
+    """Serialize BriefingData to compact JSON for prompt inclusion.
+
+    Supports selective exclusion of fields that the target LLM call
+    does not need, reducing token usage without sacrificing data quality.
+    """
+    data = briefing_data.model_dump(mode="json")
+
+    if exclude_page_sections and data.get("competitor_analysis"):
+        for ps in data["competitor_analysis"].get("page_structures") or []:
+            ps.pop("sections", None)
+
+    if exclude_section_weights and data.get("content_analysis"):
+        data["content_analysis"].pop("section_weights", None)
+
+    if exclude_qualitative:
+        data.pop("qualitative", None)
+
+    if strip_nulls:
+        data = _strip_nulls(data)
+
+    return json.dumps(data, ensure_ascii=False)
 
 
 def build_qualitative_prompt(
@@ -27,7 +59,13 @@ def build_qualitative_prompt(
     matching ``QualitativeResponse``.
     """
     seed = briefing_data.meta.seed_keyword
-    data_json = _serialize_briefing(briefing_data)
+    data_json = _serialize_briefing(
+        briefing_data,
+        exclude_page_sections=True,
+        exclude_section_weights=True,
+        exclude_qualitative=True,
+        strip_nulls=True,
+    )
 
     system = (
         "You are an expert SEO content strategist. "
@@ -199,7 +237,11 @@ def build_briefing_assembly_prompt(
     markdown text (no structured output / response_model).
     """
     seed = briefing_data.meta.seed_keyword
-    data_json = _serialize_briefing(briefing_data)
+    data_json = _serialize_briefing(
+        briefing_data,
+        exclude_page_sections=True,
+        strip_nulls=True,
+    )
 
     template_block = ""
     if template:
