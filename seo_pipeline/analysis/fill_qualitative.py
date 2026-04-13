@@ -48,6 +48,7 @@ def fill_qualitative(dir_path: str) -> None:
     logger.info("LLM call start: qualitative analysis")
     result: QualitativeResponse = complete(
         messages=messages, response_model=QualitativeResponse,
+        label="fill_qualitative",
     )
     logger.info("LLM call complete: qualitative analysis")
 

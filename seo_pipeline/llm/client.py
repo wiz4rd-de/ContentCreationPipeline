@@ -108,6 +108,7 @@ def complete(
     messages: list[dict],
     config: LLMConfig | None = None,
     response_model: type[BaseModel] | None = None,
+    label: str | None = None,
 ) -> str | BaseModel:
     """Call an LLM via LiteLLM and return a string or validated Pydantic model.
 
@@ -116,6 +117,7 @@ def complete(
         config: LLM configuration. Loaded from env if None.
         response_model: If provided, parse the response as JSON and validate
             against this Pydantic model.
+        label: If provided, print ``calling LLM: <label>...`` before the call.
 
     Returns:
         Validated Pydantic model instance if response_model is given,
@@ -126,6 +128,9 @@ def complete(
             (install with ``pip install seo-pipeline[llm]``).
     """
     import litellm
+
+    if label is not None:
+        print(f"calling LLM: {label}...")
 
     if config is None:
         config = LLMConfig.from_env()

@@ -358,3 +358,54 @@ class TestTokenUsageLogging:
         )
         captured = capsys.readouterr()
         assert "tokens used: input ? / output ?" in captured.out
+
+
+class TestLabelPrinting:
+    """complete() prints label before LLM call when provided."""
+
+    def test_prints_label(self, monkeypatch, llm_config, capsys):
+        def mock_completion(**kwargs):
+            return _make_litellm_response("ok")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+            label="fill_qualitative",
+        )
+        captured = capsys.readouterr()
+        assert "calling LLM: fill_qualitative..." in captured.out
+
+    def test_no_label_when_omitted(self, monkeypatch, llm_config, capsys):
+        def mock_completion(**kwargs):
+            return _make_litellm_response("ok")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+        )
+        captured = capsys.readouterr()
+        assert "calling LLM:" not in captured.out
+
+    def test_label_printed_before_token_usage(self, monkeypatch, llm_config, capsys):
+        """Label line appears before token usage line in output."""
+        def mock_completion(**kwargs):
+            return _make_litellm_response("ok")
+
+        import litellm
+        monkeypatch.setattr(litellm, "completion", mock_completion)
+
+        complete(
+            messages=[{"role": "user", "content": "test"}],
+            config=llm_config,
+            label="write_draft",
+        )
+        captured = capsys.readouterr()
+        label_pos = captured.out.index("calling LLM: write_draft...")
+        token_pos = captured.out.index("tokens used:")
+        assert label_pos < token_pos

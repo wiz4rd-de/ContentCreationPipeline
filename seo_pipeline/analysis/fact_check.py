@@ -121,6 +121,7 @@ def supplement_claims(
             messages,
             config=llm_config,
             response_model=_SupplementResponse,
+            label="supplement_claims",
         )
         result: list[Claim] = []
         for i, raw in enumerate(response.claims):
@@ -251,6 +252,7 @@ def verify_claim(
             messages,
             config=llm_config,
             response_model=_VerdictResponse,
+            label="verify_claim",
         )
         return VerifiedClaim(
             id=claim.id,

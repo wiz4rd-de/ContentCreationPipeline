@@ -88,7 +88,7 @@ def assemble_briefing_md(
         briefing_data, template, tone_of_voice,
     )
     logger.info("LLM call start: briefing assembly")
-    markdown: str = complete(messages=messages)
+    markdown: str = complete(messages=messages, label="assemble_briefing_md")
     logger.info("LLM call complete: briefing assembly")
 
     slug = slugify(briefing_data.meta.seed_keyword)

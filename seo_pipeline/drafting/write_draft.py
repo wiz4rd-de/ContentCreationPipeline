@@ -71,7 +71,7 @@ def write_draft(
         briefing_markdown, tone_of_voice, instructions,
     )
     logger.info("LLM call start: draft generation")
-    draft_content: str = complete(messages=messages)
+    draft_content: str = complete(messages=messages, label="write_draft")
     logger.info("LLM call complete: draft generation")
 
     slug = _slug_from_brief_path(brief)
