@@ -6,11 +6,16 @@ WDF*IDF scoring, and the top-level BriefingData aggregation.
 
 from __future__ import annotations
 
-from typing import Any
-
 from pydantic import Field, model_serializer
 
 from seo_pipeline.models.common import PipelineBaseModel
+from seo_pipeline.models.llm_responses import (
+    QualAioStrategy,
+    QualContentFormat,
+    QualEntityCluster,
+    QualGeoAudit,
+    QualUniqueAngle,
+)
 
 # ---------------------------------------------------------------------------
 # Content Topics group
@@ -492,11 +497,11 @@ class BriefingQualitative(PipelineBaseModel):
     through ``BriefingData.model_validate()`` without loss.
     """
 
-    entity_clusters: list[dict[str, Any]] | None = Field(default=None)
-    unique_angles: list[dict[str, str]] | None = Field(default=None)
-    content_format_recommendation: dict[str, Any] | None = Field(default=None)
-    geo_audit: dict[str, Any] | None = Field(default=None)
-    aio_strategy: dict[str, Any] | None = Field(default=None)
+    entity_clusters: list[QualEntityCluster] | None = Field(default=None)
+    unique_angles: list[QualUniqueAngle] | None = Field(default=None)
+    content_format_recommendation: QualContentFormat | None = Field(default=None)
+    geo_audit: QualGeoAudit | None = Field(default=None)
+    aio_strategy: QualAioStrategy | None = Field(default=None)
     briefing: str | None = Field(default=None)
 
 
