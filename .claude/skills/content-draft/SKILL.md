@@ -94,6 +94,24 @@ Before saving, review the draft against the brief's SEO checklist:
 - [ ] Title Tag and Meta Description in table match SEO guidelines
 - [ ] No unverified facts stated as definitive (mark uncertain claims with `> **[VERIFY]** ...`)
 
+**ToV-Compliance self-review:**
+- [ ] No "fuer jeden etwas zu bieten" or similar hedging phrases (A1)
+- [ ] No unqualified superlatives -- only with "einer der", "gilt als", "zaehlt zu" (A2)
+- [ ] No tricolon lists as stylistic device "Sonne, Strand und Meer" (A3)
+- [ ] No imperative cascades "Entdecke... Erlebe... Geniesse..." (A4)
+- [ ] No pseudo-personal promises "Du wirst es lieben" (A5)
+- [ ] No vague quality claims "erstklassige Hotels", "traumhafte Straende" (A6)
+- [ ] No monotonous sentence structure across consecutive sentences (A7)
+- [ ] DERTOUR always uppercase, no hyphen in brand combinations (B1)
+- [ ] No "Sterne" for hotels -- use "Kategorie" or "Rauten" (B2)
+- [ ] "kostenfrei" instead of "kostenlos"/"gratis" (B3)
+- [ ] No competitor names (B5)
+- [ ] No animal attractions in unnatural environments (B6)
+- [ ] No guarantees or performance promises "garantiert", "perfekt" (B8)
+- [ ] Numbers < 12 spelled out, >= 12 as digits; units spelled out; abbreviations spelled out (C)
+- [ ] No sentence exceeds 40 words (Schicht 2.2)
+- [ ] Paragraph openings vary -- no two consecutive paragraphs with same opening strategy (Schicht 2.3)
+
 If any item fails, fix it before proceeding.
 
 ### 4. Save output
