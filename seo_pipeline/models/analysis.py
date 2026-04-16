@@ -6,6 +6,8 @@ WDF*IDF scoring, and the top-level BriefingData aggregation.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field, model_serializer, model_validator
 
 from seo_pipeline.models.common import PipelineBaseModel
@@ -548,3 +550,26 @@ class BriefingData(PipelineBaseModel):
     competitor_analysis: BriefingCompetitorAnalysis
     faq_data: BriefingFaqData
     qualitative: BriefingQualitative
+
+
+# ---------------------------------------------------------------------------
+# ToV Compliance Check group
+# ---------------------------------------------------------------------------
+
+
+class TovViolation(PipelineBaseModel):
+    """A single ToV compliance violation found in a draft."""
+
+    line: int
+    rule: str  # e.g. "A2", "B3", "C/Zahlen"
+    severity: Literal["critical", "warning"]
+    text: str  # affected text
+    suggestion: str  # correction suggestion
+
+
+class TovCheckOutput(PipelineBaseModel):
+    """Top-level output of the ToV compliance check."""
+
+    violations: list[TovViolation]
+    summary: dict[str, int]  # e.g. {"critical": 3, "warning": 7}
+    compliant: bool
