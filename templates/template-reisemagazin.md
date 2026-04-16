@@ -30,7 +30,7 @@ Dies ist das Template für jedes neue Reisemagazin-Briefing. Die Platzhalter in 
 | Aspekt | Vorgabe |
 |--------|---------|
 | **Muster** | [Destination/Thema] – [Emotionaler Hook / Versprechen] |
-| **Länge** | Max. 65 Zeichen (für Google SERP) |
+| **Länge** | Max. 50 Zeichen (vgl. ToV Schicht 5, H1) |
 | **Keyword-Platzierung** | Haupt-Keyword am Anfang oder prominent eingebaut |
 | **Beispiele (Live)** | „Island – Wasserfall-Wunder zwischen Feuer und Eis" / „Ayutthaya – Thailands vergessene Königsstadt" |
 | **Ton** | Inspirierend, neugierig machend, nicht reißerisch |
@@ -40,7 +40,7 @@ Dies ist das Template für jedes neue Reisemagazin-Briefing. Die Platzhalter in 
 | Aspekt | Vorgabe |
 |--------|---------|
 | **Muster** | [Konkretisierung des Versprechens / Teaser auf den Inhalt] |
-| **Länge** | 1 Satz, max. 100 Zeichen |
+| **Länge** | 1 Satz, max. 70 Zeichen (vgl. ToV Schicht 5, H2) |
 | **Beispiele (Live)** | „Vom berühmten Skógafoss bis hin zu einem Geheimtipp" / „Geschichte zum Anfassen und das echte Thailand abseits des Trubels" |
 
 ### Intro-Absatz
@@ -62,7 +62,7 @@ Jede Sektion folgt einem einheitlichen Baukasten-Prinzip:
 |----------|---------|
 | **H2-Überschrift** | Listicle: „[Nr.] [Name/Ort]: [Beschreibendes Attribut]" · Guide: „[Thema/Aspekt der Destination]" · Keyword mind. in jedem 2. H2 enthalten. |
 | **Teaser-Subtitle** | 1 kurzer Satz (ca. 50–80 Zeichen), der Lust auf die Sektion macht. Wird als Akkordeon-Label und mobile Vorschau genutzt. |
-| **Lead-Absatz** | 1–2 Sätze, die den Kern der Sektion zusammenfassen. Enthält wenn möglich eine überraschende Zahl, ein Superlativ oder eine Anekdote. |
+| **Lead-Absatz** | 1–2 Sätze, die den Kern der Sektion zusammenfassen. Enthält wenn möglich eine überraschende Zahl, ein qualifiziertes Superlativ (vgl. ToV A2: „einer der", „gilt als", „zählt zu") oder eine Anekdote. |
 | **Bild** | 1 hochwertiges Foto mit: • Beschreibendem Alt-Text (inkl. Keyword, max. 125 Zeichen) • Bildunterschrift (emotionaler kurzer Satz) |
 | **Fließtext** | 2–4 Absätze (je 50–100 Wörter). Mix aus: • Fakten (Zahlen, Maße, Entfernungen) • Storytelling (Geschichte, Legende, persönliches Erleben) • Praktischen Tipps (Anreise, Öffnungszeiten, Preise) • Interne Links (kontextuell, nicht forciert) |
 | **Optional: Info-Box** | „Insider-Tipp" / „DERTOUR Extratipp" / Faktenbox mit kompaktem Spezialwissen |
@@ -128,7 +128,7 @@ Non-Content-Elemente in Drafts werden als Blockquote-Marker dargestellt:
 
 | Kategorie | So ja ✓ | So nicht ✗ |
 |-----------|---------|------------|
-| **Ansprache** | „Entdecke die schönsten Fjorde" | „Der Tourist sollte die Fjorde besuchen" |
+| **Ansprache** | „Vor allem Naturliebhaber finden in den Fjorden Wanderrouten mit Panoramablick" | „Der Tourist sollte die Fjorde besuchen" |
 | **Emotion** | „Tosende Wassermassen stürzen 44 Meter in die Tiefe" | „Der Wasserfall ist 44 Meter hoch" |
 | **Storytelling** | „Einst soll ein Wikinger seinen Schatz hier versteckt haben" | „Es gibt eine Legende über einen Wikinger" |
 | **Fakten-Einbindung** | „Der Eintritt kostet ab 20 €, die Fahrt dauert 30 Min." | „Die genauen Preise findest du auf der Website" |
