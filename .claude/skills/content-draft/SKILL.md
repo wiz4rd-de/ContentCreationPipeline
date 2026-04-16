@@ -37,15 +37,13 @@ Produce a complete article in markdown following these guidelines:
 - Write the meta description from the brief or improve it
 - Suggest image alt texts where images are recommended
 
+**Tone of Voice (PRIORITY):**
+If a ToV file is loaded (Step 1.2), it is the authoritative style guide. When any other instruction contradicts the ToV, the ToV wins. Pay special attention to Constraint-Gruppe A (A1-A7: critical frequency patterns), Constraint-Gruppe B (B1-B8: brand and legal rules), and Constraint-Gruppe C (formatting rules).
+
 **Quality:**
+- Follow the Tone of Voice guidelines provided — they override any generic quality rules
 - Write in the target language natively — no translation artifacts
-- Match the tone and brand voice specified in the brief
-- Use short paragraphs (3-4 sentences max) for readability
-- Vary sentence length and structure for a natural flow
 - Include concrete examples, data points, or expert quotes where the brief suggests them
-- Avoid filler phrases, generic statements, and unnecessary superlatives
-- Write a compelling introduction that hooks the reader and addresses the search intent
-- End with a clear conclusion and the CTA(s) from the brief
 
 **Formatting:**
 - Use markdown formatting: headers, bold, lists, blockquotes where appropriate
