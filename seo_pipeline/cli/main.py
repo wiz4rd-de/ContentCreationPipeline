@@ -519,6 +519,37 @@ def fact_check(
 
 
 @app.command()
+def tov_check(
+    draft: str = typer.Option(
+        ..., help="Path to the draft markdown file",
+    ),
+    dir: Optional[Path] = typer.Option(
+        None, help="Output directory (defaults to draft's parent)",
+    ),
+    tov: Optional[str] = typer.Option(
+        None, help="Path to a tone-of-voice file (default: templates/DT_ToV_v3.md)",
+    ),
+) -> None:
+    """Run ToV compliance audit on a draft."""
+    from seo_pipeline.analysis.tov_check import tov_check as _tov_check
+    from seo_pipeline.llm.config import LLMConfig
+
+    out_dir = dir or Path(draft).parent
+    llm_cfg = LLMConfig.from_env()
+    result = _tov_check(
+        str(draft), str(out_dir), llm_cfg, tov_path=tov,
+    )
+    status = "COMPLIANT" if result.compliant else "NON-COMPLIANT"
+    critical = result.summary.get("critical", 0)
+    warning = result.summary.get("warning", 0)
+    typer.echo(
+        f"ToV check: {status} "
+        f"({critical} critical, {warning} warning)",
+        err=True,
+    )
+
+
+@app.command()
 def score_draft_wdfidf(
     draft: Path = typer.Option(..., help="Path to draft text file"),
     pages_dir: Path = typer.Option(

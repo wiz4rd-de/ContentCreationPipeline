@@ -82,17 +82,34 @@ class TestBuildDraftPrompt:
         assert "Draft" in system_content
         assert "Haupt-Keyword" in system_content
 
-    def test_tov_included_when_provided(self) -> None:
+    def test_tov_in_system_message_when_provided(self) -> None:
         tov = "Write in a friendly, approachable tone."
         messages = build_draft_prompt(SAMPLE_BRIEFING, tov, None)
+        system_content = messages[0]["content"]
+        assert "Tone of Voice" in system_content
+        assert tov in system_content
+        # ToV must NOT be in user message (moved to system for priority)
         user_content = messages[1]["content"]
-        assert "Tone of Voice" in user_content
-        assert tov in user_content
+        assert tov not in user_content
+
+    def test_tov_references_constraint_groups(self) -> None:
+        tov = "Some ToV content."
+        messages = build_draft_prompt(SAMPLE_BRIEFING, tov, None)
+        system_content = messages[0]["content"]
+        assert "A1-A7" in system_content
+        assert "B1-B8" in system_content
+
+    def test_tov_override_statement_in_system(self) -> None:
+        tov = "Some ToV content."
+        messages = build_draft_prompt(SAMPLE_BRIEFING, tov, None)
+        system_content = messages[0]["content"]
+        assert "ToV wins" in system_content
 
     def test_tov_omitted_when_none(self) -> None:
         messages = build_draft_prompt(SAMPLE_BRIEFING, None, None)
-        user_content = messages[1]["content"]
-        assert "Tone of Voice" not in user_content
+        system_content = messages[0]["content"]
+        # No ToV priority block when no ToV provided
+        assert "PRIORITY" not in system_content
 
     def test_instructions_included_when_provided(self) -> None:
         instr = "Use du instead of Sie."
@@ -106,12 +123,61 @@ class TestBuildDraftPrompt:
         user_content = messages[1]["content"]
         assert "Special Instructions" not in user_content
 
+    def test_tov_self_review_items_present(self) -> None:
+        """Self-review must contain ToV-specific checklist items (#109)."""
+        messages = build_draft_prompt(SAMPLE_BRIEFING, None, None)
+        system_content = messages[0]["content"]
+        # At least 8 ToV items with rule references
+        tov_refs = ["(A1)", "(A2)", "(A3)", "(A4)", "(A5)", "(A6)", "(A7)",
+                    "(B1)", "(B2)", "(B3)", "(B5)", "(B6)", "(B8)", "(C)",
+                    "(Schicht 2.2)", "(Schicht 2.3)"]
+        found = [ref for ref in tov_refs if ref in system_content]
+        assert len(found) >= 8, f"Only {len(found)} ToV refs found: {found}"
+
+    def test_tov_self_review_after_seo_items(self) -> None:
+        """ToV self-review items must appear after existing SEO items (#109)."""
+        messages = build_draft_prompt(SAMPLE_BRIEFING, None, None)
+        system_content = messages[0]["content"]
+        # SEO item must come before ToV items
+        seo_pos = system_content.index("Primary keyword in title")
+        tov_pos = system_content.index("(A1)")
+        assert seo_pos < tov_pos
+
+    def test_seo_self_review_items_unchanged(self) -> None:
+        """Original SEO self-review items must remain intact (#109)."""
+        messages = build_draft_prompt(SAMPLE_BRIEFING, None, None)
+        system_content = messages[0]["content"]
+        seo_items = [
+            "Primary keyword in title, H1, and first 100 words",
+            "All secondary keywords used at least once",
+            "All outline sections covered",
+            "Word count within",
+            "CTA(s) included",
+            "Meta info table present",
+            "Title Tag and Meta Description",
+            "No unverified facts stated as definitive",
+        ]
+        for item in seo_items:
+            assert item in system_content, f"Missing SEO item: {item}"
+
+    def test_no_competing_quality_rules_in_system(self) -> None:
+        """System prompt must not contain generic quality rules that
+        compete with ToV constraints (issue #108)."""
+        messages = build_draft_prompt(SAMPLE_BRIEFING, "Some ToV.", None)
+        system_content = messages[0]["content"]
+        # These generic rules were removed in favor of ToV reference
+        assert "Vary sentence length" not in system_content
+        assert "Avoid filler phrases" not in system_content
+        assert "Match the tone and brand voice" not in system_content
+
     def test_both_tov_and_instructions(self) -> None:
         tov = "Formal German."
         instr = "Include personal anecdotes."
         messages = build_draft_prompt(SAMPLE_BRIEFING, tov, instr)
+        # ToV in system, instructions in user
+        system_content = messages[0]["content"]
         user_content = messages[1]["content"]
-        assert tov in user_content
+        assert tov in system_content
         assert instr in user_content
 
 
@@ -180,7 +246,7 @@ class TestWriteDraft:
         # No response_model should be passed (plain text output)
         assert "response_model" not in call_kwargs.kwargs
 
-    def test_passes_tov_to_prompt(self, tmp_path: Path) -> None:
+    def test_passes_tov_to_system_prompt(self, tmp_path: Path) -> None:
         brief_file = tmp_path / "brief-kw.md"
         brief_file.write_text(SAMPLE_BRIEFING, encoding="utf-8")
         tov_file = tmp_path / "tov.md"
@@ -193,8 +259,8 @@ class TestWriteDraft:
             write_draft(str(brief_file), tov_path=str(tov_file))
 
         messages = mock_complete.call_args.kwargs["messages"]
-        user_msg = messages[1]["content"]
-        assert "Be friendly." in user_msg
+        system_msg = messages[0]["content"]
+        assert "Be friendly." in system_msg
 
     def test_passes_instructions_to_prompt(self, tmp_path: Path) -> None:
         brief_file = tmp_path / "brief-kw.md"

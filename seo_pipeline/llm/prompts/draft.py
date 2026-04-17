@@ -13,12 +13,25 @@ def build_draft_prompt(
     Returns a list of message dicts with role/content keys suitable
     for passing to ``complete()``.  The LLM returns plain markdown text
     (no structured output / response_model).
+
+    The Tone of Voice (ToV) is placed in the system prompt -- the
+    highest-priority position for LLM attention -- so its constraints
+    (A1-A7, B1-B8, C formatting rules) take precedence over any
+    generic guidelines.
     """
-    tov_block = ""
+    # -- ToV block: placed in system prompt for maximum priority --------
+    tov_system_block = ""
     if tone_of_voice:
-        tov_block = (
-            "\n\n### Tone of Voice Guidelines\n\n"
-            f"{tone_of_voice}"
+        tov_system_block = (
+            "\n\n**Tone of Voice (PRIORITY -- overrides any "
+            "generic quality rules below):**\n\n"
+            f"{tone_of_voice}\n\n"
+            "The Tone of Voice guidelines above are authoritative. "
+            "When any other instruction in this prompt contradicts "
+            "the ToV, the ToV wins. Pay special attention to "
+            "Constraint-Gruppe A (A1-A7: critical frequency patterns), "
+            "Constraint-Gruppe B (B1-B8: brand and legal rules), "
+            "and Constraint-Gruppe C (formatting rules)."
         )
 
     instructions_block = ""
@@ -32,7 +45,8 @@ def build_draft_prompt(
         "You are an expert SEO content writer. "
         "You will receive a content briefing as markdown. "
         "Your task is to write a complete, publish-ready "
-        "article draft following the briefing exactly.\n\n"
+        "article draft following the briefing exactly."
+        f"{tov_system_block}\n\n"
         "**Structure:**\n"
         "- Follow the outline from the brief exactly "
         "(H1, H2, H3 hierarchy)\n"
@@ -49,22 +63,12 @@ def build_draft_prompt(
         "- Suggest image alt texts where images are "
         "recommended\n\n"
         "**Quality:**\n"
+        "- Follow the Tone of Voice guidelines provided. "
+        "They override any generic quality rules.\n"
         "- Write in the target language natively "
         "-- no translation artifacts\n"
-        "- Match the tone and brand voice specified "
-        "in the brief\n"
-        "- Use short paragraphs (3-4 sentences max) "
-        "for readability\n"
-        "- Vary sentence length and structure for a "
-        "natural flow\n"
         "- Include concrete examples, data points, or "
-        "expert quotes where the brief suggests them\n"
-        "- Avoid filler phrases, generic statements, "
-        "and unnecessary superlatives\n"
-        "- Write a compelling introduction that hooks "
-        "the reader and addresses the search intent\n"
-        "- End with a clear conclusion and the CTA(s) "
-        "from the brief\n\n"
+        "expert quotes where the brief suggests them\n\n"
         "**Formatting:**\n"
         "- Use markdown formatting: headers, bold, lists, "
         "blockquotes where appropriate\n"
@@ -122,6 +126,38 @@ def build_draft_prompt(
         "- No unverified facts stated as definitive "
         "(mark uncertain claims with "
         "`> **[VERIFY]** ...`)\n\n"
+        "**ToV-Compliance self-review:**\n"
+        "- No 'fuer jeden etwas zu bieten' or similar "
+        "hedging phrases (A1)\n"
+        "- No unqualified superlatives -- only with "
+        "'einer der', 'gilt als', 'zaehlt zu' (A2)\n"
+        "- No tricolon lists as stylistic device "
+        "'Sonne, Strand und Meer' (A3)\n"
+        "- No imperative cascades "
+        "'Entdecke... Erlebe... Geniesse...' (A4)\n"
+        "- No pseudo-personal promises "
+        "'Du wirst es lieben' (A5)\n"
+        "- No vague quality claims "
+        "'erstklassige Hotels', 'traumhafte Straende' (A6)\n"
+        "- No monotonous sentence structure across "
+        "consecutive sentences (A7)\n"
+        "- DERTOUR always uppercase, no hyphen in brand "
+        "combinations (B1)\n"
+        "- No 'Sterne' for hotels -- use "
+        "'Kategorie' or 'Rauten' (B2)\n"
+        "- 'kostenfrei' instead of "
+        "'kostenlos'/'gratis' (B3)\n"
+        "- No competitor names (B5)\n"
+        "- No animal attractions in unnatural "
+        "environments (B6)\n"
+        "- No guarantees or performance promises "
+        "'garantiert', 'perfekt' (B8)\n"
+        "- Numbers < 12 spelled out, >= 12 as digits; "
+        "units spelled out; abbreviations spelled out (C)\n"
+        "- No sentence exceeds 40 words (Schicht 2.2)\n"
+        "- Paragraph openings vary -- no two consecutive "
+        "paragraphs with same opening strategy "
+        "(Schicht 2.3)\n\n"
         "Return ONLY the draft markdown. "
         "No explanation, no code fences around the "
         "entire output."
@@ -129,7 +165,7 @@ def build_draft_prompt(
 
     user = (
         f"Content briefing:\n\n{briefing_markdown}"
-        f"{tov_block}{instructions_block}"
+        f"{instructions_block}"
     )
 
     return [
