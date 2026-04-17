@@ -89,11 +89,11 @@ class TestClaimPriority:
 
 
 class TestCappingLogic:
-    def test_cap_at_40(self, tmp_path):
-        """fact_check processes at most 40 claims."""
+    def test_cap_at_100(self, tmp_path):
+        """fact_check processes at most 100 claims."""
         draft = tmp_path / "draft.md"
         lines = [
-            f"Der Preis betraegt {i} EUR." for i in range(50)
+            f"Der Preis betraegt {i} EUR." for i in range(120)
         ]
         draft.write_text("\n".join(lines), encoding="utf-8")
 
@@ -135,8 +135,8 @@ class TestCappingLogic:
                 str(draft), str(tmp_path), cfg, api,
             )
 
-        assert len(result.verified_claims) <= 40
-        assert result.meta.total_claims_checked <= 40
+        assert len(result.verified_claims) <= 100
+        assert result.meta.total_claims_checked <= 100
 
 
 # -----------------------------------------------------------------------

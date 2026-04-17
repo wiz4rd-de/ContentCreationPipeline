@@ -533,8 +533,8 @@ def fact_check(
     # Step 3: Prioritize and cap
     all_claims = regex_claims + supplemented
     all_claims.sort(key=_claim_priority)
-    capped_claims = all_claims[:40]
-    logger.info("Checking %d claims (capped at 40)", len(capped_claims))
+    capped_claims = all_claims[:100]
+    logger.info("Checking %d claims (capped at 100)", len(capped_claims))
 
     # Step 4: Search and verify
     verified: list[VerifiedClaim] = []
