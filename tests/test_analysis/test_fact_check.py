@@ -16,6 +16,7 @@ from seo_pipeline.analysis.fact_check import (
     search_claims_batch,
     supplement_claims,
     verify_claim,
+    verify_claims_batch,
 )
 from seo_pipeline.llm.config import LLMConfig
 from seo_pipeline.models.analysis import Claim, VerifiedClaim
@@ -554,3 +555,161 @@ class TestFactCheckReports:
         md = md_path.read_text(encoding="utf-8")
         assert "Fact-Check Report" in md
         assert "Verified Claims" in md
+
+
+# -----------------------------------------------------------------------
+# Batch verify tests (Issue #104)
+# -----------------------------------------------------------------------
+
+
+class TestVerifyClaimsBatchSuccess:
+    def test_batch_of_3_returns_correct_verdicts(self):
+        """Single LLM call verifies 3 claims with correct mapping."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+            _make_claim("c3", "counts", "50 items"),
+        ]
+        snippets_map = {
+            "c1": [
+                {
+                    "title": "Price",
+                    "url": "http://ex.com/1",
+                    "snippet": "costs 100",
+                },
+            ],
+            "c2": [
+                {
+                    "title": "Date",
+                    "url": "http://ex.com/2",
+                    "snippet": "year 2024",
+                },
+            ],
+            "c3": [],
+        }
+
+        # Mock LLM to return batch verdicts
+        from seo_pipeline.analysis.fact_check import (
+            _BatchVerdictItem,
+            _BatchVerdictResponse,
+        )
+
+        mock_response = _BatchVerdictResponse(
+            verdicts=[
+                _BatchVerdictItem(
+                    claim_id="c1",
+                    verdict="correct",
+                    corrected_value=None,
+                    notes="Price confirmed",
+                ),
+                _BatchVerdictItem(
+                    claim_id="c2",
+                    verdict="incorrect",
+                    corrected_value="2025",
+                    notes="Date is wrong",
+                ),
+                _BatchVerdictItem(
+                    claim_id="c3",
+                    verdict="unverifiable",
+                    corrected_value=None,
+                    notes=None,
+                ),
+            ]
+        )
+
+        with patch(
+            "seo_pipeline.analysis.fact_check.complete",
+            return_value=mock_response,
+        ):
+            result = verify_claims_batch(
+                claims, snippets_map, _make_llm_config(),
+            )
+
+        assert len(result) == 3
+        assert result[0].id == "c1"
+        assert result[0].verdict == "correct"
+        assert result[0].notes == "Price confirmed"
+        assert result[0].sources == ["http://ex.com/1"]
+        assert result[1].id == "c2"
+        assert result[1].verdict == "incorrect"
+        assert result[1].corrected_value == "2025"
+        assert result[2].id == "c3"
+        assert result[2].verdict == "unverifiable"
+
+
+class TestVerifyClaimsBatchLLMFailure:
+    def test_returns_all_unverifiable_on_failure(self):
+        """All claims returned as unverifiable when LLM fails."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+        ]
+        snippets_map = {
+            "c1": [
+                {
+                    "title": "Price",
+                    "url": "http://ex.com/1",
+                    "snippet": "costs 100",
+                },
+            ],
+            "c2": [],
+        }
+
+        with patch(
+            "seo_pipeline.analysis.fact_check.complete",
+            side_effect=RuntimeError("LLM down"),
+        ):
+            result = verify_claims_batch(
+                claims, snippets_map, _make_llm_config(),
+            )
+
+        assert len(result) == 2
+        assert all(r.verdict == "unverifiable" for r in result)
+        assert all(
+            r.notes == "LLM batch call failed" for r in result
+        )
+        assert result[0].sources == ["http://ex.com/1"]
+        assert result[1].sources == []
+
+
+class TestVerifyClaimsBatchMissingIDs:
+    def test_missing_claim_ids_handled_gracefully(self):
+        """Claims missing from LLM response get unverifiable."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+            _make_claim("c3", "counts", "50 items"),
+        ]
+        snippets_map = {"c1": [], "c2": [], "c3": []}
+
+        from seo_pipeline.analysis.fact_check import (
+            _BatchVerdictItem,
+            _BatchVerdictResponse,
+        )
+
+        # LLM only returns verdict for c1, omits c2 and c3
+        mock_response = _BatchVerdictResponse(
+            verdicts=[
+                _BatchVerdictItem(
+                    claim_id="c1",
+                    verdict="correct",
+                    corrected_value=None,
+                    notes=None,
+                ),
+            ]
+        )
+
+        with patch(
+            "seo_pipeline.analysis.fact_check.complete",
+            return_value=mock_response,
+        ):
+            result = verify_claims_batch(
+                claims, snippets_map, _make_llm_config(),
+            )
+
+        assert len(result) == 3
+        assert result[0].verdict == "correct"
+        assert result[1].verdict == "unverifiable"
+        assert result[1].notes == "Missing from batch response"
+        assert result[2].verdict == "unverifiable"
+        assert result[2].notes == "Missing from batch response"

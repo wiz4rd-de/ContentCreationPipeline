@@ -53,6 +53,17 @@ class _VerdictResponse(PipelineBaseModel):
     notes: str | None
 
 
+class _BatchVerdictItem(PipelineBaseModel):
+    claim_id: str
+    verdict: str
+    corrected_value: str | None
+    notes: str | None
+
+
+class _BatchVerdictResponse(PipelineBaseModel):
+    verdicts: list[_BatchVerdictItem]
+
+
 # -----------------------------------------------------------------------
 # Category priority for claim sorting (lower = higher priority)
 # -----------------------------------------------------------------------
@@ -353,6 +364,143 @@ def verify_claim(
             sources=source_urls,
             notes="LLM call failed",
         )
+
+
+def verify_claims_batch(
+    claims: list[Claim],
+    snippets_map: dict[str, list[dict]],
+    llm_config: LLMConfig,
+) -> list[VerifiedClaim]:
+    """Verify multiple claims in a single LLM call.
+
+    Builds a compound prompt listing all claims with their snippets,
+    makes one complete() call, and maps response items back to claims.
+    On LLM failure, returns all claims as verdict="unverifiable".
+    """
+    if not claims:
+        return []
+
+    # Build per-claim blocks for the prompt
+    claim_blocks: list[str] = []
+    for claim in claims:
+        snippets = snippets_map.get(claim.id, [])
+        snippets_text = "\n".join(
+            f"  - [{s.get('title', '')}]"
+            f"({s.get('url', '')}): {s.get('snippet', '')}"
+            for s in snippets
+        )
+        claim_blocks.append(
+            f"[{claim.id}]\n"
+            f"  Category: {claim.category}\n"
+            f"  Value: {claim.value}\n"
+            f"  Sentence: {claim.sentence}\n"
+            f"  Section: {claim.section or 'N/A'}\n"
+            f"  Search results:\n{snippets_text}"
+        )
+
+    sys_prompt = (
+        "You are a fact-checking assistant. For each claim below, "
+        "determine if it is correct, incorrect, uncertain, or "
+        "unverifiable based on the provided search snippets. "
+        "Return JSON with a 'verdicts' array. Each item must have: "
+        "'claim_id' (matching the [ID] label), "
+        "'verdict' (one of: correct, incorrect, uncertain, "
+        "unverifiable), 'corrected_value' (string or null - the "
+        "corrected text if incorrect), 'notes' (string or null - "
+        "brief explanation)."
+    )
+
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {
+            "role": "user",
+            "content": "\n\n".join(claim_blocks),
+        },
+    ]
+
+    # Build source URLs lookup for each claim
+    source_urls_map: dict[str, list[str]] = {}
+    for claim in claims:
+        snippets = snippets_map.get(claim.id, [])
+        source_urls_map[claim.id] = [
+            s.get("url", "") for s in snippets if s.get("url")
+        ]
+
+    try:
+        response = complete(
+            messages,
+            config=llm_config,
+            response_model=_BatchVerdictResponse,
+            label="verify_claims_batch",
+        )
+
+        # Index verdicts by claim_id for lookup
+        verdict_by_id: dict[str, _BatchVerdictItem] = {
+            v.claim_id: v for v in response.verdicts
+        }
+
+        result: list[VerifiedClaim] = []
+        for claim in claims:
+            v = verdict_by_id.get(claim.id)
+            if v is not None:
+                result.append(
+                    VerifiedClaim(
+                        id=claim.id,
+                        category=claim.category,
+                        value=claim.value,
+                        sentence=claim.sentence,
+                        line=claim.line,
+                        section=claim.section,
+                        verdict=v.verdict,
+                        corrected_value=v.corrected_value,
+                        sources=source_urls_map.get(
+                            claim.id, [],
+                        ),
+                        notes=v.notes,
+                    )
+                )
+            else:
+                # LLM omitted this claim — mark unverifiable
+                logger.warning(
+                    "Batch verdict missing for claim=%s",
+                    claim.id,
+                )
+                result.append(
+                    VerifiedClaim(
+                        id=claim.id,
+                        category=claim.category,
+                        value=claim.value,
+                        sentence=claim.sentence,
+                        line=claim.line,
+                        section=claim.section,
+                        verdict="unverifiable",
+                        sources=source_urls_map.get(
+                            claim.id, [],
+                        ),
+                        notes="Missing from batch response",
+                    )
+                )
+        return result
+
+    except Exception:
+        logger.warning(
+            "verify_claims_batch failed, returning all as unverifiable",
+            exc_info=True,
+        )
+        return [
+            VerifiedClaim(
+                id=claim.id,
+                category=claim.category,
+                value=claim.value,
+                sentence=claim.sentence,
+                line=claim.line,
+                section=claim.section,
+                verdict="unverifiable",
+                sources=source_urls_map.get(claim.id, []),
+                notes="LLM batch call failed",
+            )
+            for claim in claims
+        ]
 
 
 def fact_check(
