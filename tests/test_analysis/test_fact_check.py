@@ -13,6 +13,7 @@ from seo_pipeline.analysis.fact_check import (
     _claim_priority,
     fact_check,
     search_claim,
+    search_claims_batch,
     supplement_claims,
     verify_claim,
 )
@@ -268,6 +269,192 @@ class TestSearchClaimSuccess:
         # description -> snippet mapping
         assert "snippet" in result[1]
         assert "description" not in result[1]
+
+
+# -----------------------------------------------------------------------
+# Batch search tests (Issue #103)
+# -----------------------------------------------------------------------
+
+
+class TestSearchClaimsBatchMultiTask:
+    def test_parses_multi_task_response(self):
+        """Each task result maps to the correct claim by index."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+        ]
+        mock_data = {
+            "tasks": [
+                {
+                    "result": [
+                        {
+                            "items": [
+                                {
+                                    "title": "Price page",
+                                    "url": "http://ex.com/1",
+                                    "description": "costs 100",
+                                },
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "result": [
+                        {
+                            "items": [
+                                {
+                                    "title": "Date page",
+                                    "url": "http://ex.com/2",
+                                    "description": "year 2024",
+                                },
+                                {
+                                    "title": "Date page 2",
+                                    "url": "http://ex.com/3",
+                                    "description": "also 2024",
+                                },
+                            ]
+                        }
+                    ]
+                },
+            ]
+        }
+
+        with patch("httpx.Client") as mock_cls:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.json.return_value = mock_data
+            mock_client = MagicMock()
+            mock_client.__enter__ = MagicMock(
+                return_value=mock_client,
+            )
+            mock_client.__exit__ = MagicMock(return_value=False)
+            mock_client.post.return_value = mock_resp
+            mock_cls.return_value = mock_client
+
+            api = {"auth": "x", "base": "http://x"}
+            result = search_claims_batch(claims, api)
+
+        assert len(result) == 2
+        assert result["c1"] == [
+            {
+                "title": "Price page",
+                "url": "http://ex.com/1",
+                "snippet": "costs 100",
+            },
+        ]
+        assert len(result["c2"]) == 2
+        assert result["c2"][0]["title"] == "Date page"
+
+    def test_sends_single_post(self):
+        """All claims are sent in one HTTP POST."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+            _make_claim("c3", "counts", "50 items"),
+        ]
+        mock_data = {"tasks": [{"result": []} for _ in claims]}
+
+        with patch("httpx.Client") as mock_cls:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.json.return_value = mock_data
+            mock_client = MagicMock()
+            mock_client.__enter__ = MagicMock(
+                return_value=mock_client,
+            )
+            mock_client.__exit__ = MagicMock(return_value=False)
+            mock_client.post.return_value = mock_resp
+            mock_cls.return_value = mock_client
+
+            api = {"auth": "x", "base": "http://x"}
+            search_claims_batch(claims, api)
+
+            # Exactly one POST call
+            assert mock_client.post.call_count == 1
+            # Payload has 3 entries
+            call_kwargs = mock_client.post.call_args
+            payload = call_kwargs.kwargs.get(
+                "json", call_kwargs[1].get("json"),
+            )
+            assert len(payload) == 3
+
+
+class TestSearchClaimsBatchPartialFailure:
+    def test_partial_task_failures(self):
+        """Successful tasks return results; failed ones return []."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+            _make_claim("c2", "dates_years", "2024"),
+        ]
+        mock_data = {
+            "tasks": [
+                {
+                    "result": [
+                        {
+                            "items": [
+                                {
+                                    "title": "Found",
+                                    "url": "http://ex.com",
+                                    "description": "snippet",
+                                },
+                            ]
+                        }
+                    ]
+                },
+                {
+                    # Empty result = task failed
+                    "result": []
+                },
+            ]
+        }
+
+        with patch("httpx.Client") as mock_cls:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_resp.json.return_value = mock_data
+            mock_client = MagicMock()
+            mock_client.__enter__ = MagicMock(
+                return_value=mock_client,
+            )
+            mock_client.__exit__ = MagicMock(return_value=False)
+            mock_client.post.return_value = mock_resp
+            mock_cls.return_value = mock_client
+
+            api = {"auth": "x", "base": "http://x"}
+            result = search_claims_batch(claims, api)
+
+        assert len(result["c1"]) == 1
+        assert result["c2"] == []
+
+
+class TestSearchClaimsBatchHttpFailure:
+    def test_full_http_failure_returns_empty_dict(self):
+        """Returns {} when the HTTP request fails entirely."""
+        claims = [
+            _make_claim("c1", "prices_costs", "100 EUR"),
+        ]
+
+        with patch("httpx.Client") as mock_cls:
+            mock_client = MagicMock()
+            mock_client.__enter__ = MagicMock(
+                return_value=mock_client,
+            )
+            mock_client.__exit__ = MagicMock(return_value=False)
+            mock_client.post.side_effect = (
+                httpx.ConnectError("refused")
+            )
+            mock_cls.return_value = mock_client
+
+            api = {"auth": "x", "base": "http://x"}
+            result = search_claims_batch(claims, api)
+
+        assert result == {}
+
+    def test_empty_claims_returns_empty_dict(self):
+        """Returns {} immediately for empty claims list."""
+        api = {"auth": "x", "base": "http://x"}
+        result = search_claims_batch([], api)
+        assert result == {}
 
 
 class TestFactCheckCorrections:

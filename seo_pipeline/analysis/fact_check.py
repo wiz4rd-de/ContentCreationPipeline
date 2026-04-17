@@ -16,7 +16,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
-from pydantic import Field
 
 from seo_pipeline.analysis.extract_claims import extract_claims
 from seo_pipeline.llm.client import complete
@@ -142,6 +141,77 @@ def supplement_claims(
             exc_info=True,
         )
         return []
+
+
+def search_claims_batch(
+    claims: list[Claim],
+    api_config: dict,
+    *,
+    timeout: float = 30.0,
+) -> dict[str, list[dict]]:
+    """Search all claims in a single DataForSEO POST.
+
+    Builds one payload entry per claim, sends a single HTTP request,
+    and maps each task result back to the originating claim by index.
+
+    Returns dict keyed by claim.id -> list of {title, url, snippet}.
+    On full HTTP failure returns empty dict.
+    Partial task failures yield empty list for the failed claim.
+    """
+    if not claims:
+        return {}
+
+    url = (
+        f"{api_config['base']}"
+        "/serp/google/organic/live/advanced"
+    )
+    headers = {
+        "Authorization": f"Basic {api_config['auth']}",
+        "Content-Type": "application/json",
+    }
+    payload = [
+        {
+            "keyword": claim.value,
+            "language_code": "en",
+            "location_code": 2840,
+            "depth": 5,
+        }
+        for claim in claims
+    ]
+
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+    except Exception:
+        logger.warning(
+            "search_claims_batch HTTP request failed",
+            exc_info=True,
+        )
+        return {}
+
+    results: dict[str, list[dict]] = {}
+    tasks = data.get("tasks", [])
+    for i, claim in enumerate(claims):
+        snippets: list[dict] = []
+        if i < len(tasks):
+            task = tasks[i]
+            task_result = task.get("result", [])
+            if task_result:
+                items = task_result[0].get("items", [])
+                for item in items[:5]:
+                    snippets.append(
+                        {
+                            "title": item.get("title", ""),
+                            "url": item.get("url", ""),
+                            "snippet": item.get(
+                                "description", ""
+                            ),
+                        }
+                    )
+        results[claim.id] = snippets
+    return results
 
 
 def search_claim(
