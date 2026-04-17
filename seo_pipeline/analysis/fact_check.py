@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -83,6 +84,12 @@ _DEFAULT_PRIORITY = 6  # supplemented or unknown categories
 def _claim_priority(claim: Claim) -> int:
     """Return sort priority for a claim category."""
     return _CATEGORY_PRIORITY.get(claim.category, _DEFAULT_PRIORITY)
+
+
+def _chunked(iterable: list, size: int) -> Iterator[list]:
+    """Yield successive chunks of *size* from *iterable*."""
+    for i in range(0, len(iterable), size):
+        yield iterable[i : i + size]
 
 
 # -----------------------------------------------------------------------
@@ -536,19 +543,40 @@ def fact_check(
     capped_claims = all_claims[:100]
     logger.info("Checking %d claims (capped at 100)", len(capped_claims))
 
-    # Step 4: Search and verify
-    verified: list[VerifiedClaim] = []
-    for i, claim in enumerate(capped_claims, 1):
-        logger.info(
-            "[%d/%d] %s: %s", i, len(capped_claims),
-            claim.id, claim.value[:60],
-        )
-        snippets = search_claim(claim.value, api_config)
-        vc = verify_claim(claim, snippets, llm_config)
-        logger.info("  → %s", vc.verdict)
-        verified.append(vc)
+    # Step 4: Batch search all claims in a single DataForSEO POST
+    snippets_map = search_claims_batch(capped_claims, api_config)
+    logger.info(
+        "Batch search returned snippets for %d/%d claims",
+        sum(1 for v in snippets_map.values() if v),
+        len(capped_claims),
+    )
 
-    # Step 5: Apply corrections
+    # Step 5: Verify in chunks of ~10 with per-chunk fallback
+    verified: list[VerifiedClaim] = []
+    chunks = list(_chunked(capped_claims, 10))
+    for chunk_idx, chunk in enumerate(chunks, 1):
+        logger.info(
+            "Verifying chunk %d/%d (%d claims)",
+            chunk_idx, len(chunks), len(chunk),
+        )
+        try:
+            batch_result = verify_claims_batch(
+                chunk, snippets_map, llm_config,
+            )
+            verified.extend(batch_result)
+        except Exception:
+            logger.warning(
+                "Batch verify failed for chunk %d, "
+                "falling back to per-claim verification",
+                chunk_idx,
+                exc_info=True,
+            )
+            for claim in chunk:
+                snippets = snippets_map.get(claim.id, [])
+                vc = verify_claim(claim, snippets, llm_config)
+                verified.append(vc)
+
+    # Step 6: Apply corrections
     corrections_applied = 0
     for vc in verified:
         if vc.verdict == "incorrect" and vc.corrected_value:
@@ -561,7 +589,7 @@ def fact_check(
 
     draft_path_obj.write_text(draft_text, encoding="utf-8")
 
-    # Step 6: Build output
+    # Step 7: Build output
     checked_at = (
         datetime.now(timezone.utc)
         .isoformat()

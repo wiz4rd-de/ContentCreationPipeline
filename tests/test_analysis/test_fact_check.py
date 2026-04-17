@@ -97,20 +97,22 @@ class TestCappingLogic:
         ]
         draft.write_text("\n".join(lines), encoding="utf-8")
 
-        collected: list = []
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
 
-        def mock_verify(claim, snippets, config):
-            vc = VerifiedClaim(
-                id=claim.id,
-                category=claim.category,
-                value=claim.value,
-                sentence=claim.sentence,
-                line=claim.line,
-                section=claim.section,
-                verdict="correct",
-            )
-            collected.append(vc)
-            return vc
+        def mock_batch_verify(claims, snippets_map, config):
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="correct",
+                )
+                for c in claims
+            ]
 
         with (
             patch(
@@ -120,13 +122,13 @@ class TestCappingLogic:
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".search_claim",
-                return_value=[],
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".verify_claim",
-                side_effect=mock_verify,
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
             ),
         ):
             cfg = _make_llm_config()
@@ -467,17 +469,23 @@ class TestFactCheckCorrections:
             encoding="utf-8",
         )
 
-        def mock_verify(claim, snippets, config):
-            return VerifiedClaim(
-                id=claim.id,
-                category=claim.category,
-                value=claim.value,
-                sentence=claim.sentence,
-                line=claim.line,
-                section=claim.section,
-                verdict="incorrect",
-                corrected_value="120 EUR",
-            )
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="incorrect",
+                    corrected_value="120 EUR",
+                )
+                for c in claims
+            ]
 
         with (
             patch(
@@ -487,13 +495,13 @@ class TestFactCheckCorrections:
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".search_claim",
-                return_value=[],
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".verify_claim",
-                side_effect=mock_verify,
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
             ),
         ):
             cfg = _make_llm_config()
@@ -515,16 +523,22 @@ class TestFactCheckReports:
             "Der Preis betraegt 50 EUR.", encoding="utf-8",
         )
 
-        def mock_verify(claim, snippets, config):
-            return VerifiedClaim(
-                id=claim.id,
-                category=claim.category,
-                value=claim.value,
-                sentence=claim.sentence,
-                line=claim.line,
-                section=claim.section,
-                verdict="correct",
-            )
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="correct",
+                )
+                for c in claims
+            ]
 
         with (
             patch(
@@ -534,13 +548,13 @@ class TestFactCheckReports:
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".search_claim",
-                return_value=[],
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
             ),
             patch(
                 "seo_pipeline.analysis.fact_check"
-                ".verify_claim",
-                side_effect=mock_verify,
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
             ),
         ):
             cfg = _make_llm_config()
@@ -713,3 +727,277 @@ class TestVerifyClaimsBatchMissingIDs:
         assert result[1].notes == "Missing from batch response"
         assert result[2].verdict == "unverifiable"
         assert result[2].notes == "Missing from batch response"
+
+
+# -----------------------------------------------------------------------
+# Orchestration tests (Issue #106)
+# -----------------------------------------------------------------------
+
+
+class TestFactCheckUsesBatchSearch:
+    def test_calls_search_claims_batch(self, tmp_path):
+        """fact_check calls search_claims_batch, not search_claim."""
+        draft = tmp_path / "draft.md"
+        draft.write_text(
+            "Der Preis betraegt 50 EUR.", encoding="utf-8",
+        )
+
+        batch_search_called = []
+
+        def mock_batch_search(claims, api_config, **kw):
+            batch_search_called.append(len(claims))
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="correct",
+                )
+                for c in claims
+            ]
+
+        with (
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".supplement_claims",
+                return_value=[],
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
+            ),
+        ):
+            cfg = _make_llm_config()
+            api = {"auth": "x", "base": "http://x"}
+            fact_check(str(draft), str(tmp_path), cfg, api)
+
+        # search_claims_batch called exactly once
+        assert len(batch_search_called) == 1
+
+
+class TestFactCheckChunkedVerification:
+    def test_chunks_claims_into_groups_of_10(self, tmp_path):
+        """Claims are verified in chunks of ~10."""
+        draft = tmp_path / "draft.md"
+        lines = [
+            f"Der Preis betraegt {i} EUR." for i in range(25)
+        ]
+        draft.write_text("\n".join(lines), encoding="utf-8")
+
+        chunk_sizes: list[int] = []
+
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            chunk_sizes.append(len(claims))
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="correct",
+                )
+                for c in claims
+            ]
+
+        with (
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".supplement_claims",
+                return_value=[],
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
+            ),
+        ):
+            cfg = _make_llm_config()
+            api = {"auth": "x", "base": "http://x"}
+            result = fact_check(
+                str(draft), str(tmp_path), cfg, api,
+            )
+
+        # With ~25 claims, expect 3 chunks (10, 10, 5)
+        assert len(chunk_sizes) >= 2
+        assert all(s <= 10 for s in chunk_sizes)
+        total_verified = sum(chunk_sizes)
+        assert total_verified == len(result.verified_claims)
+
+
+class TestFactCheckBatchFallback:
+    def test_fallback_to_per_claim_on_batch_failure(self, tmp_path):
+        """When batch verify raises, falls back to per-claim."""
+        draft = tmp_path / "draft.md"
+        # 5 claims = 1 chunk, so fallback covers all
+        lines = [
+            f"Der Preis betraegt {i} EUR." for i in range(5)
+        ]
+        draft.write_text("\n".join(lines), encoding="utf-8")
+
+        per_claim_calls: list[str] = []
+
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            raise RuntimeError("LLM batch failed")
+
+        def mock_verify_single(claim, snippets, config):
+            per_claim_calls.append(claim.id)
+            return VerifiedClaim(
+                id=claim.id,
+                category=claim.category,
+                value=claim.value,
+                sentence=claim.sentence,
+                line=claim.line,
+                section=claim.section,
+                verdict="unverifiable",
+                notes="Fallback",
+            )
+
+        with (
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".supplement_claims",
+                return_value=[],
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claim",
+                side_effect=mock_verify_single,
+            ),
+        ):
+            cfg = _make_llm_config()
+            api = {"auth": "x", "base": "http://x"}
+            result = fact_check(
+                str(draft), str(tmp_path), cfg, api,
+            )
+
+        # All claims verified via per-claim fallback
+        assert len(per_claim_calls) == len(result.verified_claims)
+        assert all(
+            vc.notes == "Fallback"
+            for vc in result.verified_claims
+        )
+
+    def test_partial_chunk_fallback(self, tmp_path):
+        """Only the failing chunk falls back; others use batch."""
+        draft = tmp_path / "draft.md"
+        # 15 claims = 2 chunks (10, 5)
+        lines = [
+            f"Der Preis betraegt {i} EUR." for i in range(15)
+        ]
+        draft.write_text("\n".join(lines), encoding="utf-8")
+
+        batch_call_count = [0]
+        per_claim_calls: list[str] = []
+
+        def mock_batch_search(claims, api_config, **kw):
+            return {c.id: [] for c in claims}
+
+        def mock_batch_verify(claims, snippets_map, config):
+            batch_call_count[0] += 1
+            # First chunk succeeds, second chunk fails
+            if batch_call_count[0] == 2:
+                raise RuntimeError("LLM batch failed")
+            return [
+                VerifiedClaim(
+                    id=c.id,
+                    category=c.category,
+                    value=c.value,
+                    sentence=c.sentence,
+                    line=c.line,
+                    section=c.section,
+                    verdict="correct",
+                    notes="batch",
+                )
+                for c in claims
+            ]
+
+        def mock_verify_single(claim, snippets, config):
+            per_claim_calls.append(claim.id)
+            return VerifiedClaim(
+                id=claim.id,
+                category=claim.category,
+                value=claim.value,
+                sentence=claim.sentence,
+                line=claim.line,
+                section=claim.section,
+                verdict="unverifiable",
+                notes="fallback",
+            )
+
+        with (
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".supplement_claims",
+                return_value=[],
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".search_claims_batch",
+                side_effect=mock_batch_search,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claims_batch",
+                side_effect=mock_batch_verify,
+            ),
+            patch(
+                "seo_pipeline.analysis.fact_check"
+                ".verify_claim",
+                side_effect=mock_verify_single,
+            ),
+        ):
+            cfg = _make_llm_config()
+            api = {"auth": "x", "base": "http://x"}
+            result = fact_check(
+                str(draft), str(tmp_path), cfg, api,
+            )
+
+        total = len(result.verified_claims)
+        assert total > 0
+        # First chunk (10) used batch, second chunk used fallback
+        batch_results = [
+            vc for vc in result.verified_claims
+            if vc.notes == "batch"
+        ]
+        fallback_results = [
+            vc for vc in result.verified_claims
+            if vc.notes == "fallback"
+        ]
+        assert len(batch_results) == 10
+        assert len(fallback_results) == total - 10
+        assert len(per_claim_calls) == total - 10
