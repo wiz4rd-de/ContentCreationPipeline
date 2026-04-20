@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
-from pydantic import Field
 
 from seo_pipeline.analysis.extract_claims import extract_claims
 from seo_pipeline.llm.client import complete
@@ -54,6 +54,17 @@ class _VerdictResponse(PipelineBaseModel):
     notes: str | None
 
 
+class _BatchVerdictItem(PipelineBaseModel):
+    claim_id: str
+    verdict: str
+    corrected_value: str | None
+    notes: str | None
+
+
+class _BatchVerdictResponse(PipelineBaseModel):
+    verdicts: list[_BatchVerdictItem]
+
+
 # -----------------------------------------------------------------------
 # Category priority for claim sorting (lower = higher priority)
 # -----------------------------------------------------------------------
@@ -73,6 +84,12 @@ _DEFAULT_PRIORITY = 6  # supplemented or unknown categories
 def _claim_priority(claim: Claim) -> int:
     """Return sort priority for a claim category."""
     return _CATEGORY_PRIORITY.get(claim.category, _DEFAULT_PRIORITY)
+
+
+def _chunked(iterable: list, size: int) -> Iterator[list]:
+    """Yield successive chunks of *size* from *iterable*."""
+    for i in range(0, len(iterable), size):
+        yield iterable[i : i + size]
 
 
 # -----------------------------------------------------------------------
@@ -142,6 +159,77 @@ def supplement_claims(
             exc_info=True,
         )
         return []
+
+
+def search_claims_batch(
+    claims: list[Claim],
+    api_config: dict,
+    *,
+    timeout: float = 30.0,
+) -> dict[str, list[dict]]:
+    """Search all claims in a single DataForSEO POST.
+
+    Builds one payload entry per claim, sends a single HTTP request,
+    and maps each task result back to the originating claim by index.
+
+    Returns dict keyed by claim.id -> list of {title, url, snippet}.
+    On full HTTP failure returns empty dict.
+    Partial task failures yield empty list for the failed claim.
+    """
+    if not claims:
+        return {}
+
+    url = (
+        f"{api_config['base']}"
+        "/serp/google/organic/live/advanced"
+    )
+    headers = {
+        "Authorization": f"Basic {api_config['auth']}",
+        "Content-Type": "application/json",
+    }
+    payload = [
+        {
+            "keyword": claim.value,
+            "language_code": "en",
+            "location_code": 2840,
+            "depth": 5,
+        }
+        for claim in claims
+    ]
+
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.post(url, headers=headers, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+    except Exception:
+        logger.warning(
+            "search_claims_batch HTTP request failed",
+            exc_info=True,
+        )
+        return {}
+
+    results: dict[str, list[dict]] = {}
+    tasks = data.get("tasks", [])
+    for i, claim in enumerate(claims):
+        snippets: list[dict] = []
+        if i < len(tasks):
+            task = tasks[i]
+            task_result = task.get("result", [])
+            if task_result:
+                items = task_result[0].get("items", [])
+                for item in items[:5]:
+                    snippets.append(
+                        {
+                            "title": item.get("title", ""),
+                            "url": item.get("url", ""),
+                            "snippet": item.get(
+                                "description", ""
+                            ),
+                        }
+                    )
+        results[claim.id] = snippets
+    return results
 
 
 def search_claim(
@@ -285,6 +373,143 @@ def verify_claim(
         )
 
 
+def verify_claims_batch(
+    claims: list[Claim],
+    snippets_map: dict[str, list[dict]],
+    llm_config: LLMConfig,
+) -> list[VerifiedClaim]:
+    """Verify multiple claims in a single LLM call.
+
+    Builds a compound prompt listing all claims with their snippets,
+    makes one complete() call, and maps response items back to claims.
+    On LLM failure, returns all claims as verdict="unverifiable".
+    """
+    if not claims:
+        return []
+
+    # Build per-claim blocks for the prompt
+    claim_blocks: list[str] = []
+    for claim in claims:
+        snippets = snippets_map.get(claim.id, [])
+        snippets_text = "\n".join(
+            f"  - [{s.get('title', '')}]"
+            f"({s.get('url', '')}): {s.get('snippet', '')}"
+            for s in snippets
+        )
+        claim_blocks.append(
+            f"[{claim.id}]\n"
+            f"  Category: {claim.category}\n"
+            f"  Value: {claim.value}\n"
+            f"  Sentence: {claim.sentence}\n"
+            f"  Section: {claim.section or 'N/A'}\n"
+            f"  Search results:\n{snippets_text}"
+        )
+
+    sys_prompt = (
+        "You are a fact-checking assistant. For each claim below, "
+        "determine if it is correct, incorrect, uncertain, or "
+        "unverifiable based on the provided search snippets. "
+        "Return JSON with a 'verdicts' array. Each item must have: "
+        "'claim_id' (matching the [ID] label), "
+        "'verdict' (one of: correct, incorrect, uncertain, "
+        "unverifiable), 'corrected_value' (string or null - the "
+        "corrected text if incorrect), 'notes' (string or null - "
+        "brief explanation)."
+    )
+
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {
+            "role": "user",
+            "content": "\n\n".join(claim_blocks),
+        },
+    ]
+
+    # Build source URLs lookup for each claim
+    source_urls_map: dict[str, list[str]] = {}
+    for claim in claims:
+        snippets = snippets_map.get(claim.id, [])
+        source_urls_map[claim.id] = [
+            s.get("url", "") for s in snippets if s.get("url")
+        ]
+
+    try:
+        response = complete(
+            messages,
+            config=llm_config,
+            response_model=_BatchVerdictResponse,
+            label="verify_claims_batch",
+        )
+
+        # Index verdicts by claim_id for lookup
+        verdict_by_id: dict[str, _BatchVerdictItem] = {
+            v.claim_id: v for v in response.verdicts
+        }
+
+        result: list[VerifiedClaim] = []
+        for claim in claims:
+            v = verdict_by_id.get(claim.id)
+            if v is not None:
+                result.append(
+                    VerifiedClaim(
+                        id=claim.id,
+                        category=claim.category,
+                        value=claim.value,
+                        sentence=claim.sentence,
+                        line=claim.line,
+                        section=claim.section,
+                        verdict=v.verdict,
+                        corrected_value=v.corrected_value,
+                        sources=source_urls_map.get(
+                            claim.id, [],
+                        ),
+                        notes=v.notes,
+                    )
+                )
+            else:
+                # LLM omitted this claim — mark unverifiable
+                logger.warning(
+                    "Batch verdict missing for claim=%s",
+                    claim.id,
+                )
+                result.append(
+                    VerifiedClaim(
+                        id=claim.id,
+                        category=claim.category,
+                        value=claim.value,
+                        sentence=claim.sentence,
+                        line=claim.line,
+                        section=claim.section,
+                        verdict="unverifiable",
+                        sources=source_urls_map.get(
+                            claim.id, [],
+                        ),
+                        notes="Missing from batch response",
+                    )
+                )
+        return result
+
+    except Exception:
+        logger.warning(
+            "verify_claims_batch failed, returning all as unverifiable",
+            exc_info=True,
+        )
+        return [
+            VerifiedClaim(
+                id=claim.id,
+                category=claim.category,
+                value=claim.value,
+                sentence=claim.sentence,
+                line=claim.line,
+                section=claim.section,
+                verdict="unverifiable",
+                sources=source_urls_map.get(claim.id, []),
+                notes="LLM batch call failed",
+            )
+            for claim in claims
+        ]
+
+
 def fact_check(
     draft_path: str,
     out_dir: str,
@@ -315,22 +540,43 @@ def fact_check(
     # Step 3: Prioritize and cap
     all_claims = regex_claims + supplemented
     all_claims.sort(key=_claim_priority)
-    capped_claims = all_claims[:40]
-    logger.info("Checking %d claims (capped at 40)", len(capped_claims))
+    capped_claims = all_claims[:100]
+    logger.info("Checking %d claims (capped at 100)", len(capped_claims))
 
-    # Step 4: Search and verify
+    # Step 4: Batch search all claims in a single DataForSEO POST
+    snippets_map = search_claims_batch(capped_claims, api_config)
+    logger.info(
+        "Batch search returned snippets for %d/%d claims",
+        sum(1 for v in snippets_map.values() if v),
+        len(capped_claims),
+    )
+
+    # Step 5: Verify in chunks of ~10 with per-chunk fallback
     verified: list[VerifiedClaim] = []
-    for i, claim in enumerate(capped_claims, 1):
+    chunks = list(_chunked(capped_claims, 10))
+    for chunk_idx, chunk in enumerate(chunks, 1):
         logger.info(
-            "[%d/%d] %s: %s", i, len(capped_claims),
-            claim.id, claim.value[:60],
+            "Verifying chunk %d/%d (%d claims)",
+            chunk_idx, len(chunks), len(chunk),
         )
-        snippets = search_claim(claim.value, api_config)
-        vc = verify_claim(claim, snippets, llm_config)
-        logger.info("  → %s", vc.verdict)
-        verified.append(vc)
+        try:
+            batch_result = verify_claims_batch(
+                chunk, snippets_map, llm_config,
+            )
+            verified.extend(batch_result)
+        except Exception:
+            logger.warning(
+                "Batch verify failed for chunk %d, "
+                "falling back to per-claim verification",
+                chunk_idx,
+                exc_info=True,
+            )
+            for claim in chunk:
+                snippets = snippets_map.get(claim.id, [])
+                vc = verify_claim(claim, snippets, llm_config)
+                verified.append(vc)
 
-    # Step 5: Apply corrections
+    # Step 6: Apply corrections
     corrections_applied = 0
     for vc in verified:
         if vc.verdict == "incorrect" and vc.corrected_value:
@@ -343,7 +589,7 @@ def fact_check(
 
     draft_path_obj.write_text(draft_text, encoding="utf-8")
 
-    # Step 6: Build output
+    # Step 7: Build output
     checked_at = (
         datetime.now(timezone.utc)
         .isoformat()
