@@ -94,7 +94,13 @@ def extract_keywords(
     if not isinstance(result_item, dict):
         return []
 
-    items = result_item.get("items")
+    # KFK (Google Ads) responses have keywords directly in result (no "items"
+    # wrapper).  Detect by checking for a top-level "keyword" key on the first
+    # result entry.
+    if "items" not in result_item and "keyword" in result_item:
+        items = result
+    else:
+        items = result_item.get("items")
 
     if not isinstance(items, list):
         return []
