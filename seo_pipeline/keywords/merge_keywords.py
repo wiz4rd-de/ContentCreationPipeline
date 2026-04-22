@@ -11,19 +11,28 @@ from seo_pipeline.keywords.extract_keywords import extract_keywords
 logger = logging.getLogger(__name__)
 
 
-def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
+def merge_keywords(
+    related_raw: dict,
+    suggestions_raw: dict,
+    seed: str,
+    *,
+    kfk_raw: dict | None = None,
+) -> dict:
     """
-    Merge and deduplicate keywords from two DataForSEO API responses.
+    Merge and deduplicate keywords from DataForSEO API responses.
 
-    Combines keywords from both related_keywords and keyword_suggestions responses,
-    deduplicates case-insensitively (preferring related_keywords on collision),
-    ensures the seed keyword is always present, and sorts by search_volume
-    (descending) with alphabetical tie-breaking.
+    Combines keywords from related_keywords, keyword_suggestions, and
+    optionally keywords_for_keywords responses. Deduplicates case-insensitively
+    with priority: related > suggestions > kfk. Ensures the seed keyword is
+    always present and sorts by search_volume (descending) with alphabetical
+    tie-breaking.
 
     Args:
         related_raw: Raw JSON response from related_keywords API
         suggestions_raw: Raw JSON response from keyword_suggestions API
         seed: The seed keyword to ensure is always present
+        kfk_raw: Optional raw JSON response from keywords_for_keywords API.
+            When None, behavior is identical to the two-source merge.
 
     Returns:
         A dict with keys:
@@ -34,19 +43,21 @@ def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
             - search_volume (int | None)
             - cpc (float | None)
             - monthly_searches (list | None)
-            - source ('related', 'suggestions', or 'seed')
+            - source ('related', 'suggestions', 'kfk', or 'seed')
     """
-    # Extract keywords from both sources
+    # Extract keywords from all sources
     related_keywords = extract_keywords(related_raw)
     suggestions_keywords = extract_keywords(suggestions_raw)
+    kfk_keywords = extract_keywords(kfk_raw) if kfk_raw is not None else []
 
     logger.info(
-        "Merging keywords: %d related, %d suggestions",
+        "Merging keywords: %d related, %d suggestions, %d kfk",
         len(related_keywords),
         len(suggestions_keywords),
+        len(kfk_keywords),
     )
 
-    # Deduplicate case-insensitively, preferring related_keywords on collision
+    # Deduplicate case-insensitively. Priority: related > suggestions > kfk
     seen = {}  # lowercase keyword -> merged record
 
     for kw in related_keywords:
@@ -58,6 +69,11 @@ def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
         key = kw["keyword"].lower().strip()
         if key not in seen:
             seen[key] = {**kw, "source": "suggestions"}
+
+    for kw in kfk_keywords:
+        key = kw["keyword"].lower().strip()
+        if key not in seen:
+            seen[key] = {**kw, "source": "kfk"}
 
     # Ensure seed keyword is always included
     seed_key = seed.lower().strip()
@@ -79,7 +95,8 @@ def merge_keywords(related_raw: dict, suggestions_raw: dict, seed: str) -> dict:
         )
     )
 
-    dedup_count = len(related_keywords) + len(suggestions_keywords) - len(merged)
+    total_input = len(related_keywords) + len(suggestions_keywords) + len(kfk_keywords)
+    dedup_count = total_input - len(merged)
     logger.info(
         "Merge complete: %d unique keywords (%d duplicates removed)",
         len(merged),
