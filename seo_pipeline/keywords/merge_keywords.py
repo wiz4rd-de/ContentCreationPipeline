@@ -42,7 +42,6 @@ def merge_keywords(
             - keyword (str)
             - search_volume (int | None)
             - cpc (float | None)
-            - monthly_searches (list | None)
             - source ('related', 'suggestions', 'kfk', or 'seed')
     """
     # Extract keywords from all sources
@@ -82,7 +81,6 @@ def merge_keywords(
             "keyword": seed.strip(),
             "search_volume": None,
             "cpc": None,
-            "monthly_searches": None,
             "source": "seed",
         }
 

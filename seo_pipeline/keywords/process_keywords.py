@@ -223,7 +223,6 @@ def process_keywords(
             "keyword": seed.strip(),
             "search_volume": None,
             "cpc": None,
-            "monthly_searches": None,
         }
 
     # 2. Merge volume from separate endpoint if available; difficulty comes
@@ -248,7 +247,6 @@ def process_keywords(
             "keyword": kw["keyword"],
             "search_volume": search_volume,
             "cpc": normalize_number(cpc),
-            "monthly_searches": kw.get("monthly_searches"),
             "difficulty": kw.get("difficulty"),
         })
 

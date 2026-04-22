@@ -14,7 +14,7 @@ def normalize_item(item: dict) -> dict | None:
     DataForSEO provides three response shapes:
     1. related_keywords: keyword data nested under item.keyword_data
     2. keywords_for_keywords (Google Ads): flat structure with search_volume,
-       cpc, monthly_searches at top level (no keyword_info wrapper)
+       cpc at top level (no keyword_info wrapper)
     3. keyword_suggestions: keyword data directly on item with keyword_info
 
     Args:
@@ -74,7 +74,6 @@ def extract_keywords(
         - keyword (str)
         - search_volume (int | None)
         - cpc (float | None)
-        - monthly_searches (list | None)
         - difficulty (int | None) - only if include_difficulty=True
     """
     # Extract items from the standard response path, safely handling empty lists
@@ -117,7 +116,6 @@ def extract_keywords(
             "keyword": normalized["keyword"].strip(),
             "search_volume": normalized["info"].get("search_volume"),
             "cpc": normalized["info"].get("cpc"),
-            "monthly_searches": normalized["info"].get("monthly_searches"),
         }
 
         if include_difficulty:

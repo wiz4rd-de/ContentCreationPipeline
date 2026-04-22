@@ -13,7 +13,6 @@
           "keyword": "thailand urlaub",
           "search_volume": 5000,
           "cpc": 1.2,
-          "monthly_searches": null,
           "difficulty": 40,
           "intent": null,
           "opportunity_score": 121.95
@@ -22,7 +21,6 @@
           "keyword": "thailand urlaub tipps",
           "search_volume": 800,
           "cpc": 0.9,
-          "monthly_searches": null,
           "difficulty": 30,
           "intent": "informational",
           "opportunity_score": 25.81
@@ -31,7 +29,6 @@
           "keyword": "sextourismus thailand",
           "search_volume": 200,
           "cpc": 0.1,
-          "monthly_searches": null,
           "difficulty": 5,
           "intent": null,
           "opportunity_score": 33.33
@@ -40,7 +37,6 @@
           "keyword": "elefantenreiten thailand",
           "search_volume": 300,
           "cpc": 0.5,
-          "monthly_searches": null,
           "difficulty": 15,
           "intent": null,
           "opportunity_score": 18.75
@@ -58,7 +54,6 @@
           "keyword": "thailand check24",
           "search_volume": 600,
           "cpc": 2.0,
-          "monthly_searches": null,
           "difficulty": 20,
           "intent": "navigational",
           "opportunity_score": 28.57
@@ -67,7 +62,6 @@
           "keyword": "thailand booking.com angebote",
           "search_volume": 400,
           "cpc": 1.5,
-          "monthly_searches": null,
           "difficulty": 25,
           "intent": "navigational",
           "opportunity_score": 15.38
@@ -76,7 +70,6 @@
           "keyword": "thailand reise tui",
           "search_volume": 350,
           "cpc": 1.8,
-          "monthly_searches": null,
           "difficulty": 22,
           "intent": "navigational",
           "opportunity_score": 15.22
@@ -94,16 +87,14 @@
           "keyword": "thailand wetter",
           "search_volume": 900,
           "cpc": 0.3,
-          "monthly_searches": null,
           "difficulty": 35,
           "intent": "informational",
           "opportunity_score": 25.0
         },
         {
-          "keyword": "\u0e17\u0e48\u0e2d\u0e07\u0e40\u0e17\u0e35\u0e48\u0e22\u0e27\u0e44\u0e17\u0e22",
+          "keyword": "ท่องเที่ยวไทย",
           "search_volume": 1000,
           "cpc": 0.2,
-          "monthly_searches": null,
           "difficulty": 10,
           "intent": null,
           "opportunity_score": 90.91
@@ -112,7 +103,6 @@
           "keyword": "download free thailand guide torrent",
           "search_volume": 50,
           "cpc": 0.0,
-          "monthly_searches": null,
           "difficulty": 2,
           "intent": null,
           "opportunity_score": 16.67

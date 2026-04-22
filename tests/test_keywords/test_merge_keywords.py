@@ -104,8 +104,6 @@ class TestSeedKeywordInclusion:
         assert result["keywords"][0]["source"] == "seed"
         assert result["keywords"][0]["search_volume"] is None
         assert result["keywords"][0]["cpc"] is None
-        assert result["keywords"][0]["monthly_searches"] is None
-
     def test_does_not_duplicate_seed(self, related_raw, suggestions_raw):
         """Test that seed keyword is not duplicated when already present."""
         result = merge_keywords(related_raw, suggestions_raw, "keyword recherche")
@@ -324,7 +322,6 @@ class TestOutputStructure:
             assert "keyword" in kw, "keyword field required"
             assert "search_volume" in kw, "search_volume field required"
             assert "cpc" in kw, "cpc field required"
-            assert "monthly_searches" in kw, "monthly_searches field required"
             assert "source" in kw, "source field required"
 
     def test_source_field_values(self, related_raw, suggestions_raw):
