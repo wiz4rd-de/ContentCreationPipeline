@@ -165,7 +165,7 @@ def search_claims_batch(
     claims: list[Claim],
     api_config: dict,
     *,
-    timeout: float = 30.0,
+    timeout: float = 120.0,
 ) -> dict[str, list[dict]]:
     """Search all claims in a single DataForSEO POST.
 
