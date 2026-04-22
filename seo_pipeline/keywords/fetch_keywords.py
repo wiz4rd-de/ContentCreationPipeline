@@ -1,6 +1,7 @@
-"""Fetch keywords from DataForSEO related_keywords and keyword_suggestions endpoints.
+"""Fetch keywords from DataForSEO related_keywords, keyword_suggestions,
+and keywords_for_keywords endpoints.
 
-Calls both endpoints in parallel with retry logic, saves raw responses,
+Calls all three endpoints concurrently with retry logic, saves raw responses,
 then invokes merge_keywords for deterministic post-processing.
 """
 
@@ -8,7 +9,10 @@ import asyncio
 import json
 import logging
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -25,6 +29,9 @@ RETRY_FACTOR = 2
 RETRY_MAX_DELAY = 8.0  # seconds
 RETRY_MAX_ATTEMPTS = 3  # 3 retries = 4 total attempts
 REQUEST_TIMEOUT = 30.0  # seconds
+
+# Async polling constants for keywords_for_keywords endpoint
+KFK_POLL_TIMEOUT = 120  # seconds before giving up on async task
 
 
 def calculate_backoff(
@@ -143,6 +150,205 @@ async def call_endpoint(
             await client.aclose()
 
 
+def extract_task_id(response: dict) -> str:
+    """Extract task UUID from a task_post response.
+
+    Args:
+        response: parsed JSON from task_post
+
+    Returns:
+        The task ID string
+
+    Raises:
+        ValueError: if the response is malformed or reports an error
+    """
+    tasks = response.get("tasks")
+    if not tasks:
+        raise ValueError("task_post returned no tasks in response")
+
+    task = tasks[0]
+    status_code = task.get("status_code")
+    if status_code is None:
+        raise ValueError("task_post returned no status_code")
+
+    if str(status_code) != "20100":
+        msg = task.get("status_message", "unknown error")
+        raise ValueError(
+            f"task_post failed with status {status_code}: {msg}"
+        )
+
+    task_id = task.get("id")
+    if task_id is None:
+        raise ValueError("task_post returned no task ID")
+
+    return task_id
+
+
+def is_task_ready(
+    response: dict, task_id: str
+) -> dict[str, Any] | bool:
+    """Check if a specific task ID appears in a tasks_ready response.
+
+    Returns False if the task is not found, or a dict with
+    ``{'ready': True}`` if found.
+    """
+    tasks = response.get("tasks")
+    if not tasks:
+        return False
+
+    for t in tasks:
+        results = t.get("result")
+        if not results:
+            continue
+        for r in results:
+            if r.get("id") == task_id:
+                return {"ready": True}
+
+    return False
+
+
+def build_kfk_date_range() -> tuple[str, str]:
+    """Build a 12-month lookback date range for the KFK endpoint.
+
+    Returns:
+        (date_from, date_to) as YYYY-MM-DD strings.
+        date_from is the 1st of the month 12 months ago.
+        date_to is today's date.
+    """
+    today = datetime.now()
+    date_to = today.strftime("%Y-%m-%d")
+    # 12 months ago: subtract 12 from month, adjust year
+    month = today.month - 12
+    year = today.year
+    while month < 1:
+        month += 12
+        year -= 1
+    date_from = f"{year}-{month:02d}-01"
+    return date_from, date_to
+
+
+def _monotonic_ms() -> float:
+    """Return monotonic clock time in milliseconds."""
+    return time.monotonic() * 1000
+
+
+async def fetch_kfk(
+    seed_keyword: str,
+    *,
+    language: str,
+    location_code: int,
+    base: str,
+    auth: str,
+    client: httpx.AsyncClient,
+    timeout: int = KFK_POLL_TIMEOUT,
+) -> dict:
+    """Fetch keywords_for_keywords via async task_post/poll/task_get.
+
+    Args:
+        seed_keyword: The seed keyword.
+        language: Language code (e.g. 'de').
+        location_code: DataForSEO location code.
+        base: API base URL.
+        auth: Base64-encoded auth string.
+        client: httpx.AsyncClient to use.
+        timeout: Max seconds to wait for async task completion.
+
+    Returns:
+        Parsed JSON response from task_get.
+
+    Raises:
+        ValueError: On API errors or timeout.
+    """
+    date_from, date_to = build_kfk_date_range()
+
+    kfk_base = f"{base}/keywords_data/google_ads/keywords_for_keywords"
+    headers = {
+        "Authorization": f"Basic {auth}",
+        "Content-Type": "application/json",
+    }
+
+    post_body = [{
+        "keywords": [seed_keyword],
+        "language_code": language,
+        "location_code": location_code,
+        "date_from": date_from,
+        "date_to": date_to,
+    }]
+
+    # Step 1: Post task
+    logger.info(
+        'Posting keywords_for_keywords task for "%s" '
+        "(location=%d, lang=%s, %s to %s)...",
+        seed_keyword, location_code, language, date_from, date_to,
+    )
+
+    post_resp = await client.post(
+        f"{kfk_base}/task_post",
+        headers=headers,
+        json=post_body,
+    )
+    post_resp.raise_for_status()
+    post_data = post_resp.json()
+
+    task_id = extract_task_id(post_data)
+    logger.info("KFK task created: %s", task_id)
+
+    # Step 2: Poll tasks_ready with exponential backoff
+    timeout_ms = timeout * 1000
+    start_time = _monotonic_ms()
+    attempt = 0
+
+    while True:
+        elapsed = _monotonic_ms() - start_time
+        if elapsed >= timeout_ms:
+            raise ValueError(
+                f"KFK task {task_id} timed out after {timeout} seconds"
+            )
+
+        delay = calculate_backoff(attempt)
+        logger.info(
+            "KFK: waiting %.1fs before poll attempt %d...",
+            delay, attempt + 1,
+        )
+        await asyncio.sleep(delay)
+
+        ready_resp = await client.get(
+            f"{kfk_base}/tasks_ready",
+            headers={"Authorization": f"Basic {auth}"},
+        )
+        ready_resp.raise_for_status()
+        ready_data = ready_resp.json()
+
+        result = is_task_ready(ready_data, task_id)
+        if result is not False:
+            break
+
+        attempt += 1
+
+    # Step 3: Retrieve results
+    logger.info("KFK task %s is ready. Retrieving results...", task_id)
+
+    get_resp = await client.get(
+        f"{kfk_base}/task_get/{task_id}",
+        headers={"Authorization": f"Basic {auth}"},
+    )
+    get_resp.raise_for_status()
+    get_data = get_resp.json()
+
+    get_task = (get_data.get("tasks") or [None])[0]
+    if get_task is None:
+        raise ValueError("KFK task_get returned no tasks in response")
+
+    status_code = get_task.get("status_code")
+    if str(status_code) != "20000":
+        msg = get_task.get("status_message", "unknown error")
+        raise ValueError(
+            f"KFK task_get failed with status {status_code}: {msg}"
+        )
+
+    return get_data
+
+
 async def fetch_keywords(
     seed_keyword: str,
     *,
@@ -155,9 +361,10 @@ async def fetch_keywords(
 ) -> str:
     """Fetch keywords from DataForSEO and save raw responses.
 
-    Calls related_keywords and keyword_suggestions endpoints in parallel,
-    saves raw JSON responses to outdir, then invokes merge_keywords for
-    deterministic post-processing.
+    Calls related_keywords, keyword_suggestions, and keywords_for_keywords
+    endpoints concurrently. The first two are synchronous live calls; the
+    third uses async task_post/poll/task_get. Saves raw JSON responses to
+    outdir, then invokes merge_keywords for deterministic post-processing.
 
     Args:
         seed_keyword: The seed keyword to expand.
@@ -194,7 +401,7 @@ async def fetch_keywords(
     }]
 
     logger.info(
-        'Fetching related keywords for "%s" (market=%s, lang=%s, limit=%d)...',
+        'Fetching keywords for "%s" (market=%s, lang=%s, limit=%d)...',
         seed_keyword, market, language, limit,
     )
 
@@ -202,23 +409,45 @@ async def fetch_keywords(
     if owns_client:
         client = httpx.AsyncClient(timeout=REQUEST_TIMEOUT)
 
+    kfk_response: dict | None = None
+
     try:
-        # Call both endpoints in parallel (each retries independently)
-        related_response, suggestions_response = await asyncio.gather(
-            call_endpoint(
-                f"{base}/dataforseo_labs/google/related_keywords/live",
-                request_body,
-                auth,
-                "related_keywords",
-                client=client,
-            ),
-            call_endpoint(
-                f"{base}/dataforseo_labs/google/keyword_suggestions/live",
-                request_body,
-                auth,
-                "keyword_suggestions",
-                client=client,
-            ),
+        # Wrap KFK in a coroutine that catches errors for graceful degradation
+        async def _kfk_with_fallback() -> dict | None:
+            try:
+                return await fetch_kfk(
+                    seed_keyword,
+                    language=language,
+                    location_code=location_code,
+                    base=base,
+                    auth=auth,
+                    client=client,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "keywords_for_keywords failed (non-fatal): %s", exc,
+                )
+                return None
+
+        # Call all three endpoints concurrently
+        related_response, suggestions_response, kfk_response = (
+            await asyncio.gather(
+                call_endpoint(
+                    f"{base}/dataforseo_labs/google/related_keywords/live",
+                    request_body,
+                    auth,
+                    "related_keywords",
+                    client=client,
+                ),
+                call_endpoint(
+                    f"{base}/dataforseo_labs/google/keyword_suggestions/live",
+                    request_body,
+                    auth,
+                    "keyword_suggestions",
+                    client=client,
+                ),
+                _kfk_with_fallback(),
+            )
         )
     finally:
         if owns_client:
@@ -238,6 +467,14 @@ async def fetch_keywords(
     logger.info("Saved: %s", related_path)
     logger.info("Saved: %s", suggestions_path)
 
+    # Save KFK raw response if available
+    if kfk_response is not None:
+        kfk_path = out / "keywords-for-keywords-raw.json"
+        kfk_path.write_text(
+            json.dumps(kfk_response, indent=2), encoding="utf-8"
+        )
+        logger.info("Saved: %s", kfk_path)
+
     # Invoke merge_keywords for deterministic post-processing
     expanded_path = out / "keywords-expanded.json"
     try:
@@ -249,6 +486,7 @@ async def fetch_keywords(
             related_raw=related_data,
             suggestions_raw=suggestions_data,
             seed=seed_keyword,
+            kfk_raw=kfk_response,
         )
         text = (
             json.dumps(merged_output, indent=2)

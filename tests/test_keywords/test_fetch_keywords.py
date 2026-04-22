@@ -1,6 +1,7 @@
 """Tests for fetch_keywords module: pure functions and mocked HTTP calls."""
 
 import json
+from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
 import httpx
@@ -10,12 +11,17 @@ from seo_pipeline.keywords.fetch_keywords import (
     RETRY_FACTOR,
     RETRY_INITIAL_DELAY,
     RETRY_MAX_DELAY,
+    build_kfk_date_range,
     calculate_backoff,
     call_endpoint,
+    extract_task_id,
+    fetch_kfk,
     fetch_keywords,
+    is_task_ready,
 )
 
 _SLEEP = "seo_pipeline.keywords.fetch_keywords.asyncio.sleep"
+_FETCH_KFK = "seo_pipeline.keywords.fetch_keywords.fetch_kfk"
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +72,109 @@ class TestCalculateBackoff:
     def test_zero_attempt(self):
         """Attempt 0 with defaults returns exactly 1.0."""
         assert calculate_backoff(0) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# extract_task_id
+# ---------------------------------------------------------------------------
+
+
+class TestExtractTaskId:
+    """Tests for extract_task_id (KFK async pattern)."""
+
+    def test_success(self):
+        resp = {
+            "tasks": [{"id": "abc-123", "status_code": 20100}]
+        }
+        assert extract_task_id(resp) == "abc-123"
+
+    def test_error_status(self):
+        resp = {
+            "tasks": [{
+                "id": "abc-123",
+                "status_code": 40501,
+                "status_message": "bad request",
+            }]
+        }
+        with pytest.raises(ValueError, match="40501"):
+            extract_task_id(resp)
+
+    def test_no_tasks(self):
+        with pytest.raises(ValueError, match="no tasks"):
+            extract_task_id({"tasks": []})
+
+    def test_missing_tasks_key(self):
+        with pytest.raises(ValueError, match="no tasks"):
+            extract_task_id({})
+
+    def test_no_status_code(self):
+        with pytest.raises(ValueError, match="no status_code"):
+            extract_task_id({"tasks": [{"id": "abc"}]})
+
+    def test_no_task_id(self):
+        with pytest.raises(ValueError, match="no task ID"):
+            extract_task_id({"tasks": [{"status_code": 20100}]})
+
+
+# ---------------------------------------------------------------------------
+# is_task_ready
+# ---------------------------------------------------------------------------
+
+
+class TestIsTaskReady:
+    """Tests for is_task_ready (KFK async pattern)."""
+
+    def test_found(self):
+        resp = {"tasks": [{"result": [{"id": "abc-123"}]}]}
+        result = is_task_ready(resp, "abc-123")
+        assert result == {"ready": True}
+
+    def test_not_found(self):
+        resp = {"tasks": [{"result": [{"id": "other-id"}]}]}
+        assert is_task_ready(resp, "abc-123") is False
+
+    def test_empty_response(self):
+        assert is_task_ready({}, "abc") is False
+
+    def test_empty_tasks(self):
+        assert is_task_ready({"tasks": []}, "abc") is False
+
+    def test_no_result(self):
+        assert is_task_ready({"tasks": [{"result": None}]}, "abc") is False
+
+    def test_empty_result(self):
+        assert is_task_ready({"tasks": [{"result": []}]}, "abc") is False
+
+
+# ---------------------------------------------------------------------------
+# build_kfk_date_range
+# ---------------------------------------------------------------------------
+
+
+class TestBuildKfkDateRange:
+    """Tests for build_kfk_date_range."""
+
+    def test_returns_12_month_lookback(self):
+        with patch(
+            "seo_pipeline.keywords.fetch_keywords.datetime"
+        ) as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 4, 22)
+            mock_dt.side_effect = lambda *a, **k: datetime(*a, **k)
+            date_from, date_to = build_kfk_date_range()
+
+        assert date_from == "2025-04-01"
+        assert date_to == "2026-04-22"
+
+    def test_january_wraps_to_previous_year(self):
+        with patch(
+            "seo_pipeline.keywords.fetch_keywords.datetime"
+        ) as mock_dt:
+            mock_dt.now.return_value = datetime(2026, 1, 15)
+            mock_dt.side_effect = lambda *a, **k: datetime(*a, **k)
+            date_from, date_to = build_kfk_date_range()
+
+        assert date_from == "2025-01-01"
+        assert date_to == "2026-01-15"
 
 
 # ---------------------------------------------------------------------------
@@ -276,6 +385,247 @@ class TestCallEndpoint:
 
 
 # ---------------------------------------------------------------------------
+# fetch_kfk (async task_post/poll/task_get)
+# ---------------------------------------------------------------------------
+
+
+class TestFetchKfk:
+    """Tests for the async keywords_for_keywords fetch."""
+
+    async def test_successful_flow(self):
+        """Happy path: task_post -> tasks_ready (found) -> task_get."""
+        task_post_resp = {
+            "tasks": [{"id": "kfk-task-1", "status_code": 20100}]
+        }
+        tasks_ready_resp = {
+            "tasks": [{"result": [{"id": "kfk-task-1"}]}]
+        }
+        task_get_resp = {
+            "tasks": [{
+                "status_code": 20000,
+                "result": [{"keyword": "sintra pena palace"}],
+            }]
+        }
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com/task_post"),
+            json=task_post_resp,
+        )
+        mock_client.get.side_effect = [
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/tasks_ready"),
+                json=tasks_ready_resp,
+            ),
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/task_get"),
+                json=task_get_resp,
+            ),
+        ]
+
+        with patch(_SLEEP, new_callable=AsyncMock):
+            result = await fetch_kfk(
+                "sintra",
+                language="de",
+                location_code=2276,
+                base="https://api.example.com",
+                auth="dGVzdDp0ZXN0",
+                client=mock_client,
+                timeout=120,
+            )
+
+        assert result == task_get_resp
+        # 1 POST for task_post
+        assert mock_client.post.call_count == 1
+        # 2 GETs: tasks_ready + task_get
+        assert mock_client.get.call_count == 2
+
+    async def test_polls_until_ready(self):
+        """Task not ready on first poll, ready on second."""
+        task_post_resp = {
+            "tasks": [{"id": "kfk-task-2", "status_code": 20100}]
+        }
+        not_ready_resp = {"tasks": [{"result": []}]}
+        ready_resp = {
+            "tasks": [{"result": [{"id": "kfk-task-2"}]}]
+        }
+        task_get_resp = {
+            "tasks": [{"status_code": 20000, "result": []}]
+        }
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com/task_post"),
+            json=task_post_resp,
+        )
+        mock_client.get.side_effect = [
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/tasks_ready"),
+                json=not_ready_resp,
+            ),
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/tasks_ready"),
+                json=ready_resp,
+            ),
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/task_get"),
+                json=task_get_resp,
+            ),
+        ]
+
+        with patch(_SLEEP, new_callable=AsyncMock):
+            result = await fetch_kfk(
+                "sintra",
+                language="de",
+                location_code=2276,
+                base="https://api.example.com",
+                auth="dGVzdDp0ZXN0",
+                client=mock_client,
+                timeout=120,
+            )
+
+        assert result == task_get_resp
+        # 3 GETs: 2 polls + 1 task_get
+        assert mock_client.get.call_count == 3
+
+    async def test_timeout_raises(self):
+        """Polling exceeds timeout raises ValueError."""
+        task_post_resp = {
+            "tasks": [{"id": "kfk-timeout", "status_code": 20100}]
+        }
+        not_ready_resp = {"tasks": [{"result": []}]}
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com/task_post"),
+            json=task_post_resp,
+        )
+        mock_client.get.return_value = httpx.Response(
+            200,
+            request=httpx.Request("GET", "https://api.example.com/tasks_ready"),
+            json=not_ready_resp,
+        )
+
+        # Use timeout=0 so the loop times out immediately after first sleep
+        with patch(_SLEEP, new_callable=AsyncMock):
+            with patch(
+                "seo_pipeline.keywords.fetch_keywords._monotonic_ms",
+                side_effect=[0.0, 0.0, 200_000.0],
+            ):
+                with pytest.raises(ValueError, match="timed out"):
+                    await fetch_kfk(
+                        "sintra",
+                        language="de",
+                        location_code=2276,
+                        base="https://api.example.com",
+                        auth="dGVzdDp0ZXN0",
+                        client=mock_client,
+                        timeout=120,
+                    )
+
+    async def test_task_get_error_raises(self):
+        """task_get returning non-20000 status raises ValueError."""
+        task_post_resp = {
+            "tasks": [{"id": "kfk-err", "status_code": 20100}]
+        }
+        ready_resp = {
+            "tasks": [{"result": [{"id": "kfk-err"}]}]
+        }
+        task_get_resp = {
+            "tasks": [{
+                "status_code": 40401,
+                "status_message": "Task not found",
+            }]
+        }
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com/task_post"),
+            json=task_post_resp,
+        )
+        mock_client.get.side_effect = [
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/tasks_ready"),
+                json=ready_resp,
+            ),
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com/task_get"),
+                json=task_get_resp,
+            ),
+        ]
+
+        with patch(_SLEEP, new_callable=AsyncMock):
+            with pytest.raises(ValueError, match="40401"):
+                await fetch_kfk(
+                    "sintra",
+                    language="de",
+                    location_code=2276,
+                    base="https://api.example.com",
+                    auth="dGVzdDp0ZXN0",
+                    client=mock_client,
+                    timeout=120,
+                )
+
+    async def test_post_body_format(self):
+        """Verify KFK post body uses 'keywords' (array), not 'keyword'."""
+        task_post_resp = {
+            "tasks": [{"id": "kfk-body", "status_code": 20100}]
+        }
+        ready_resp = {"tasks": [{"result": [{"id": "kfk-body"}]}]}
+        get_resp = {"tasks": [{"status_code": 20000, "result": []}]}
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com/task_post"),
+            json=task_post_resp,
+        )
+        mock_client.get.side_effect = [
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com"),
+                json=ready_resp,
+            ),
+            httpx.Response(
+                200,
+                request=httpx.Request("GET", "https://api.example.com"),
+                json=get_resp,
+            ),
+        ]
+
+        with patch(_SLEEP, new_callable=AsyncMock):
+            await fetch_kfk(
+                "sintra palace",
+                language="de",
+                location_code=2276,
+                base="https://api.example.com",
+                auth="dGVzdDp0ZXN0",
+                client=mock_client,
+            )
+
+        post_call = mock_client.post.call_args
+        body = post_call.kwargs.get("json") or post_call[1].get("json")
+        assert body[0]["keywords"] == ["sintra palace"]
+        assert "keyword" not in body[0]
+        assert body[0]["language_code"] == "de"
+        assert body[0]["location_code"] == 2276
+        # date_from and date_to should be present
+        assert "date_from" in body[0]
+        assert "date_to" in body[0]
+
+
+# ---------------------------------------------------------------------------
 # fetch_keywords (integration with mocked HTTP)
 # ---------------------------------------------------------------------------
 
@@ -309,8 +659,13 @@ class TestFetchKeywords:
 
         outdir = tmp_path / "output"
 
-        # Patch merge_keywords import to avoid ImportError
-        with patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}):
+        # Patch fetch_kfk and merge_keywords to isolate the test
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, return_value=None) as mock_kfk,
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
+            # Make _kfk_with_fallback return None (fetch_kfk raises, fallback catches)
+            mock_kfk.side_effect = ValueError("test skip")
             await fetch_keywords(
                 "test keyword",
                 market="de",
@@ -331,8 +686,85 @@ class TestFetchKeywords:
         assert json.loads(related_path.read_text()) == related_data
         assert json.loads(suggestions_path.read_text()) == suggestions_data
 
-    async def test_fetch_keywords_calls_both_endpoints(self, tmp_path):
-        """Verify both related and suggestions endpoints are called."""
+    async def test_fetch_keywords_calls_all_three_endpoints(self, tmp_path):
+        """Verify related, suggestions, and KFK endpoints are called."""
+        env_file = tmp_path / "api.env"
+        env_file.write_text(
+            "DATAFORSEO_AUTH=dGVzdDp0ZXN0\nDATAFORSEO_BASE=https://api.example.com"
+        )
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com"),
+            json={"status": "ok"},
+        )
+
+        kfk_data = {"tasks": [{"status_code": 20000, "result": []}]}
+
+        outdir = tmp_path / "output"
+
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, return_value=kfk_data),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
+            await fetch_keywords(
+                "test keyword",
+                market="de",
+                language="de",
+                outdir=str(outdir),
+                env_path=str(env_file),
+                client=mock_client,
+            )
+
+        # Two calls for related + suggestions (KFK is patched separately)
+        assert mock_client.post.call_count == 2
+
+        urls_called = [call.args[0] for call in mock_client.post.call_args_list]
+        assert any("related_keywords" in url for url in urls_called)
+        assert any("keyword_suggestions" in url for url in urls_called)
+
+    async def test_fetch_keywords_saves_kfk_raw(self, tmp_path):
+        """Verify KFK raw response is saved when available."""
+        env_file = tmp_path / "api.env"
+        env_file.write_text(
+            "DATAFORSEO_AUTH=dGVzdDp0ZXN0\nDATAFORSEO_BASE=https://api.example.com"
+        )
+
+        mock_client = AsyncMock(spec=httpx.AsyncClient)
+        mock_client.post.return_value = httpx.Response(
+            200,
+            request=httpx.Request("POST", "https://api.example.com"),
+            json={"status": "ok"},
+        )
+
+        kfk_data = {
+            "tasks": [{
+                "status_code": 20000,
+                "result": [{"keyword": "sintra palace"}],
+            }]
+        }
+        outdir = tmp_path / "output"
+
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, return_value=kfk_data),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
+            await fetch_keywords(
+                "sintra",
+                market="de",
+                language="de",
+                outdir=str(outdir),
+                env_path=str(env_file),
+                client=mock_client,
+            )
+
+        kfk_path = outdir / "keywords-for-keywords-raw.json"
+        assert kfk_path.exists()
+        assert json.loads(kfk_path.read_text()) == kfk_data
+
+    async def test_fetch_keywords_kfk_failure_graceful(self, tmp_path):
+        """KFK failure does not break the pipeline -- graceful degradation."""
         env_file = tmp_path / "api.env"
         env_file.write_text(
             "DATAFORSEO_AUTH=dGVzdDp0ZXN0\nDATAFORSEO_BASE=https://api.example.com"
@@ -347,9 +779,17 @@ class TestFetchKeywords:
 
         outdir = tmp_path / "output"
 
-        with patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}):
-            await fetch_keywords(
-                "test keyword",
+        with (
+            patch(
+                _FETCH_KFK,
+                new_callable=AsyncMock,
+                side_effect=ValueError("API down"),
+            ),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
+            # Should not raise
+            result = await fetch_keywords(
+                "test",
                 market="de",
                 language="de",
                 outdir=str(outdir),
@@ -357,12 +797,12 @@ class TestFetchKeywords:
                 client=mock_client,
             )
 
-        # Two calls: one for related_keywords, one for keyword_suggestions
-        assert mock_client.post.call_count == 2
-
-        urls_called = [call.args[0] for call in mock_client.post.call_args_list]
-        assert any("related_keywords" in url for url in urls_called)
-        assert any("keyword_suggestions" in url for url in urls_called)
+        assert result == str(outdir / "keywords-expanded.json")
+        # KFK raw file should NOT exist
+        assert not (outdir / "keywords-for-keywords-raw.json").exists()
+        # But the other two should exist
+        assert (outdir / "keywords-related-raw.json").exists()
+        assert (outdir / "keywords-suggestions-raw.json").exists()
 
     async def test_fetch_keywords_creates_outdir(self, tmp_path):
         """Verify outdir is created if it doesn't exist."""
@@ -381,7 +821,10 @@ class TestFetchKeywords:
         outdir = tmp_path / "nested" / "deep" / "output"
         assert not outdir.exists()
 
-        with patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}):
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, side_effect=ValueError("skip")),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
             await fetch_keywords(
                 "test keyword",
                 market="de",
@@ -409,7 +852,10 @@ class TestFetchKeywords:
 
         outdir = tmp_path / "output"
 
-        with patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}):
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, side_effect=ValueError("skip")),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
             await fetch_keywords(
                 "seo tools",
                 market="de",
@@ -446,7 +892,10 @@ class TestFetchKeywords:
 
         outdir = tmp_path / "output"
 
-        with patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}):
+        with (
+            patch(_FETCH_KFK, new_callable=AsyncMock, side_effect=ValueError("skip")),
+            patch.dict("sys.modules", {"seo_pipeline.keywords.merge_keywords": None}),
+        ):
             result = await fetch_keywords(
                 "test",
                 market="de",

@@ -31,6 +31,13 @@ def suggestions_raw():
 
 
 @pytest.fixture
+def kfk_raw():
+    """Load the kfk-raw.json fixture."""
+    with open(FIXTURES_DIR / "kfk-raw.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+@pytest.fixture
 def related_empty():
     """Load the related-empty.json fixture."""
     with open(FIXTURES_DIR / "related-empty.json", "r", encoding="utf-8") as f:
@@ -219,6 +226,83 @@ class TestEmptyAndMalformed:
         assert result["total_keywords"] == 2
 
 
+class TestKfkIntegration:
+    """Test keywords_for_keywords third source integration."""
+
+    def test_kfk_keywords_included(
+        self, related_empty, suggestions_empty, kfk_raw
+    ):
+        """KFK keywords are included when both other sources are empty."""
+        result = merge_keywords(
+            related_empty, suggestions_empty, "sintra", kfk_raw=kfk_raw
+        )
+        kfk_kws = [k for k in result["keywords"] if k["source"] == "kfk"]
+        assert len(kfk_kws) >= 1
+
+    def test_kfk_dedup_priority(self, related_raw, suggestions_raw, kfk_raw):
+        """Related > suggestions > kfk dedup priority is respected."""
+        result = merge_keywords(
+            related_raw, suggestions_raw, "keyword recherche", kfk_raw=kfk_raw
+        )
+        # All KFK keywords that share a name with related/suggestions
+        # should NOT appear as kfk source
+        for kw in result["keywords"]:
+            if kw["source"] == "kfk":
+                key = kw["keyword"].lower()
+                related_keys = {
+                    k["keyword"].lower()
+                    for k in merge_keywords(
+                        related_raw, suggestions_raw, "keyword recherche"
+                    )["keywords"]
+                }
+                assert key not in related_keys
+
+    def test_kfk_none_backward_compatible(self, related_raw, suggestions_raw):
+        """When kfk_raw is None, output matches two-source merge."""
+        result_two = merge_keywords(related_raw, suggestions_raw, "keyword recherche")
+        result_three = merge_keywords(
+            related_raw, suggestions_raw, "keyword recherche", kfk_raw=None
+        )
+        assert result_two == result_three
+
+    def test_kfk_source_label(
+        self, related_empty, suggestions_empty, kfk_raw
+    ):
+        """KFK-sourced keywords have source='kfk'."""
+        result = merge_keywords(
+            related_empty, suggestions_empty, "sintra", kfk_raw=kfk_raw
+        )
+        kfk_kws = [k for k in result["keywords"] if k["source"] == "kfk"]
+        assert len(kfk_kws) > 0
+        # All KFK keywords should have the correct source
+        for kw in kfk_kws:
+            assert kw["source"] == "kfk"
+
+    def test_kfk_related_wins_collision(self, suggestions_empty, kfk_raw):
+        """When related and KFK have same keyword, related wins."""
+        # Build a related response that contains one of the KFK keywords
+        related_with_overlap = {
+            "tasks": [{"result": [{"items": [
+                {
+                    "keyword_data": {
+                        "keyword": "sintra pena palace",
+                        "keyword_info": {"search_volume": 999, "cpc": 9.99},
+                        "keyword_properties": {},
+                    }
+                }
+            ]}]}]
+        }
+        result = merge_keywords(
+            related_with_overlap, suggestions_empty, "sintra", kfk_raw=kfk_raw
+        )
+        match = next(
+            k for k in result["keywords"]
+            if k["keyword"].lower() == "sintra pena palace"
+        )
+        assert match["source"] == "related"
+        assert match["search_volume"] == 999
+
+
 class TestOutputStructure:
     """Test output structure and fields."""
 
@@ -247,7 +331,7 @@ class TestOutputStructure:
         """Test that source field contains valid values."""
         result = merge_keywords(related_raw, suggestions_raw, "keyword recherche")
 
-        valid_sources = {"related", "suggestions", "seed"}
+        valid_sources = {"related", "suggestions", "kfk", "seed"}
         for kw in result["keywords"]:
             assert kw["source"] in valid_sources, (
                 f"source must be one of {valid_sources}, got {kw['source']}"

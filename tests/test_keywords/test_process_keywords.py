@@ -420,3 +420,97 @@ class TestProcessKeywordsStructural:
         for cluster in result["clusters"]:
             assert "cluster_opportunity" in cluster
             assert cluster["cluster_opportunity"] is not None
+
+
+# --- process_keywords with kfk_raw ---
+
+
+KFK_FIXTURES = Path("test/fixtures/keyword-expansion")
+
+
+class TestProcessKeywordsKfk:
+    """Tests for keywords_for_keywords integration in process_keywords."""
+
+    def _load_fixture(self, name: str) -> dict:
+        with open(FIXTURES / name, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_kfk_none_backward_compatible(self):
+        """kfk_raw=None produces identical output to two-source call."""
+        related = self._load_fixture("related-raw.json")
+        suggestions = self._load_fixture("suggestions-raw.json")
+
+        result_two = process_keywords(related, suggestions, "keyword recherche")
+        result_three = process_keywords(
+            related, suggestions, "keyword recherche", kfk_raw=None,
+        )
+
+        result_two_json = json.dumps(result_two, indent=2)
+        result_three_json = json.dumps(result_three, indent=2)
+        assert result_two_json == result_three_json
+
+    def test_kfk_adds_unique_keywords(self):
+        """KFK keywords not in related/suggestions are included."""
+        related = self._load_fixture("related-empty.json")
+        suggestions = self._load_fixture("suggestions-empty.json")
+        kfk = json.loads(
+            (KFK_FIXTURES / "kfk-raw.json").read_text(encoding="utf-8")
+        )
+
+        result = process_keywords(
+            related, suggestions, "sintra", kfk_raw=kfk,
+        )
+        all_kws = [
+            kw["keyword"]
+            for c in result["clusters"]
+            for kw in c["keywords"]
+        ]
+        # KFK fixture has "sintra pena palace" etc.
+        assert "sintra pena palace" in all_kws
+
+    def test_kfk_dedup_related_wins(self):
+        """Related keywords take priority over KFK on collision."""
+        # Build a related response with overlapping keyword
+        related = {
+            "tasks": [{"result": [{"items": [
+                {
+                    "keyword_data": {
+                        "keyword": "sintra pena palace",
+                        "keyword_info": {"search_volume": 5000, "cpc": 9.0},
+                        "keyword_properties": {"keyword_difficulty": 10},
+                    }
+                }
+            ]}]}]
+        }
+        suggestions = self._load_fixture("suggestions-empty.json")
+        kfk = json.loads(
+            (KFK_FIXTURES / "kfk-raw.json").read_text(encoding="utf-8")
+        )
+
+        result = process_keywords(
+            related, suggestions, "sintra", kfk_raw=kfk,
+        )
+        # Find "sintra pena palace" -- should have related's volume (5000)
+        match = None
+        for c in result["clusters"]:
+            for kw in c["keywords"]:
+                if kw["keyword"].lower() == "sintra pena palace":
+                    match = kw
+                    break
+        assert match is not None
+        assert match["search_volume"] == 5000
+
+    def test_kfk_total_keywords_increases(self):
+        """Adding KFK data increases total_keywords when there are unique ones."""
+        related = self._load_fixture("related-raw.json")
+        suggestions = self._load_fixture("suggestions-raw.json")
+        kfk = json.loads(
+            (KFK_FIXTURES / "kfk-raw.json").read_text(encoding="utf-8")
+        )
+
+        result_without = process_keywords(related, suggestions, "keyword recherche")
+        result_with = process_keywords(
+            related, suggestions, "keyword recherche", kfk_raw=kfk,
+        )
+        # KFK has unique keywords not in related/suggestions, so total should grow
+        assert result_with["total_keywords"] > result_without["total_keywords"]
