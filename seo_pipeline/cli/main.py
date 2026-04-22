@@ -229,6 +229,9 @@ def merge_keywords(
         ..., help="Path to keyword_suggestions raw JSON file",
     ),
     seed: str = typer.Option(..., help="Seed keyword to ensure inclusion"),
+    kfk: Optional[str] = typer.Option(
+        None, help="Path to keywords_for_keywords raw JSON file (optional)",
+    ),
 ) -> None:
     """Merge and deduplicate keywords from DataForSEO API responses."""
     from seo_pipeline.keywords.merge_keywords import (
@@ -237,7 +240,10 @@ def merge_keywords(
 
     related_raw = json.loads(Path(related).read_text(encoding="utf-8"))
     suggestions_raw = json.loads(Path(suggestions).read_text(encoding="utf-8"))
-    result = _merge_keywords(related_raw, suggestions_raw, seed)
+    kfk_raw = None
+    if kfk:
+        kfk_raw = json.loads(Path(kfk).read_text(encoding="utf-8"))
+    result = _merge_keywords(related_raw, suggestions_raw, seed, kfk_raw=kfk_raw)
     typer.echo(json.dumps(result, indent=2, ensure_ascii=False))
 
 
@@ -252,6 +258,9 @@ def process_keywords(
     seed: str = typer.Option(..., help="Seed keyword"),
     volume: Optional[str] = typer.Option(
         None, help="Path to volume raw JSON file (optional)",
+    ),
+    kfk: Optional[str] = typer.Option(
+        None, help="Path to keywords_for_keywords raw JSON file (optional)",
     ),
     brands: Optional[str] = typer.Option(
         None, help="Comma-separated brand list (optional)",
@@ -272,13 +281,17 @@ def process_keywords(
     if volume:
         volume_raw = json.loads(Path(volume).read_text(encoding="utf-8"))
 
+    kfk_raw = None
+    if kfk:
+        kfk_raw = json.loads(Path(kfk).read_text(encoding="utf-8"))
+
     brands_list = None
     if brands:
         brands_list = [b.strip() for b in brands.split(",") if b.strip()]
 
     result = _process_keywords(
         related_raw, suggestions_raw, seed,
-        volume_raw=volume_raw, brands=brands_list,
+        volume_raw=volume_raw, brands=brands_list, kfk_raw=kfk_raw,
     )
     output_json = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
 
@@ -830,10 +843,18 @@ def run_pipeline(
     _log("Stage 5/11: Processing keywords...")
     related_path = out_dir / "keywords-related-raw.json"
     suggestions_path = out_dir / "keywords-suggestions-raw.json"
+    kfk_path = out_dir / "keywords-for-keywords-raw.json"
     if related_path.exists() and suggestions_path.exists():
         related_raw = json.loads(related_path.read_text(encoding="utf-8"))
         suggestions_raw = json.loads(suggestions_path.read_text(encoding="utf-8"))
-        kw_processed = _process_keywords(related_raw, suggestions_raw, keyword)
+        kfk_raw = (
+            json.loads(kfk_path.read_text(encoding="utf-8"))
+            if kfk_path.exists()
+            else None
+        )
+        kw_processed = _process_keywords(
+            related_raw, suggestions_raw, keyword, kfk_raw=kfk_raw,
+        )
         kw_processed_path = out_dir / "keywords-processed.json"
         kw_processed_path.write_text(
             json.dumps(kw_processed, indent=2, ensure_ascii=False) + "\n",

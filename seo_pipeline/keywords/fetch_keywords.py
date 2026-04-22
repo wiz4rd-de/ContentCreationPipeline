@@ -486,6 +486,7 @@ async def fetch_keywords(
             related_raw=related_data,
             suggestions_raw=suggestions_data,
             seed=seed_keyword,
+            kfk_raw=kfk_response,
         )
         text = (
             json.dumps(merged_output, indent=2)

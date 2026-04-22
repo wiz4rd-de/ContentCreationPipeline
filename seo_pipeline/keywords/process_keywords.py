@@ -161,11 +161,12 @@ def process_keywords(
     seed: str,
     volume_raw: dict | None = None,
     brands: list[str] | None = None,
+    kfk_raw: dict | None = None,
 ) -> dict:
     """Process keywords with intent classification, Jaccard clustering, and scoring.
 
     Pipeline:
-    1. Extract and deduplicate keywords from related + suggestions (with difficulty)
+    1. Extract and deduplicate keywords from related + suggestions + kfk (with difficulty)
     2. Merge volume from optional volume endpoint
     3. Stable sort by volume desc, alpha tie-break
     4. Classify search intent
@@ -179,6 +180,7 @@ def process_keywords(
         seed: Seed keyword string.
         volume_raw: Optional raw JSON from volume endpoint.
         brands: Optional list of brand strings for navigational intent.
+        kfk_raw: Optional raw JSON from keywords_for_keywords API.
 
     Returns:
         Dict with seed_keyword, total_keywords, total_clusters, clusters.
@@ -205,6 +207,14 @@ def process_keywords(
         key = kw["keyword"].lower().strip()
         if key not in seen:
             seen[key] = kw
+
+    # KFK keywords (lowest priority in dedup)
+    if kfk_raw is not None:
+        kfk_keywords = extract_keywords(kfk_raw, include_difficulty=True)
+        for kw in kfk_keywords:
+            key = kw["keyword"].lower().strip()
+            if key not in seen:
+                seen[key] = kw
 
     # Ensure seed keyword is always present
     seed_key = seed.lower().strip()
@@ -367,6 +377,9 @@ def main() -> None:
         "--volume", default=None, help="Path to volume raw JSON file (optional)"
     )
     parser.add_argument(
+        "--kfk", default=None, help="Path to keywords_for_keywords raw JSON (optional)"
+    )
+    parser.add_argument(
         "--brands", default=None, help="Comma-separated brand list (optional)"
     )
     parser.add_argument(
@@ -402,13 +415,23 @@ def main() -> None:
                 sys.exit(1)
             volume_raw = json.loads(volume_path.read_text(encoding="utf-8"))
 
+        kfk_raw = None
+        if args.kfk:
+            kfk_path = Path(args.kfk)
+            if not kfk_path.exists():
+                print(
+                    f"Error: kfk file not found: {args.kfk}", file=sys.stderr
+                )
+                sys.exit(1)
+            kfk_raw = json.loads(kfk_path.read_text(encoding="utf-8"))
+
         brands = None
         if args.brands:
             brands = [b.strip() for b in args.brands.split(",") if b.strip()]
 
         result = process_keywords(
             related_raw, suggestions_raw, args.seed,
-            volume_raw=volume_raw, brands=brands,
+            volume_raw=volume_raw, brands=brands, kfk_raw=kfk_raw,
         )
 
         output_json = json.dumps(result, indent=2)
