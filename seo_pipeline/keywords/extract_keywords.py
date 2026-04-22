@@ -9,11 +9,13 @@ logger = logging.getLogger(__name__)
 
 def normalize_item(item: dict) -> dict | None:
     """
-    Normalize an item from either DataForSEO API response shape.
+    Normalize an item from any DataForSEO keyword API response shape.
 
-    DataForSEO provides two response shapes:
+    DataForSEO provides three response shapes:
     1. related_keywords: keyword data nested under item.keyword_data
-    2. keyword_suggestions: keyword data directly on item
+    2. keywords_for_keywords (Google Ads): flat structure with search_volume,
+       cpc, monthly_searches at top level (no keyword_info wrapper)
+    3. keyword_suggestions: keyword data directly on item with keyword_info
 
     Args:
         item: A keyword item from the DataForSEO API response
@@ -31,6 +33,16 @@ def normalize_item(item: dict) -> dict | None:
             "keyword": kd["keyword"],
             "info": kd.get("keyword_info") or {},
             "props": kd.get("keyword_properties") or {},
+        }
+
+    # keywords_for_keywords (Google Ads) flat shape: search_volume at top
+    # level instead of nested under keyword_info. Must be checked before the
+    # suggestions branch because both have a top-level "keyword" key.
+    if item.get("keyword") and "search_volume" in item and "keyword_info" not in item:
+        return {
+            "keyword": item["keyword"],
+            "info": item,
+            "props": {},
         }
 
     # keyword_suggestions shape: keyword data directly on item

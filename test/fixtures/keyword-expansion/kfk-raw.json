@@ -1,0 +1,101 @@
+{
+  "version": "0.1.20241101",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "time": "1.2345 sec.",
+  "cost": 0.005,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "id": "kfk-fixture-001",
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "time": "0.9876 sec.",
+      "cost": 0.005,
+      "result_count": 1,
+      "path": ["v3", "keywords_data", "google_ads", "keywords_for_keywords", "task_get", "kfk-fixture-001"],
+      "data": {
+        "api": "keywords_data",
+        "function": "keywords_for_keywords",
+        "keywords": ["sintra"],
+        "language_code": "de",
+        "location_code": 2276
+      },
+      "result": [
+        {
+          "items": [
+            {
+              "keyword": "sintra pena palace",
+              "location_code": 2276,
+              "language_code": "de",
+              "search_partners": false,
+              "competition": "LOW",
+              "competition_index": 7,
+              "search_volume": 210,
+              "low_top_of_page_bid": 0.41,
+              "high_top_of_page_bid": 1.5,
+              "cpc": 1.07,
+              "monthly_searches": [
+                {"year": 2025, "month": 3, "search_volume": 170},
+                {"year": 2025, "month": 2, "search_volume": 140},
+                {"year": 2025, "month": 1, "search_volume": 110}
+              ]
+            },
+            {
+              "keyword": "sintra sehenswuerdigkeiten",
+              "location_code": 2276,
+              "language_code": "de",
+              "search_partners": false,
+              "competition": "MEDIUM",
+              "competition_index": 35,
+              "search_volume": 1900,
+              "low_top_of_page_bid": 0.22,
+              "high_top_of_page_bid": 0.89,
+              "cpc": 0.55,
+              "monthly_searches": [
+                {"year": 2025, "month": 3, "search_volume": 1600},
+                {"year": 2025, "month": 2, "search_volume": 1200},
+                {"year": 2025, "month": 1, "search_volume": 880}
+              ]
+            },
+            {
+              "keyword": "sintra lissabon tagesausflug",
+              "location_code": 2276,
+              "language_code": "de",
+              "search_partners": false,
+              "competition": "HIGH",
+              "competition_index": 72,
+              "search_volume": 480,
+              "low_top_of_page_bid": 0.65,
+              "high_top_of_page_bid": 2.1,
+              "cpc": 1.38,
+              "monthly_searches": [
+                {"year": 2025, "month": 3, "search_volume": 590},
+                {"year": 2025, "month": 2, "search_volume": 390},
+                {"year": 2025, "month": 1, "search_volume": 260}
+              ]
+            },
+            {
+              "keyword": "sintra strand",
+              "location_code": 2276,
+              "language_code": "de",
+              "search_partners": false,
+              "competition": "LOW",
+              "competition_index": 3,
+              "search_volume": 50,
+              "low_top_of_page_bid": null,
+              "high_top_of_page_bid": null,
+              "cpc": null,
+              "monthly_searches": [
+                {"year": 2025, "month": 3, "search_volume": 50},
+                {"year": 2025, "month": 2, "search_volume": 40},
+                {"year": 2025, "month": 1, "search_volume": 30}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
