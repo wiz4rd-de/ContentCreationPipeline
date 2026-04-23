@@ -413,27 +413,31 @@ class TestEmitDraftDocx:
 
 
 class TestRunPipelineDocxIntegration:
-    """Structural verification that run_pipeline invokes _emit_draft_docx
+    """Structural verification that the pipeline invokes _emit_draft_docx
     at the correct place: AFTER the fact-check try/except, targeting the
     draft-<slug>.md that fact_check may have modified in place.
 
     A full end-to-end CliRunner test would require mocking 10+ stage
     functions; this source-inspection test guards the key invariant
     (correct placement) without that complexity.
+
+    Since P1.2 (#194) the stage logic lives in ``seo_pipeline.orchestrator``
+    rather than ``cli.main``, so the invariant is asserted on the Stage 11
+    helper in the orchestrator module.
     """
 
     def test_emit_draft_docx_call_follows_fact_check_block(self) -> None:
         import inspect
 
-        from seo_pipeline.cli import main as cli_main
+        from seo_pipeline import orchestrator
 
-        source = inspect.getsource(cli_main.run_pipeline)
+        source = inspect.getsource(orchestrator._stage_fact_check)
 
         assert source.count("_emit_draft_docx(") == 1, (
-            "_emit_draft_docx should be called exactly once in run_pipeline"
+            "_emit_draft_docx should be called exactly once in _stage_fact_check"
         )
 
-        fact_check_idx = source.index("Stage 11/11: Fact-checking")
+        fact_check_idx = source.index("_fact_check(")
         emit_idx = source.index("_emit_draft_docx(")
         assert fact_check_idx < emit_idx, (
             "_emit_draft_docx must be called after the fact-check stage"
