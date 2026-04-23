@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pypandoc
 import pytest
 
 from seo_pipeline.drafting.write_draft import (
@@ -293,6 +294,67 @@ class TestWriteDraft:
             write_draft(str(brief_file))
 
         assert "draft-kw.md" in caplog.text
+
+
+class TestWriteDraftDocx:
+    """Tests for the sibling .docx emission (issue #189)."""
+
+    def test_emits_docx_alongside_md(self, tmp_path: Path) -> None:
+        brief_file = tmp_path / "brief-my-topic.md"
+        brief_file.write_text(SAMPLE_BRIEFING, encoding="utf-8")
+
+        with patch(
+            "seo_pipeline.drafting.write_draft.complete",
+            return_value=CANNED_DRAFT,
+        ), patch("pypandoc.convert_file") as mock_convert:
+            write_draft(str(brief_file))
+
+        expected_md = tmp_path / "draft-my-topic.md"
+        expected_docx = tmp_path / "draft-my-topic.docx"
+        mock_convert.assert_called_once_with(
+            str(expected_md), "docx", outputfile=str(expected_docx),
+        )
+
+    def test_docx_failure_does_not_raise(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        brief_file = tmp_path / "brief-fail.md"
+        brief_file.write_text(SAMPLE_BRIEFING, encoding="utf-8")
+
+        with caplog.at_level("WARNING"), patch(
+            "seo_pipeline.drafting.write_draft.complete",
+            return_value=CANNED_DRAFT,
+        ), patch(
+            "pypandoc.convert_file", side_effect=RuntimeError("pandoc boom"),
+        ):
+            # Must return normally even though pypandoc raises.
+            write_draft(str(brief_file))
+
+        md_path = tmp_path / "draft-fail.md"
+        assert md_path.exists()
+        assert md_path.read_text(encoding="utf-8") == CANNED_DRAFT
+        assert "docx conversion failed" in caplog.text
+        assert "pandoc boom" in caplog.text
+
+    def test_docx_real_conversion(self, tmp_path: Path) -> None:
+        """Exercise real pypandoc on a small inline markdown fixture."""
+        fixture = (
+            "# Heading\n\n"
+            "A short paragraph with **bold** text.\n\n"
+            "- first item\n"
+            "- second item\n\n"
+            "> A blockquote.\n"
+        )
+        md_path = tmp_path / "sample.md"
+        md_path.write_text(fixture, encoding="utf-8")
+        docx_path = tmp_path / "sample.docx"
+
+        pypandoc.convert_file(
+            str(md_path), "docx", outputfile=str(docx_path),
+        )
+
+        assert docx_path.exists()
+        assert docx_path.stat().st_size > 0
 
 
 class TestWriteDraftCLI:
