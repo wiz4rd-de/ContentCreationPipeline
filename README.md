@@ -119,7 +119,7 @@ The pipeline runs in three phases:
    uv sync --all-extras
    ```
 
-   This creates a `.venv` and installs all runtime dependencies plus the CLI (`typer`), API (`fastapi`), dev (`pytest`, `ruff`), and LLM-provider extras.
+   This creates a `.venv` and installs all runtime dependencies plus the CLI (`typer`), dev (`pytest`, `ruff`), and LLM-provider extras.
 
 3. Configure API credentials:
 

@@ -21,7 +21,6 @@ dependencies = [
 
 [project.optional-dependencies]
 cli = ["typer[all]>=0.9"]
-api = ["fastapi>=0.100", "uvicorn[standard]"]
 dev = ["pytest>=8.0", "pytest-asyncio", "ruff"]
 anthropic = ["anthropic>=0.25"]
 openai = ["openai>=1.30"]
