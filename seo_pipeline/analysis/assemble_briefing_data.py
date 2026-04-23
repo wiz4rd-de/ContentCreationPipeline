@@ -24,7 +24,7 @@ from seo_pipeline.utils.math import normalize_number
 
 logger = logging.getLogger(__name__)
 
-PIPELINE_VERSION = "0.2.0"
+PIPELINE_VERSION = "0.9.0"
 
 _YEAR_RE = re.compile(r"\b(2024|2025)\b")
 
