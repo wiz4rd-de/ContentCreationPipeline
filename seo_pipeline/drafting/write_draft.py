@@ -78,25 +78,6 @@ def write_draft(
     output_path.write_text(draft_content, encoding="utf-8")
     logger.info("  writing: %s", output_path)
 
-    # Emit a sibling .docx. The .md is the source of truth — any docx
-    # failure is logged and swallowed so the pipeline never breaks.
-    docx_path = brief.parent / f"draft-{slug}.docx"
-    try:
-        import pypandoc
-    except ImportError:
-        logger.warning(
-            "  skipping docx: pypandoc not installed (install pypandoc-binary)",
-        )
-        return
-
-    try:
-        pypandoc.convert_file(
-            str(output_path), "docx", outputfile=str(docx_path),
-        )
-        logger.info("  writing: %s", docx_path)
-    except Exception as exc:  # noqa: BLE001 — docx failure must not raise
-        logger.warning("  docx conversion failed for %s: %s", output_path, exc)
-
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

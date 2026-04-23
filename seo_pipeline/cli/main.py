@@ -21,6 +21,45 @@ app = typer.Typer(
     add_completion=False,
 )
 
+logger = logging.getLogger(__name__)
+
+
+def _emit_draft_docx(draft_md_path: Path) -> None:
+    """Convert ``draft-<slug>.md`` to a sibling ``draft-<slug>.docx``.
+
+    This is called after the fact-check stage has had a chance to modify
+    ``draft-<slug>.md`` in place, so the resulting docx reflects the final
+    (post-fact-check) markdown state.
+
+    The ``.md`` file is the source of truth. Any docx emission failure is
+    logged and swallowed so the pipeline never breaks.
+    """
+    if not draft_md_path.exists():
+        logger.warning(
+            "  skipping docx: draft markdown not found at %s", draft_md_path,
+        )
+        return
+
+    docx_path = draft_md_path.with_suffix(".docx")
+
+    try:
+        import pypandoc
+    except ImportError:
+        logger.warning(
+            "  skipping docx: pypandoc not installed (install pypandoc-binary)",
+        )
+        return
+
+    try:
+        pypandoc.convert_file(
+            str(draft_md_path), "docx", outputfile=str(docx_path),
+        )
+        logger.info("  writing: %s", docx_path)
+    except Exception as exc:  # noqa: BLE001 — docx failure must not raise
+        logger.warning(
+            "  docx conversion failed for %s: %s", draft_md_path, exc,
+        )
+
 
 def _version_callback(value: bool) -> None:
     if value:
@@ -1005,6 +1044,12 @@ def run_pipeline(
                 f"  Warning: fact-check failed ({exc}), "
                 "continuing..."
             )
+
+        # Emit a sibling .docx from the (potentially fact-check-modified)
+        # draft markdown. Runs whether fact-check succeeded or failed —
+        # we want a docx of whatever state the .md ends up in. Any docx
+        # failure is logged and swallowed so the pipeline never breaks.
+        _emit_draft_docx(out_dir / f"draft-{slug}.md")
     else:
         _log("  LLM not configured — run these stages manually:")
         tov_flag = f" --tov {tov}" if tov else ""
