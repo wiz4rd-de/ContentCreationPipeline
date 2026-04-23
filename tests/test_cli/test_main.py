@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,6 +12,19 @@ from typer.testing import CliRunner
 from seo_pipeline.cli.main import app
 
 runner = CliRunner()
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(output: str) -> str:
+    """Strip ANSI color codes so assertions match in any terminal env.
+
+    GitHub Actions sets FORCE_COLOR=1, which makes rich render option
+    names as fragmented ANSI tokens (e.g. `--top` -> `\\x1b[..]-\\x1b[..]-top`),
+    breaking naive `in` checks. Local dev has no FORCE_COLOR, so tests
+    passed. Strip ANSI to make assertions env-independent.
+    """
+    return _ANSI_RE.sub("", output)
 
 
 # ---------------------------------------------------------------------------
@@ -26,13 +40,14 @@ def test_app_imports():
 def test_help_returns_zero():
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "seo-pipeline" in result.output.lower() or "SEO" in result.output
+    out = _plain(result.output)
+    assert "seo-pipeline" in out.lower() or "SEO" in out
 
 
 def test_version_returns_zero():
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    assert "0.1.0" in _plain(result.output)
 
 
 # ---------------------------------------------------------------------------
@@ -43,40 +58,44 @@ def test_version_returns_zero():
 def test_process_serp_help():
     result = runner.invoke(app, ["process-serp", "--help"])
     assert result.exit_code == 0
-    assert "--top" in result.output
-    assert "--output" in result.output
+    out = _plain(result.output)
+    assert "--top" in out
+    assert "--output" in out
 
 
 def test_fetch_serp_help():
     result = runner.invoke(app, ["fetch-serp", "--help"])
     assert result.exit_code == 0
-    assert "--market" in result.output or "KEYWORD" in result.output
+    out = _plain(result.output)
+    assert "--market" in out or "KEYWORD" in out
 
 
 def test_assemble_competitors_help():
     result = runner.invoke(app, ["assemble-competitors", "--help"])
     assert result.exit_code == 0
-    assert "--date" in result.output
+    assert "--date" in _plain(result.output)
 
 
 def test_extract_page_help():
     result = runner.invoke(app, ["extract-page", "--help"])
     assert result.exit_code == 0
-    assert "--output" in result.output
+    assert "--output" in _plain(result.output)
 
 
 def test_filter_keywords_help():
     result = runner.invoke(app, ["filter-keywords", "--help"])
     assert result.exit_code == 0
-    assert "--keywords" in result.output
-    assert "--serp" in result.output
+    out = _plain(result.output)
+    assert "--keywords" in out
+    assert "--serp" in out
 
 
 def test_run_pipeline_help():
     result = runner.invoke(app, ["run-pipeline", "--help"])
     assert result.exit_code == 0
-    assert "--skip-fetch" in result.output
-    assert "--output-dir" in result.output
+    out = _plain(result.output)
+    assert "--skip-fetch" in out
+    assert "--output-dir" in out
 
 
 # ---------------------------------------------------------------------------

@@ -9,6 +9,10 @@
 *.pyd
 __pycache__/
 
+# Python tool caches
+.pytest_cache/
+.ruff_cache/
+
 
 # macOS
 .DS_Store
