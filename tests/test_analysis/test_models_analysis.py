@@ -27,7 +27,7 @@ def fixture_dir() -> Path:
     """Return path to briefing-data fixture directory."""
     return (
         Path(__file__).parent.parent.parent
-        / "test"
+        / "tests"
         / "fixtures"
         / "assemble-briefing-data"
         / "2026-03-09_test-keyword"

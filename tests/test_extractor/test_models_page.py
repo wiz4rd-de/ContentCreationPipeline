@@ -11,7 +11,7 @@ from seo_pipeline.models import ExtractedPage, ExtractedPageError
 @pytest.fixture
 def page_fixtures_dir() -> Path:
     """Return path to page fixtures directory."""
-    return Path(__file__).parent.parent.parent / "test" / "fixtures"
+    return Path(__file__).parent.parent.parent / "tests" / "fixtures"
 
 
 class TestExtractedPage:
@@ -137,7 +137,7 @@ class TestExtractedPage:
         [
             path
             for path in Path(__file__).resolve().parent.parent.parent.glob(
-                "test/fixtures/*/pages/*.json"
+                "tests/fixtures/*/pages/*.json"
             )
         ],
         ids=lambda p: f"{p.parent.parent.name}/{p.parent.name}/{p.name}",

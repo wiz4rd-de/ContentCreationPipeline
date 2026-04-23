@@ -19,7 +19,7 @@ from seo_pipeline.analysis.analyze_page_structure import (
     main,
 )
 
-FIXTURES = Path("test/fixtures/analyze-page-structure")
+FIXTURES = Path("tests/fixtures/analyze-page-structure")
 GOLDEN = Path("tests/golden")
 
 

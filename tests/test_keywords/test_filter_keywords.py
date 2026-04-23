@@ -14,7 +14,7 @@ from seo_pipeline.keywords.filter_keywords import (
 )
 from seo_pipeline.utils.text import is_foreign_language
 
-FIXTURES = Path("test/fixtures/filter-keywords")
+FIXTURES = Path("tests/fixtures/filter-keywords")
 GOLDEN = Path("tests/golden")
 
 

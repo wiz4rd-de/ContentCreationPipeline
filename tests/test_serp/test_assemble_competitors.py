@@ -16,12 +16,12 @@ from seo_pipeline.serp.assemble_competitors import (
 
 FIXTURES_DIR = (
     Path(__file__).parent.parent.parent
-    / "test" / "fixtures" / "assemble-briefing-data"
+    / "tests" / "fixtures" / "assemble-briefing-data"
 )
 GOLDEN_DIR = Path(__file__).parent.parent / "golden"
 INTEGRATION_FIXTURES = (
     Path(__file__).parent.parent.parent
-    / "test" / "fixtures" / "integration"
+    / "tests" / "fixtures" / "integration"
 )
 
 FIXTURE_NAMES = [

@@ -16,7 +16,7 @@ from seo_pipeline.analysis.score_draft_wdfidf import (
     score_draft_wdfidf,
 )
 
-FIXTURES = Path("test/fixtures/score-draft-wdfidf")
+FIXTURES = Path("tests/fixtures/score-draft-wdfidf")
 GOLDEN = Path("tests/golden")
 
 

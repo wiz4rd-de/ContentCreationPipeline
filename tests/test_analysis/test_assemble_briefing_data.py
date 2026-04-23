@@ -16,7 +16,7 @@ from seo_pipeline.analysis.assemble_briefing_data import (
     normalize_years,
 )
 
-FIXTURES = Path("test/fixtures/assemble-briefing-data/2026-03-09_test-keyword")
+FIXTURES = Path("tests/fixtures/assemble-briefing-data/2026-03-09_test-keyword")
 GOLDEN = Path("tests/golden")
 
 # Sentinel timestamp used in golden file so tests are deterministic.

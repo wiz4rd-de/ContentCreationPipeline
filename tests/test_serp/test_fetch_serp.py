@@ -20,7 +20,7 @@ from seo_pipeline.serp.fetch_serp import (
 )
 
 FIXTURES_DIR = (
-    Path(__file__).parent.parent.parent / "test" / "fixtures" / "fetch-serp"
+    Path(__file__).parent.parent.parent / "tests" / "fixtures" / "fetch-serp"
 )
 
 
