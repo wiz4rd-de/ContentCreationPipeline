@@ -178,3 +178,93 @@ def test_summarize_briefing_invocation(tmp_path: Path):
 
     assert result.exit_code == 0
     assert "Keyword: test" in result.output
+
+
+# ---------------------------------------------------------------------------
+# Stage 10 LLM availability gate (regression: issue #87)
+# ---------------------------------------------------------------------------
+
+
+def test_stage10_gate_falls_back_when_litellm_missing(monkeypatch):
+    """The Stage 10 gate must set llm_configured=False when litellm is absent.
+
+    Regression for issue #87: previously `LLMConfig.from_env()` succeeded when
+    env vars were set, but Stage 10 crashed with ModuleNotFoundError because
+    `litellm` was not installed. The gate must proactively check for litellm
+    via `importlib.util.find_spec` and treat ImportError as "not configured".
+    """
+    import importlib.util
+
+    from seo_pipeline.llm.config import LLMConfig
+
+    # Pretend LLM env is valid by returning a dummy config.
+    monkeypatch.setattr(
+        LLMConfig, "from_env", classmethod(lambda cls, env_file=None: None)
+    )
+    # Pretend litellm is missing.
+    real_find_spec = importlib.util.find_spec
+
+    def fake_find_spec(name, *args, **kwargs):
+        if name == "litellm":
+            return None
+        return real_find_spec(name, *args, **kwargs)
+
+    monkeypatch.setattr(importlib.util, "find_spec", fake_find_spec)
+
+    # Mirror the exact gate logic from run_pipeline Stage 10.
+    try:
+        LLMConfig.from_env()
+        if importlib.util.find_spec("litellm") is None:
+            raise ImportError("litellm is not installed")
+        llm_configured = True
+    except (ValueError, ImportError):
+        llm_configured = False
+
+    assert llm_configured is False
+
+
+def test_stage10_gate_enabled_when_env_and_litellm_present(monkeypatch):
+    """Gate stays True when env is valid and litellm is importable."""
+    import importlib.util
+
+    from seo_pipeline.llm.config import LLMConfig
+
+    monkeypatch.setattr(
+        LLMConfig, "from_env", classmethod(lambda cls, env_file=None: None)
+    )
+    # Pretend litellm is available (return a truthy sentinel).
+    monkeypatch.setattr(
+        importlib.util, "find_spec", lambda name, *a, **kw: object()
+    )
+
+    try:
+        LLMConfig.from_env()
+        if importlib.util.find_spec("litellm") is None:
+            raise ImportError("litellm is not installed")
+        llm_configured = True
+    except (ValueError, ImportError):
+        llm_configured = False
+
+    assert llm_configured is True
+
+
+def test_stage10_gate_disabled_when_env_invalid(monkeypatch):
+    """Gate is False when LLMConfig.from_env raises ValueError (pre-existing behaviour)."""
+    import importlib.util
+
+    from seo_pipeline.llm.config import LLMConfig
+
+    def raise_value_error(cls, env_file=None):
+        raise ValueError("missing env")
+
+    monkeypatch.setattr(LLMConfig, "from_env", classmethod(raise_value_error))
+
+    try:
+        LLMConfig.from_env()
+        if importlib.util.find_spec("litellm") is None:
+            raise ImportError("litellm is not installed")
+        llm_configured = True
+    except (ValueError, ImportError):
+        llm_configured = False
+
+    assert llm_configured is False

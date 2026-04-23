@@ -937,12 +937,16 @@ def run_pipeline(
         "(fill-qualitative, assemble-briefing-md, write-draft)..."
     )
 
+    import importlib.util
+
     from seo_pipeline.llm.config import LLMConfig
 
     try:
         LLMConfig.from_env()
+        if importlib.util.find_spec("litellm") is None:
+            raise ImportError("litellm is not installed")
         llm_configured = True
-    except ValueError:
+    except (ValueError, ImportError):
         llm_configured = False
 
     if llm_configured:
