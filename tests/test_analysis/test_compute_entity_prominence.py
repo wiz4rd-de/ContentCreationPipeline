@@ -12,7 +12,7 @@ from seo_pipeline.analysis.compute_entity_prominence import (
     main,
 )
 
-FIXTURES = Path("test/fixtures/compute-entity-prominence")
+FIXTURES = Path("tests/fixtures/compute-entity-prominence")
 
 
 # ---------------------------------------------------------------------------

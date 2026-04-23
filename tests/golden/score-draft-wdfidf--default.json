@@ -1,7 +1,7 @@
 {
   "meta": {
-    "draft": "test/fixtures/score-draft-wdfidf/draft.txt",
-    "pages_dir": "test/fixtures/score-draft-wdfidf/pages",
+    "draft": "tests/fixtures/score-draft-wdfidf/draft.txt",
+    "pages_dir": "tests/fixtures/score-draft-wdfidf/pages",
     "language": "de",
     "threshold": 0.1,
     "competitor_count": 2,

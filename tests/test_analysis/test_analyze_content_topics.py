@@ -21,7 +21,7 @@ from seo_pipeline.analysis.analyze_content_topics import (
     main,
 )
 
-FIXTURES = Path("test/fixtures/analyze-content-topics")
+FIXTURES = Path("tests/fixtures/analyze-content-topics")
 GOLDEN = Path("tests/golden")
 
 

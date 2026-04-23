@@ -16,7 +16,7 @@ from seo_pipeline.analysis.extract_claims import (
     main,
 )
 
-FIXTURE = Path("test/fixtures/extract-claims/draft.md")
+FIXTURE = Path("tests/fixtures/extract-claims/draft.md")
 
 
 # ---------------------------------------------------------------------------

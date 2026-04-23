@@ -227,7 +227,7 @@ class TestHtmlSignals:
         This ensures the model correctly deserializes the test fixture.
         """
         fixture_path = Path(
-            "/Users/marco.funk/Code/ContentCreationPipeline/test/fixtures/"
+            "/Users/marco.funk/Code/ContentCreationPipeline/tests/fixtures/"
             "analyze-page-structure/pages/page-alpha.json"
         )
 
@@ -288,7 +288,7 @@ class TestHeadingsListIntegration:
     def test_heading_list_from_fixture(self) -> None:
         """Test Heading list deserialization from fixture."""
         fixture_path = Path(
-            "/Users/marco.funk/Code/ContentCreationPipeline/test/fixtures/"
+            "/Users/marco.funk/Code/ContentCreationPipeline/tests/fixtures/"
             "analyze-page-structure/pages/page-alpha.json"
         )
 

@@ -26,7 +26,7 @@ gh issue comment 32 --body-file /tmp/gh-body.md && gh issue close 32
 
 - **Use built-in tools instead of Bash for file operations.** Glob instead of `ls`/`find`, Grep instead of `grep`/`rg`, Read instead of `cat`/`head`/`tail`. This avoids shell security hook false positives (e.g., `2>/dev/null` triggers "quoted characters in flag names").
 - **Never create temp scripts to read/modify JSON files.** Use the Read tool to load JSON, update values in your reasoning, and write back with the Write tool. No `/tmp/*.mjs` files, no heredocs, no `node -e`.
-- **Reserve Bash exclusively for running project scripts** (`node src/...`) and git commands. Everything else should use dedicated tools.
+- **Reserve Bash exclusively for running project scripts** (`uv run seo-pipeline ...`) and git commands. Everything else should use dedicated tools.
 - **Cap verbose Bash output.** When a script may print large JSON or verbose progress to stdout, pipe through `| head -20` to avoid bloating the context window. Most pipeline scripts use `--output` flags and produce minimal stdout, but always cap when unsure. Do not suppress stderr (errors/stack traces are useful).
 
 ## Skill Files

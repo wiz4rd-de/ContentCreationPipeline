@@ -10,7 +10,7 @@ from seo_pipeline.analysis.assemble_briefing_md import assemble_briefing_md, mai
 
 FIXTURE_DIR = (
     Path(__file__).resolve().parents[2]
-    / "test"
+    / "tests"
     / "fixtures"
     / "assemble-briefing-data"
     / "2026-03-09_test-keyword"

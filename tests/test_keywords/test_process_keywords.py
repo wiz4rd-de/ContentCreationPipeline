@@ -13,8 +13,8 @@ from seo_pipeline.keywords.process_keywords import (
 )
 from seo_pipeline.utils.math import normalize_number
 
-FIXTURES = Path("test/fixtures/process-keywords")
-GOLDEN = Path("test/golden")
+FIXTURES = Path("tests/fixtures/process-keywords")
+GOLDEN = Path("tests/golden_fixtures")
 
 
 # --- normalize_number ---
@@ -425,7 +425,7 @@ class TestProcessKeywordsStructural:
 # --- process_keywords with kfk_raw ---
 
 
-KFK_FIXTURES = Path("test/fixtures/keyword-expansion")
+KFK_FIXTURES = Path("tests/fixtures/keyword-expansion")
 
 
 class TestProcessKeywordsKfk:

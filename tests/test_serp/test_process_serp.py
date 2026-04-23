@@ -14,7 +14,7 @@ from seo_pipeline.serp.process_serp import (
 
 FIXTURES_DIR = (
     Path(__file__).parent.parent.parent
-    / "test" / "fixtures" / "process-serp"
+    / "tests" / "fixtures" / "process-serp"
 )
 GOLDEN_DIR = Path(__file__).parent.parent / "golden"
 

@@ -1,18 +1,18 @@
-# Claude Content Creation Pipeline
+# SEO Content Creation Pipeline
 
-> **Maintenance mode.** This Node.js codebase is feature-frozen at v1.0.0. Active development continues in the Python rewrite: [ContentCreationPipeline](https://github.com/wiz4rd-de/ContentCreationPipeline).
+Deterministic SEO content pipeline — Python modules handle all data extraction; LLM calls are constrained to qualitative analysis on a pre-built data skeleton.
 
-Deterministic SEO content pipeline -- scripts handle all data extraction; a single LLM call does qualitative analysis only.cre
+> Originally implemented in Node.js; see git history for the legacy tree.
 
 ## Architecture
 
-Every byte of data processing is handled by deterministic Node.js scripts (~9,300 LOC) that produce identical output for identical input. The LLM is constrained to a single, final step: filling in qualitative null placeholders on a pre-built data skeleton. It never re-ranks, re-scores, or modifies any deterministic field.
+Every byte of data processing is handled by deterministic Python modules that produce identical output for identical input. LLM calls are confined to three qualitative stages: filling null placeholders in the briefing skeleton, assembling the final briefing markdown, and (optionally) generating the article draft. The LLM never re-ranks, re-scores, or modifies any deterministic field.
 
 The pipeline runs in three phases:
 
-- **Phase 1 (deterministic):** 8 pipeline scripts fetch, parse, cluster, score, and assemble all keyword, SERP, competitor, and content analysis data into `briefing-data.json`. Every intermediate file is JSON-in, JSON-out via stdout.
-- **Phase 2 (single LLM call):** The LLM reads `briefing-data.json` and fills 6 qualitative fields (entity clusters, GEO audit, format recommendation, unique angles, AIO strategy, final briefing). It operates on the pre-built skeleton and cannot alter deterministic data.
-- **Phase 3 (optional, LLM):** Generates a publish-ready article draft from the content briefing, enforcing SEO best practices and brand voice guidelines.
+- **Phase 1 (deterministic):** Pipeline modules fetch, parse, cluster, score, and assemble all keyword, SERP, competitor, and content analysis data into `briefing-data.json`. Every intermediate file is JSON-in, JSON-out.
+- **Phase 2 (LLM):** Qualitative fields are filled on the skeleton, then the final briefing markdown is assembled. The LLM operates on the pre-built skeleton and cannot alter deterministic data.
+- **Phase 3 (LLM, optional):** Generates a publish-ready article draft from the content briefing. A fact-check stage can verify the draft against web sources.
 
 ```
                          Seed Keyword + Market
@@ -21,41 +21,46 @@ The pipeline runs in three phases:
                |                                 |
                v                                 v
     +---------------------+           +---------------------+
-    | fetch-keywords.mjs  |           | fetch-serp.mjs      |
-    | DataForSEO related  |           | DataForSEO SERP     |
-    | + suggestions       |           | (async task_post/get)|
+    | keywords/           |           | serp/               |
+    | fetch_keywords.py   |           | fetch_serp.py       |
+    | DataForSEO related, |           | DataForSEO SERP     |
+    | suggestions, KFK    |           | (async task_post/get)|
     +---------------------+           +---------------------+
                |                                 |
                v                                 v
     +---------------------+           +---------------------+
-    | process-keywords.mjs|           | process-serp.mjs    |
+    | keywords/           |           | serp/               |
+    | process_keywords.py |           | process_serp.py     |
     | intent, clusters,   |           | AI Overview, PAA,   |
     | opportunity scores  |           | featured snippets   |
     +---------------------+           +---------------------+
                |                                 |
                v                          +------+------+
     +---------------------+               |             |
-    | filter-keywords.mjs |               v             v
-    | blocklist, brand,   |    +----------------+  +------------------+
-    | FAQ priority        |    | extract-page   |  | assemble-        |
-    +---------------------+    | (per URL)      |  | competitors.mjs  |
+    | keywords/           |               v             v
+    | filter_keywords.py  |    +----------------+  +------------------+
+    | blocklist, brand,   |    | extractor/     |  | serp/            |
+    | FAQ priority        |    | extract_page.py|  | assemble_        |
+    +---------------------+    | (per URL)      |  | competitors.py   |
                |               +----------------+  +------------------+
                |                      |                    |
                |               pages/<domain>.json         |
                |                      |                    |
                |                      v                    |
                |          +--------------------------+     |
-               |          | analyze-page-structure   |     |
-               |          | analyze-content-topics   |     |
-               |          | compute-entity-prominence|     |
+               |          | analysis/                |     |
+               |          | analyze_page_structure.py|     |
+               |          | analyze_content_topics.py|     |
+               |          | compute_entity_prominence|     |
                |          +--------------------------+     |
                |                      |                    |
                +----------+-----------+--------------------+
                           |
                           v
                +---------------------+
-               | assemble-briefing-  |  consolidates everything
-               | data.mjs           |  into briefing-data.json
+               | analysis/           |  consolidates everything
+               | assemble_briefing_  |  into briefing-data.json
+               | data.py             |
                +---------------------+
                           |
                   briefing-data.json
@@ -63,26 +68,41 @@ The pipeline runs in three phases:
                           |
                           v
                +---------------------+
-               | Single LLM call     |  fills 6 qualitative
-               | (Phase 2)           |  null fields
+               | analysis/           |  fills qualitative
+               | fill_qualitative.py |  null fields (LLM)
+               +---------------------+
+                          |
+                          v
+               +---------------------+
+               | analysis/           |  final briefing markdown
+               | assemble_briefing_  |  (LLM)
+               | md.py               |
                +---------------------+
                           |
                     brief-<slug>.md
                           |
                           v
                +---------------------+
-               | Article draft       |  SEO-optimized article
-               | (Phase 3, optional) |  with brand voice
+               | drafting/           |  SEO-optimized article
+               | write_draft.py      |  (LLM, optional)
                +---------------------+
                           |
                     draft-<slug>.md
+                          |
+                          v
+               +---------------------+
+               | analysis/           |  fact-check + ToV audit
+               | fact_check.py       |  (LLM + WebSearch)
+               | tov_check.py        |
+               +---------------------+
 ```
 
 ## Prerequisites
 
-- Node.js >= 18
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
+- Python >= 3.11
+- [uv](https://docs.astral.sh/uv/) package manager
 - A [DataForSEO](https://dataforseo.com/) account (login + password)
+- An LLM provider API key (Anthropic, OpenAI, or Google)
 
 ## Setup
 
@@ -90,15 +110,16 @@ The pipeline runs in three phases:
 
    ```bash
    git clone <repo-url>
-   cd ClaudeContentCreationPipeline
+   cd ContentCreationPipeline
    ```
 
 2. Install dependencies:
 
    ```bash
-   npm install
-   cd src/extractor && npm install && cd ../..
+   uv sync --all-extras
    ```
+
+   This creates a `.venv` and installs all runtime dependencies plus the CLI (`typer`), API (`fastapi`), dev (`pytest`, `ruff`), and LLM-provider extras.
 
 3. Configure API credentials:
 
@@ -106,7 +127,7 @@ The pipeline runs in three phases:
    cp api.env.example api.env
    ```
 
-   Edit `api.env` and set your DataForSEO credentials:
+   Edit `api.env` and set your DataForSEO credentials plus LLM provider config:
 
    ```env
    SEO_PROVIDER=dataforseo
@@ -114,151 +135,187 @@ The pipeline runs in three phases:
    DATAFORSEO_BASE=https://api.dataforseo.com/v3
    SEO_MARKET=de
    SEO_LANGUAGE=de
+
+   LLM_PROVIDER=anthropic
+   LLM_MODEL=claude-sonnet-4-20250514
+   LLM_API_KEY=sk-ant-...
    ```
 
-   Generate the auth string with: `echo -n 'login:password' | base64`
+   Generate the DataForSEO auth string with: `echo -n 'login:password' | base64`
 
 4. Verify the setup:
 
    ```bash
-   npm test
+   uv run pytest
    ```
 
 ## Usage
 
 ### Full pipeline
 
-Run the complete pipeline with a single skill:
+Run the complete pipeline end-to-end via the Typer CLI:
 
+```bash
+uv run seo-pipeline run-pipeline "thailand urlaub" \
+  --location de --language de \
+  --tov templates/DT_ToV_v3.md \
+  --template templates/template-reisemagazin.md \
+  --user-domain example.com \
+  --business-context "Tour operator selling guided Thailand trips"
 ```
-/seo-content-pipeline
-```
 
-Claude will collect these inputs interactively:
+The `run-pipeline` subcommand orchestrates all 11 stages (SERP fetch, SERP processing, page extraction, keyword fetch/process/filter, content analysis, briefing assembly, qualitative fill, briefing markdown, article draft, fact-check).
 
-| Input | Required | Description |
-|-------|----------|-------------|
-| Seed keyword | yes | The topic to research (e.g. "thailand urlaub") |
-| Your domain | no | Excluded from competitor analysis |
-| Market | no | ISO country code, default `de` |
-| Business context | yes | What you sell, target audience |
-| Content goals | yes | Traffic, leads, authority, conversions |
-| Content template | no | Pick from `templates/template-*.md` or skip |
-| Brand voice | no | Pick from `templates/*ToV*` or skip |
+### Claude Code skills
 
-### Individual skills
-
-Each pipeline phase is also available as a standalone skill:
+Each pipeline phase is also available as a Claude Code skill (from `.claude/skills/`):
 
 | Skill | Scope |
 |-------|-------|
+| `/seo-content-pipeline` | Full pipeline orchestrator |
 | `/seo-keyword-research` | Fetch keyword data from DataForSEO, cluster by intent and volume |
 | `/competitor-analysis` | Analyze top-ranking pages, extract structure and content signals |
 | `/content-strategy` | Synthesize keyword + competitor data into a prioritized content roadmap |
 | `/content-briefing` | Generate a detailed writing brief from `briefing-data.json` |
 | `/content-draft` | Write a publish-ready article from an existing brief |
-| `/implement-issues` | Work through GitHub issues in `IMPLEMENTATION.md` via agent orchestration |
+| `/content-revision` | Revise an existing draft with structured SME input |
+| `/fact-check` | Verify factual claims in a draft via WebSearch |
+| `/tov-check` | Run a tone-of-voice compliance audit on a draft |
 
 ### Direct CLI
 
-Every pipeline script can be run standalone for debugging, piping, or integration:
+Every pipeline stage can be run standalone for debugging, piping, or integration. See `uv run seo-pipeline --help` for the full command list.
 
 ```bash
 # Keyword research
-node src/keywords/fetch-keywords.mjs "thailand urlaub" \
-  --market de --language de --outdir output/2026-03-23_thailand-urlaub --limit 50
-node src/keywords/process-keywords.mjs \
-  --related keywords-related-raw.json --suggestions keywords-suggestions-raw.json \
-  --seed "thailand urlaub"
-node src/keywords/filter-keywords.mjs \
-  --keywords keywords-processed.json --serp serp-processed.json --seed "thailand urlaub"
+uv run seo-pipeline fetch-keywords "thailand urlaub" \
+  --market de --language de --outdir output/2026-04-23_thailand-urlaub --limit 50
+uv run seo-pipeline process-keywords \
+  --related output/2026-04-23_thailand-urlaub/keywords-related-raw.json \
+  --suggestions output/2026-04-23_thailand-urlaub/keywords-suggestions-raw.json \
+  --seed "thailand urlaub" \
+  --output output/2026-04-23_thailand-urlaub/keywords-processed.json
+uv run seo-pipeline filter-keywords \
+  --keywords output/2026-04-23_thailand-urlaub/keywords-processed.json \
+  --serp output/2026-04-23_thailand-urlaub/serp-processed.json \
+  --seed "thailand urlaub" \
+  --output output/2026-04-23_thailand-urlaub/keywords-filtered.json
 
 # SERP analysis
-node src/serp/fetch-serp.mjs "thailand urlaub" --market de --language de --force
-node src/serp/process-serp.mjs serp-raw.json --top 10
+uv run seo-pipeline fetch-serp "thailand urlaub" \
+  --market de --language de --force \
+  --outdir output/2026-04-23_thailand-urlaub
+uv run seo-pipeline process-serp output/2026-04-23_thailand-urlaub/serp-raw.json \
+  --top 10 --output output/2026-04-23_thailand-urlaub/serp-processed.json
 
 # Page extraction
-node src/extractor/extract-page.mjs "https://example.com/page"
+uv run seo-pipeline extract-page "https://example.com/page" \
+  --output output/2026-04-23_thailand-urlaub/pages/example-com.json
 
 # Content analysis
-node src/analysis/analyze-page-structure.mjs --pages-dir output/dir/pages/
-node src/analysis/analyze-content-topics.mjs --pages-dir output/dir/pages/ --seed "thailand urlaub"
-node src/analysis/compute-entity-prominence.mjs --entities entities.json --pages-dir output/dir/pages/
+uv run seo-pipeline analyze-page-structure \
+  --pages-dir output/2026-04-23_thailand-urlaub/pages/ \
+  --output output/2026-04-23_thailand-urlaub/page-structure.json
+uv run seo-pipeline analyze-content-topics \
+  --pages-dir output/2026-04-23_thailand-urlaub/pages/ \
+  --seed "thailand urlaub" \
+  --output output/2026-04-23_thailand-urlaub/content-topics.json
+uv run seo-pipeline compute-entity-prominence \
+  --entities output/2026-04-23_thailand-urlaub/content-topics.json \
+  --pages-dir output/2026-04-23_thailand-urlaub/pages/ \
+  --output output/2026-04-23_thailand-urlaub/entity-prominence.json
 
-# Assembly
-node src/analysis/assemble-briefing-data.mjs --dir output/2026-03-23_thailand-urlaub/
+# Briefing assembly
+uv run seo-pipeline assemble-briefing-data \
+  --dir output/2026-04-23_thailand-urlaub/ \
+  --market de --language de
+uv run seo-pipeline summarize-briefing \
+  --file output/2026-04-23_thailand-urlaub/briefing-data.json
 
-# Utilities
-node src/utils/resolve-location.mjs de          # -> 2276
-node src/utils/slugify.mjs "thailand urlaub"     # -> thailand-urlaub
-node scripts/clean-output.mjs --keep-days 30
+# LLM stages
+uv run seo-pipeline fill-qualitative --dir output/2026-04-23_thailand-urlaub/
+uv run seo-pipeline assemble-briefing-md --dir output/2026-04-23_thailand-urlaub/
+uv run seo-pipeline write-draft --brief output/2026-04-23_thailand-urlaub/brief-thailand-urlaub.md
+
+# Post-draft checks
+uv run seo-pipeline extract-claims \
+  --draft output/2026-04-23_thailand-urlaub/draft-thailand-urlaub.md \
+  --output output/2026-04-23_thailand-urlaub/claims-extracted.json
+uv run seo-pipeline fact-check \
+  --draft output/2026-04-23_thailand-urlaub/draft-thailand-urlaub.md
+uv run seo-pipeline tov-check \
+  --draft output/2026-04-23_thailand-urlaub/draft-thailand-urlaub.md
 ```
 
-All scripts support `--output <path>` for file output (default: stdout).
+All subcommands that produce JSON support `--output <path>` for file output (default: stdout).
 
-## Pipeline Steps (Phase 1)
+## Pipeline Stages (Phase 1 — deterministic)
 
-Each script reads JSON (from files or stdout) and writes JSON to stdout. All sorting is stable. All output is byte-identical for identical input.
+Each module reads structured input (JSON files or arguments) and produces structured output. All sorting is stable. All output is byte-identical for identical input.
 
-### 1. fetch-serp.mjs
+### 1. `serp/fetch_serp.py`
 
 Calls DataForSEO `task_post` and `task_get/advanced` endpoints to retrieve top organic search results. Handles caching automatically: if `serp-raw.json` exists and is fresh, reuses it; otherwise fetches from the API.
 
-- **Flags:** `<keyword>` (positional), `--market`, `--language` (required), `--outdir`, `--depth` (default 10), `--timeout` (default 120s), `--force` (bypass cache), `--max-age` (default 7 days)
+- **CLI:** `uv run seo-pipeline fetch-serp "<keyword>" --market <code> --language <code> --outdir <dir>`
+- **Flags:** `--depth` (default 10), `--timeout` (default 120s), `--force` (bypass cache), `--max-age` (default 7 days)
 - **Output:** `serp-raw.json` in `--outdir`
 
-### 2. fetch-keywords.mjs
+### 2. `keywords/fetch_keywords.py`
 
-Calls DataForSEO `related_keywords` and `keyword_suggestions` endpoints, saves raw responses, then merges internally to produce a deduplicated keyword list.
+Calls DataForSEO `related_keywords`, `keyword_suggestions`, and `keywords_for_keywords` endpoints, saves raw responses, then merges internally to produce a deduplicated keyword list.
 
-- **Flags:** `<seed>` (positional), `--market`, `--language`, `--outdir` (required), `--limit` (default 50)
-- **Output:** `keywords-related-raw.json`, `keywords-suggestions-raw.json`, `keywords-expanded.json`
+- **CLI:** `uv run seo-pipeline fetch-keywords "<seed>" --market <code> --language <code> --outdir <dir>`
+- **Flags:** `--limit` (default 50)
+- **Output:** `keywords-related-raw.json`, `keywords-suggestions-raw.json`, `keywords-for-keywords-raw.json`, `keywords-expanded.json`
 
-### 3. process-keywords.mjs
+### 3. `keywords/process_keywords.py`
 
 Merges raw API responses into a structured skeleton with intent tags (DE+EN regex), Jaccard-similarity n-gram clusters (threshold >= 0.5), and opportunity scores. Null placeholders for LLM-only fields (`cluster_label`, `strategic_notes`).
 
-- **Flags:** `--related`, `--suggestions`, `--seed` (required), `--volume`, `--brands` (optional)
+- **CLI:** `uv run seo-pipeline process-keywords --related <file> --suggestions <file> --seed <keyword>`
+- **Flags:** `--volume`, `--kfk`, `--brands`, `--output`
 - **Output:** JSON with `clusters[]`, each containing `keywords[]` with intent, volume, CPC, opportunity score
 
-### 4. filter-keywords.mjs
+### 4. `keywords/filter_keywords.py`
 
-Tags keywords with filter status (blocklist, brand, foreign-language) without deleting them -- tag, don't delete. Computes FAQ prioritization by scoring PAA questions against keyword token overlaps.
+Tags keywords with filter status (blocklist, brand, foreign-language) without deleting them — tag, don't delete. Computes FAQ prioritization by scoring PAA questions against keyword token overlaps.
 
-- **Flags:** `--keywords`, `--serp`, `--seed` (required), `--blocklist`, `--brands` (optional)
+- **CLI:** `uv run seo-pipeline filter-keywords --keywords <file> --serp <file> --seed <keyword>`
+- **Flags:** `--blocklist`, `--brands`, `--output`
 - **Output:** JSON with `clusters[]` (keywords annotated with `filter_status` + `filter_reason`), `faq_selection[]`, `removal_summary`
-- **Default blocklist:** `src/keywords/blocklist-default.json` (ethics, booking portals, spam patterns)
+- **Default blocklist:** `seo_pipeline/data/blocklist_default.json` (ethics, booking portals, spam patterns)
 
-### 5. process-serp.mjs
+### 5. `serp/process_serp.py`
 
 Parses a raw DataForSEO advanced SERP response into structured features: AI Overview, featured snippets, People Also Ask, related searches, discussions, video, top stories, knowledge graph, commercial and local signals.
 
-- **Flags:** `<file>` (positional), `--top` (default 10)
+- **CLI:** `uv run seo-pipeline process-serp <file> --top <n>`
 - **Output:** JSON with `serp_features`, `competitors[]`
 
-### 6. extract-page.mjs
+### 6. `extractor/extract_page.py`
 
-Fetches a URL and parses it with jsdom + @mozilla/readability. Extracts headings (h2-h4), word count, link counts, meta tags, and HTML content signals (FAQ sections, tables, lists, video embeds, images, forms).
+Fetches a URL and parses it with `trafilatura` + `beautifulsoup4`. Extracts headings (h2-h4), word count, link counts, meta tags, and HTML content signals (FAQ sections, tables, lists, video embeds, images, forms).
 
-- **Flags:** `<URL>` (positional)
+- **CLI:** `uv run seo-pipeline extract-page "<URL>"`
 - **Output:** JSON with `headings[]`, `word_count`, `link_count`, `html_signals`, `main_content_text`
-- **Dependencies:** jsdom, @mozilla/readability (installed locally in `src/extractor/`)
 
-### 7. Content analysis scripts
+### 7. Content analysis modules
 
-Three scripts that analyze the extracted pages:
+Three modules that analyze the extracted pages:
 
-**analyze-page-structure.mjs** -- Detects content modules (FAQ, table, list, video, form, image gallery) per competitor page. Computes per-section word/sentence counts, depth scores, and cross-competitor module frequency.
+**`analysis/analyze_page_structure.py`** — Detects content modules (FAQ, table, list, video, form, image gallery) per competitor page. Computes per-section word/sentence counts, depth scores, and cross-competitor module frequency.
 
-**analyze-content-topics.mjs** -- Extracts n-gram term frequencies with IDF boost (Leipzig Wikipedia 1M corpus), clusters headings by Jaccard overlap, and reports content format signals across competitors.
+**`analysis/analyze_content_topics.py`** — Extracts n-gram term frequencies with IDF boost (Leipzig Wikipedia 1M corpus), clusters headings by Jaccard overlap, and reports content format signals across competitors.
 
-**compute-entity-prominence.mjs** -- Re-computes entity mention counts across competitor page texts using exact synonym matching. Records discrepancies against any prior LLM-supplied values.
+**`analysis/compute_entity_prominence.py`** — Re-computes entity mention counts across competitor page texts using exact synonym matching. Records discrepancies against any prior LLM-supplied values.
 
-### 8. assemble-briefing-data.mjs
+### 8. `analysis/assemble_briefing_data.py`
 
 Consolidates all pipeline outputs from a run directory into a single `briefing-data.json`. Normalizes years, ranks keyword clusters by total search volume, and sets all qualitative fields to `null`.
 
-- **Flags:** `--dir` (required)
+- **CLI:** `uv run seo-pipeline assemble-briefing-data --dir <dir>`
+- **Flags:** `--market`, `--language`, `--user-domain`, `--business-context`, `--output`
 - **Reads (all optional, gracefully absent):** `serp-processed.json`, `keywords-processed.json`, `keywords-filtered.json`, `page-structure.json`, `content-topics.json`, `entity-prominence.json`, `competitors-data.json`
 - **Output:** writes `briefing-data.json` to `--dir`
 
@@ -285,32 +342,32 @@ Output structure:
 
 ### Utility modules
 
-These are imported by pipeline scripts or used by specific skills:
+Imported by pipeline stages or used by specific skills:
 
 | Module | Purpose |
 |--------|---------|
-| `extract-keywords.mjs` | Shared ES module that normalizes keyword records from DataForSEO responses |
-| `merge-keywords.mjs` | Deduplicates keywords from two raw response files |
-| `prepare-strategist-data.mjs` | Builds a data skeleton for the content-strategy skill |
-| `merge-qualitative.mjs` | Merges LLM qualitative output back into briefing-data.json |
-| `summarize-briefing.mjs` | Generates a concise briefing summary for token-efficient display |
-| `score-draft-wdfidf.mjs` | Scores a draft against WDF*IDF proof keywords |
-| `tokenizer.mjs` | Deterministic text tokenization with stopword filtering (de/en) |
-| `slugify.mjs` | URL-safe slug generation with German umlaut transliteration |
-| `load-api-config.mjs` | Loads and parses `api.env` credentials |
-| `preflight.mjs` | Pre-run validation of API config and environment |
-| `resolve-location.mjs` | Maps ISO country codes to DataForSEO location codes |
+| `keywords/extract_keywords.py` | Normalizes keyword records from DataForSEO responses |
+| `keywords/merge_keywords.py` | Deduplicates keywords from related + suggestions + KFK response files |
+| `keywords/prepare_strategist_data.py` | Builds a data skeleton for the content-strategy skill |
+| `serp/assemble_competitors.py` | Merge SERP data + extracted page JSON into `competitors-data.json` |
+| `analysis/merge_qualitative.py` | Merges LLM qualitative output back into `briefing-data.json` |
+| `analysis/summarize_briefing.py` | Generates a concise briefing summary for token-efficient display |
+| `analysis/score_draft_wdfidf.py` | Scores a draft against competitor pages using WDF*IDF |
+| `analysis/extract_claims.py` | Extracts factual claims from draft markdown (deterministic regex) |
+| `utils/tokenizer.py` | Deterministic text tokenization with stopword filtering (de/en) |
+| `utils/slugify.py` | URL-safe slug generation with German umlaut transliteration |
+| `utils/load_api_config.py` | Loads and parses `api.env` credentials |
+| `utils/preflight.py` | Pre-run validation of API config and environment |
+| `utils/resolve_location.py` | Maps ISO country codes to DataForSEO location codes |
+| `utils/text.py`, `utils/math.py` | Shared text and math helpers |
 
-### Standalone scripts
+## Qualitative Analysis (Phase 2 — LLM)
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/build-idf-table.mjs` | Computes IDF table from Wikipedia corpus (one-time setup) |
-| `scripts/clean-output.mjs` | Deletes old output directories by age threshold |
+After `briefing-data.json` is assembled, two LLM stages produce the final briefing:
 
-## Qualitative Analysis (Phase 2)
+### `analysis/fill_qualitative.py` — fills the skeleton
 
-After `briefing-data.json` is assembled, a single LLM call fills these 6 null fields:
+A single batched LLM call fills these null fields:
 
 | Field | Description |
 |-------|-------------|
@@ -319,13 +376,18 @@ After `briefing-data.json` is assembled, a single LLM call fills these 6 null fi
 | `content_format_recommendation` | Recommended content format based on SERP and competitor signals |
 | `unique_angles` | Differentiation opportunities not covered by competitors |
 | `aio_strategy` | Strategy for AI Overview optimization |
-| `briefing` | Final assembled content briefing document (9-section markdown) |
 
-**Data integrity constraint:** The LLM never re-ranks keywords, re-scores opportunities, modifies competitor data, or alters any deterministic field. It reads the skeleton and fills nulls only.
+Writes `qualitative.json`, then `merge_qualitative.py` merges it back into `briefing-data.json`.
 
-## Article Draft (Phase 3)
+### `analysis/assemble_briefing_md.py` — writes the briefing
 
-An optional phase that transforms the content brief into a publish-ready article:
+A second LLM call assembles the final 9-section briefing markdown (`brief-<slug>.md`) from the filled skeleton, optionally constrained by a template and tone-of-voice guide.
+
+**Data integrity constraint:** Neither LLM stage re-ranks keywords, re-scores opportunities, modifies competitor data, or alters any deterministic field. They read the skeleton and fill nulls only.
+
+## Article Draft (Phase 3 — LLM, optional)
+
+`drafting/write_draft.py` transforms the content brief into a publish-ready article:
 
 - Enforces SEO best practices (primary keyword in title/H1/first 100 words, secondary keyword distribution)
 - Follows outline from brief exactly
@@ -333,123 +395,150 @@ An optional phase that transforms the content brief into a publish-ready article
 - Generates meta description, title tag, alt text suggestions
 - Produces `draft-<slug>.md` with meta table, article content, and TODO/VERIFY markers for editorial review
 
+### Post-draft checks
+
+- **`analysis/extract_claims.py`** — Deterministic regex-based extraction of factual claims from the draft.
+- **`analysis/fact_check.py`** — Verifies each extracted claim via WebSearch, produces `fact-check-report.json` / `.md`, and applies corrections.
+- **`analysis/tov_check.py`** — Runs a tone-of-voice compliance audit against a ToV guide (default: `templates/DT_ToV_v3.md`).
+- **`analysis/score_draft_wdfidf.py`** — WDF*IDF scoring against competitor proof keywords.
+
 ## Output Directory
 
 Each pipeline run produces a dated directory:
 
 ```
-output/2026-03-23_thailand-urlaub/
-  keywords-related-raw.json       # Raw DataForSEO related keywords response
-  keywords-suggestions-raw.json   # Raw DataForSEO suggestions response
-  keywords-expanded.json          # Deduplicated merged keywords
-  keywords-processed.json         # Clustered, intent-tagged, scored keywords
-  keywords-filtered.json          # Tagged with filter status + FAQ selection
-  serp-raw.json                   # Raw DataForSEO SERP response
-  serp-processed.json             # Extracted SERP features + competitor list
+output/2026-04-23_thailand-urlaub/
+  keywords-related-raw.json              # Raw DataForSEO related keywords response
+  keywords-suggestions-raw.json          # Raw DataForSEO suggestions response
+  keywords-for-keywords-raw.json         # Raw DataForSEO keywords-for-keywords response
+  keywords-expanded.json                 # Deduplicated merged keywords
+  keywords-processed.json                # Clustered, intent-tagged, scored keywords
+  keywords-filtered.json                 # Tagged with filter status + FAQ selection
+  serp-raw.json                          # Raw DataForSEO SERP response
+  serp-processed.json                    # Extracted SERP features + competitor list
   pages/
-    example-com.json              # Per-domain page extraction (one per competitor)
+    example-com.json                     # Per-domain page extraction (one per competitor)
     other-site-de.json
-  competitors-data.json           # Merged SERP + page data with null qualitative fields
-  page-structure.json             # Module detection + cross-competitor analysis
-  content-topics.json             # Proof keywords, entity candidates, section weights
-  entity-prominence.json          # Code-verified entity mention counts
-  briefing-data.json              # Consolidated data skeleton (Phase 1 output)
-  qualitative.json                # LLM-generated qualitative fields (Phase 2 intermediate)
-  brief-thailand-urlaub.md        # Final content briefing (Phase 2 output)
-  draft-thailand-urlaub.md        # Article draft (Phase 3 output, optional)
+  competitors-data.json                  # Merged SERP + page data with null qualitative fields
+  page-structure.json                    # Module detection + cross-competitor analysis
+  content-topics.json                    # Proof keywords, entity candidates, section weights
+  entity-prominence.json                 # Code-verified entity mention counts
+  briefing-data.json                     # Consolidated data skeleton (Phase 1 output)
+  qualitative.json                       # LLM-generated qualitative fields (Phase 2 intermediate)
+  brief-thailand-urlaub.md               # Final content briefing (Phase 2 output)
+  draft-thailand-urlaub.md               # Article draft (Phase 3 output, optional)
+  claims-extracted.json                  # Deterministic claim extraction from draft
+  fact-check-report.json / .md           # Fact-check results (if run)
 ```
 
 ## Project Structure
 
 ```
-src/
-  utils/
-    resolve-location.mjs          # Market code -> DataForSEO location code
-    slugify.mjs                    # URL-safe slug generator (ö->oe, ä->ae, ü->ue, ß->ss)
-    tokenizer.mjs                  # Deterministic tokenization + stopword filtering
-    load-api-config.mjs            # api.env credential loader
-    preflight.mjs                  # Pre-run environment validation
-    location-codes.json            # ISO -> numeric location mapping (16 markets)
-    stopwords.json                 # German + English stopword lists
-    idf-de.json                    # IDF reference corpus (Leipzig Wikipedia 1M)
-  keywords/
-    fetch-keywords.mjs             # DataForSEO API caller + merge orchestrator
-    extract-keywords.mjs           # Shared keyword normalization module
-    merge-keywords.mjs             # Deduplication + stable sort by volume
-    process-keywords.mjs           # Intent tagging, Jaccard clustering, scoring
-    filter-keywords.mjs            # Blocklist/brand/language tagging + FAQ priority
-    prepare-strategist-data.mjs    # Data skeleton for content-strategy skill
-    blocklist-default.json         # Default keyword blocklist
+seo_pipeline/
+  cli/
+    main.py                              # Typer CLI entrypoint (seo-pipeline)
   serp/
-    fetch-serp.mjs                 # SERP data fetcher (async task_post/task_get)
-    process-serp.mjs               # SERP feature extraction from raw API response
-    assemble-competitors.mjs       # Merge SERP data + page extractions
+    fetch_serp.py                        # SERP data fetcher (async task_post/task_get)
+    process_serp.py                      # SERP feature extraction from raw API response
+    assemble_competitors.py              # Merge SERP data + page extractions
+  keywords/
+    fetch_keywords.py                    # DataForSEO API caller + merge orchestrator
+    extract_keywords.py                  # Keyword record normalization
+    merge_keywords.py                    # Deduplication + stable sort by volume
+    process_keywords.py                  # Intent tagging, Jaccard clustering, scoring
+    filter_keywords.py                   # Blocklist/brand/language tagging + FAQ priority
+    prepare_strategist_data.py           # Data skeleton for content-strategy skill
   extractor/
-    extract-page.mjs               # jsdom + Readability page parser
-    package.json                   # Local deps: jsdom, @mozilla/readability
+    extract_page.py                      # trafilatura + BeautifulSoup page parser
   analysis/
-    analyze-page-structure.mjs     # Module detection, section depth scoring
-    analyze-content-topics.mjs     # TF-IDF proof keywords, entity candidates
-    compute-entity-prominence.mjs  # Code-verified entity counts across pages
-    assemble-briefing-data.mjs     # Consolidate all outputs into briefing-data.json
-    merge-qualitative.mjs          # Merge LLM qualitative output into data skeleton
-    summarize-briefing.mjs         # Token-efficient briefing summary
-    score-draft-wdfidf.mjs         # WDF*IDF scoring for draft quality
+    analyze_page_structure.py            # Module detection, section depth scoring
+    analyze_content_topics.py            # TF-IDF proof keywords, entity candidates
+    compute_entity_prominence.py         # Code-verified entity counts across pages
+    assemble_briefing_data.py            # Consolidate all outputs into briefing-data.json
+    fill_qualitative.py                  # LLM qualitative field fill
+    merge_qualitative.py                 # Merge LLM qualitative output into data skeleton
+    assemble_briefing_md.py              # LLM final briefing markdown assembly
+    summarize_briefing.py                # Token-efficient briefing summary
+    score_draft_wdfidf.py                # WDF*IDF scoring for draft quality
+    extract_claims.py                    # Deterministic claim extraction from draft
+    fact_check.py                        # LLM + WebSearch claim verification
+    tov_check.py                         # Tone-of-voice compliance audit
+  drafting/
+    write_draft.py                       # LLM article draft generation
+  llm/
+    client.py                            # LLM provider client (via litellm)
+    config.py                            # LLMConfig (provider, model, keys)
+    prompts/                             # Prompt templates
+  models/
+    analysis.py, common.py, keywords.py, # Pydantic models for structured I/O
+    llm_responses.py, page.py, serp.py
+  utils/
+    resolve_location.py                  # Market code -> DataForSEO location code
+    slugify.py                           # URL-safe slug generator (ö->oe, ä->ae, ü->ue, ß->ss)
+    tokenizer.py                         # Deterministic tokenization + stopword filtering
+    text.py, math.py                     # Shared helpers
+    load_api_config.py                   # api.env credential loader
+    preflight.py                         # Pre-run environment validation
+  data/
+    location_codes.json                  # ISO -> numeric location mapping (15 markets)
+    stopwords.json                       # German + English stopword lists
+    idf_de.json                          # IDF reference corpus (Leipzig Wikipedia 1M)
+    blocklist_default.json               # Default keyword blocklist
+  api/                                   # FastAPI surface (hosted pipeline, WIP)
 
-scripts/
-  build-idf-table.mjs             # One-time IDF table builder from Wikipedia corpus
-  clean-output.mjs                 # Delete old output directories
-
-test/
-  scripts/
-    *.test.mjs                     # 25 test files, 552 tests (node --test)
+tests/                                   # pytest test suite
+  test_serp/, test_keywords/, test_analysis/, test_extractor/,
+  test_utils/, test_llm/, test_drafting/, test_models/
+  fixtures/                              # Test input fixtures
+  golden/                                # Golden snapshot outputs
 
 .claude/
-  skills/
-    seo-content-pipeline/          # Full pipeline orchestrator
-    seo-keyword-research/          # Keyword research skill
-    competitor-analysis/           # Competitor analysis skill
-    content-strategy/              # Content strategy skill
-    content-briefing/              # Content briefing skill
-    content-draft/                 # Article draft skill
+  skills/                                # Claude Code skill definitions
+    seo-content-pipeline/                # Full pipeline orchestrator
+    seo-keyword-research/                # Keyword research skill
+    competitor-analysis/                 # Competitor analysis skill
+    content-strategy/                    # Content strategy skill
+    content-briefing/                    # Content briefing skill
+    content-draft/                       # Article draft skill
+    content-revision/                    # SME-driven revision skill
+    fact-check/                          # Fact-check skill
+    tov-check/                           # ToV audit skill
 
 templates/
-  template-reisemagazin.md         # Travel magazine article template
-  template-urlaubsseite.md         # Transactional destination page template
-  DT_ToV_v3.md                     # Brand tone of voice (v3, AI-native)
-  DT_ToV_v2.md                     # Brand tone of voice (v2)
-  DT_ToneOfVoice.md               # Brand tone of voice (v1)
+  template-reisemagazin.md               # Travel magazine article template
+  template-urlaubsseite.md               # Transactional destination page template
+  template-themenseite.md                # Topic page template
+  DT_ToV_v3.md                           # Brand tone of voice (v3, AI-native)
+  DT_ToV_v2.md                           # Brand tone of voice (v2)
+  DT_ToneOfVoice.md                      # Brand tone of voice (v1)
 
-output/                            # Generated pipeline runs (gitignored)
-api.env.example                    # API configuration template
-package.json                       # Project config + test runner
+output/                                  # Generated pipeline runs (gitignored)
+api.env.example                          # API configuration template
+pyproject.toml                           # Project config + dependencies
+uv.lock                                  # Locked dependency versions
 ```
 
 ## Testing
 
-25 test files, 552 passing tests, 0 failures. Zero external test dependencies -- uses Node.js built-in `node --test`.
-
 ```bash
-npm test
+uv run pytest
 ```
 
-Every deterministic script has byte-identity tests: given the same input JSON, the script produces the exact same output, byte for byte. Tests include an end-to-end integration test that validates the full pipeline flow with fixture data.
+Uses `pytest` with `pytest-asyncio`. Every deterministic module has byte-identity tests: given the same input JSON, the module produces the exact same output. Golden snapshot tests under `tests/golden/` verify end-to-end pipeline behavior against frozen fixture data.
 
 ## Design Decisions
 
-**Determinism first.** The LLM should guess, infer, and interpret as little as possible. Data extraction is handled by deterministic scripts that produce byte-identical output for the same input. The LLM's role is constrained to qualitative analysis only, operating on a pre-built data skeleton with null placeholders.
+**Determinism first.** The LLM should guess, infer, and interpret as little as possible. Data extraction is handled by deterministic modules that produce byte-identical output for the same input. The LLM's role is constrained to qualitative analysis only, operating on a pre-built data skeleton with null placeholders.
 
 **Tag, don't delete.** Filtered keywords are tagged with `filter_status` and `filter_reason` rather than removed. This preserves a full audit trail and lets downstream steps make informed decisions.
 
-**Null placeholder strategy.** All qualitative fields are explicitly set to `null` in the data skeleton. The LLM's job is to fill those nulls -- nothing else. This makes it trivial to verify that deterministic data was not modified.
+**Null placeholder strategy.** All qualitative fields are explicitly set to `null` in the data skeleton. The LLM's job is to fill those nulls — nothing else. This makes it trivial to verify that deterministic data was not modified.
 
-**Stable sorting everywhere.** All array sorts use stable comparison functions with tiebreakers (typically alphabetical on keyword string). This guarantees byte-identical output across runs and Node.js versions.
+**Stable sorting everywhere.** All array sorts use stable comparison functions with tiebreakers (typically alphabetical on keyword string). This guarantees byte-identical output across runs and Python versions.
 
 **Year normalization.** Keywords containing year references (e.g. "thailand urlaub 2025") are normalized to the current year to prevent stale data from skewing cluster formation.
 
-**JSON in, JSON out via stdout.** Every script reads JSON from files/flags and writes JSON to stdout. This enables Unix-style piping and makes each script independently testable.
-
-**Local extractor dependencies.** jsdom and @mozilla/readability are installed in `src/extractor/` with their own `package.json`, keeping the core pipeline lightweight.
+**Structured I/O everywhere.** Every module reads and writes Pydantic-validated structures, serialized to JSON at module boundaries. This makes each stage independently testable and pipeable.
 
 **IDF-boosted term scoring.** Content topic analysis uses a production IDF table (Leipzig Wikipedia 1M corpus) to boost topic-specific terms and downweight common language patterns.
 
@@ -457,7 +546,7 @@ Every deterministic script has byte-identity tests: given the same input JSON, t
 
 ## Supported Markets
 
-The pipeline supports 16 markets via `src/utils/location-codes.json`:
+The pipeline supports 15 markets via `seo_pipeline/data/location_codes.json`:
 
 | Code | Market | Code | Market |
 |------|--------|------|--------|
@@ -474,7 +563,7 @@ The pipeline supports 16 markets via `src/utils/location-codes.json`:
 
 ### HTTP 403 from DataForSEO
 
-**Symptom:** `API error 403: ...` from `fetch-serp.mjs` or `fetch-keywords.mjs`
+**Symptom:** `API error 403: ...` from `fetch-serp` or `fetch-keywords`
 
 **Cause:** Invalid credentials, expired account, or exceeded API quota
 
@@ -490,21 +579,9 @@ curl -s -o /dev/null -w "%{http_code}" -X POST \
 
 Check your account status at https://app.dataforseo.com/
 
-### Missing extractor dependencies
-
-**Symptom:** `Error: Cannot find module 'jsdom'` or `MODULE_NOT_FOUND` from `extract-page.mjs`
-
-**Cause:** `src/extractor/node_modules` does not exist -- dependencies are installed separately from root
-
-**Fix:**
-
-```bash
-cd src/extractor && npm install && cd ../..
-```
-
 ### ENOTDIR / output directory errors
 
-**Symptom:** `ENOTDIR: not a directory` or `ENOENT: no such file or directory` during pipeline run
+**Symptom:** `FileNotFoundError: No such file or directory` or similar during pipeline run
 
 **Cause:** A file exists where a directory is expected, or the output path structure is wrong
 
@@ -522,28 +599,36 @@ cd src/extractor && npm install && cd ../..
 echo -n 'login:password' | base64
 ```
 
-The `-n` flag is critical -- without it, a newline gets encoded into the credentials.
+The `-n` flag is critical — without it, a newline gets encoded into the credentials.
 
 ### Stale SERP cache
 
 **Symptom:** Pipeline returns old SERP data even after the search landscape changed
 
-**Cause:** `fetch-serp.mjs` caches results in `serp-raw.json` and reuses them by default
+**Cause:** `fetch-serp` caches results in `serp-raw.json` and reuses them by default
 
-**Fix:** Re-run with `--force` flag to bypass the cache:
-
-```bash
-node src/serp/fetch-serp.mjs "keyword" --market de --language de --force
-```
-
-### Node.js version too old
-
-**Symptom:** Syntax errors on `import` statements or `AbortSignal.timeout is not a function`
-
-**Cause:** Node.js < 18 does not support ESM, `AbortSignal.timeout()`, or the built-in test runner
-
-**Fix:** Upgrade to Node.js 18 or later. Check with:
+**Fix:** Re-run with `--force` to bypass the cache:
 
 ```bash
-node --version
+uv run seo-pipeline fetch-serp "keyword" --market de --language de --outdir <dir> --force
 ```
+
+### Python version too old
+
+**Symptom:** Syntax errors on type annotations or `ImportError` on standard library features
+
+**Cause:** Python < 3.11 is not supported (see `pyproject.toml` `requires-python`)
+
+**Fix:** Upgrade to Python 3.11+. `uv` will select a compatible interpreter automatically when running `uv sync`. Check with:
+
+```bash
+uv run python --version
+```
+
+### LLM provider not configured
+
+**Symptom:** `ValueError: LLM_PROVIDER not set` when running Phase 2 stages
+
+**Cause:** `api.env` is missing LLM configuration, or the environment variables were not loaded
+
+**Fix:** Set `LLM_PROVIDER`, `LLM_MODEL`, and `LLM_API_KEY` in `api.env`. Supported providers: `anthropic`, `openai`, `google` (routed via `litellm`).

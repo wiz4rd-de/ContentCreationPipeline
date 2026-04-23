@@ -7,10 +7,10 @@ import pytest
 
 from seo_pipeline.keywords.merge_keywords import merge_keywords
 
-# Load fixtures from the Node.js test fixtures directory
+# Load fixtures from the shared test fixtures directory
 FIXTURES_DIR = (
     Path(__file__).parent.parent.parent
-    / "test"
+    / "tests"
     / "fixtures"
     / "keyword-expansion"
 )

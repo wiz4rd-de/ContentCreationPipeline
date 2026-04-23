@@ -443,7 +443,7 @@ class TestErrorHandling:
         """Test that error fixture matches expected shape."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "extract-page"
             / "page-error.json"

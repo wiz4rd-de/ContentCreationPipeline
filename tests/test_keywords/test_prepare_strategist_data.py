@@ -430,7 +430,7 @@ class TestPrepareStrategistData:
         """Return path to test fixtures."""
         return (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "prepare-strategist-data"
         )

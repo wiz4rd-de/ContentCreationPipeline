@@ -142,7 +142,7 @@ class TestExtractKeywords:
         """Test extraction from related_keywords response shape."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "related-raw.json"
@@ -163,7 +163,7 @@ class TestExtractKeywords:
         """Test extraction from keyword_suggestions response shape."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "suggestions-raw.json"
@@ -183,7 +183,7 @@ class TestExtractKeywords:
         """Test extraction from keywords_for_keywords response shape."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "kfk-raw.json"
@@ -232,7 +232,7 @@ class TestExtractKeywords:
         """Test extraction with include_difficulty=True."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "suggestions-raw-flat.json"
@@ -371,7 +371,7 @@ class TestExtractKeywords:
         """Test extraction from empty fixture."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "related-empty.json"
@@ -386,7 +386,7 @@ class TestExtractKeywords:
         """Test extraction from suggestions empty fixture."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "suggestions-empty.json"
@@ -401,7 +401,7 @@ class TestExtractKeywords:
         """Test handling of malformed responses."""
         fixture_path = (
             Path(__file__).parent.parent.parent
-            / "test"
+            / "tests"
             / "fixtures"
             / "keyword-expansion"
             / "malformed-response.json"
