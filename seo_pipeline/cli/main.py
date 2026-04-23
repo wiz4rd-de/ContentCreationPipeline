@@ -787,288 +787,37 @@ def run_pipeline(
     ),
 ) -> None:
     """Run the full SEO content pipeline end-to-end for a keyword."""
-    import os
-    from datetime import datetime, timezone
-
-    from seo_pipeline.utils.slugify import slugify
-
-    slug = slugify(keyword)
-    date_str = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
-    out_dir = output_dir or Path("output") / f"{date_str}_{slug}"
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    pages_dir = out_dir / "pages"
-    pages_dir.mkdir(exist_ok=True)
-
-    # Set LLM env vars if provided
-    if llm_provider:
-        os.environ["LLM_PROVIDER"] = llm_provider
-    if llm_model:
-        os.environ["LLM_MODEL"] = llm_model
-
-    _log = lambda msg: typer.echo(msg, err=True)  # noqa: E731
-
-    # --- Stage 1: Fetch SERP ---
-    from seo_pipeline.serp.fetch_serp import fetch_serp as _fetch_serp
-
-    if not skip_fetch:
-        _log("Stage 1/11: Fetching SERP data...")
-        asyncio.run(
-            _fetch_serp(
-                keyword, location, language,
-                outdir=str(out_dir),
-            )
-        )
-    else:
-        _log("Stage 1/11: Skipping SERP fetch (cached)...")
-        serp_raw_path = out_dir / "serp-raw.json"
-        if not serp_raw_path.exists():
-            typer.echo(f"Error: cached serp-raw.json not found at {serp_raw_path}",
-                       err=True)
-            raise typer.Exit(code=1)
-
-    # --- Stage 2: Process SERP ---
-    from seo_pipeline.serp.process_serp import process_serp as _process_serp
-
-    _log("Stage 2/11: Processing SERP data...")
-    serp_raw_path = out_dir / "serp-raw.json"
-    serp_raw = json.loads(serp_raw_path.read_text(encoding="utf-8"))
-    serp_processed = _process_serp(serp_raw, top_n=10)
-    serp_processed_path = out_dir / "serp-processed.json"
-    serp_processed_path.write_text(
-        json.dumps(serp_processed, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
+    from seo_pipeline.orchestrator import (
+        PipelineConfig,
+        StageEvent,
+        run_pipeline_core,
     )
 
-    # --- Stage 3: Extract pages ---
-    from seo_pipeline.extractor.extract_page import extract_page as _extract_page
-
-    competitors = serp_processed.get("competitors", [])
-    _log(f"Stage 3/11: Extracting {len(competitors)} competitor pages...")
-    for comp in competitors:
-        comp_url = comp.get("url")
-        if not comp_url:
-            continue
-        domain = comp.get("domain", "unknown")
-        page_path = pages_dir / f"{domain}.json"
-        if skip_fetch and page_path.exists():
-            continue
-        page_data = _extract_page(comp_url)
-        page_path.write_text(
-            json.dumps(page_data, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-
-    # --- Stage 4: Fetch & process keywords ---
-    from seo_pipeline.keywords.fetch_keywords import (
-        fetch_keywords as _fetch_keywords,
-    )
-
-    if not skip_fetch:
-        _log("Stage 4/11: Fetching keywords...")
-        env_path = str(Path(__file__).resolve().parent.parent.parent / "api.env")
-        asyncio.run(
-            _fetch_keywords(
-                keyword, market=location, language=language,
-                outdir=str(out_dir), env_path=env_path,
-            )
-        )
-    else:
-        _log("Stage 4/11: Skipping keyword fetch (cached)...")
-
-    # --- Stage 5: Process keywords ---
-    from seo_pipeline.keywords.process_keywords import (
-        process_keywords as _process_keywords,
-    )
-
-    _log("Stage 5/11: Processing keywords...")
-    related_path = out_dir / "keywords-related-raw.json"
-    suggestions_path = out_dir / "keywords-suggestions-raw.json"
-    kfk_path = out_dir / "keywords-for-keywords-raw.json"
-    if related_path.exists() and suggestions_path.exists():
-        related_raw = json.loads(related_path.read_text(encoding="utf-8"))
-        suggestions_raw = json.loads(suggestions_path.read_text(encoding="utf-8"))
-        kfk_raw = (
-            json.loads(kfk_path.read_text(encoding="utf-8"))
-            if kfk_path.exists()
-            else None
-        )
-        kw_processed = _process_keywords(
-            related_raw, suggestions_raw, keyword, kfk_raw=kfk_raw,
-        )
-        kw_processed_path = out_dir / "keywords-processed.json"
-        kw_processed_path.write_text(
-            json.dumps(kw_processed, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-    else:
-        _log("Warning: keyword files not found, skipping processing")
-        kw_processed = {"clusters": []}
-
-    # --- Stage 6: Filter keywords ---
-    from seo_pipeline.keywords.filter_keywords import (
-        filter_keywords as _filter_keywords,
-    )
-
-    _log("Stage 6/11: Filtering keywords...")
-    kw_filtered = _filter_keywords(kw_processed, serp_processed, keyword)
-    kw_filtered_path = out_dir / "keywords-filtered.json"
-    kw_filtered_path.write_text(
-        json.dumps(kw_filtered, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    # --- Stage 7: Analysis ---
-    from seo_pipeline.analysis.analyze_content_topics import (
-        analyze_content_topics as _analyze_content_topics,
-    )
-    from seo_pipeline.analysis.analyze_page_structure import (
-        analyze_page_structure as _analyze_page_structure,
-    )
-
-    _log("Stage 7/11: Running content analysis...")
-    topics = _analyze_content_topics(pages_dir, keyword, language=language)
-    topics_path = out_dir / "content-topics.json"
-    topics_path.write_text(
-        json.dumps(topics.model_dump(), indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    structure = _analyze_page_structure(pages_dir)
-    structure_path = out_dir / "page-structure.json"
-    structure_path.write_text(
-        json.dumps(structure.model_dump(), indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    # --- Stage 8: Assemble briefing data ---
-    from seo_pipeline.analysis.assemble_briefing_data import (
-        _normalize_tree,
-    )  # noqa: I001
-    from seo_pipeline.analysis.assemble_briefing_data import (
-        assemble_briefing_data as _assemble_briefing_data,
-    )
-
-    _log("Stage 8/11: Assembling briefing data...")
-    briefing = _assemble_briefing_data(
-        out_dir, market=location, language=language,
+    config = PipelineConfig(
+        keyword=keyword, location=location, language=language,
+        output_dir=output_dir, skip_fetch=skip_fetch,
+        llm_provider=llm_provider, llm_model=llm_model,
+        tov=tov, template=template,
         user_domain=user_domain, business_context=business_context,
     )
-    briefing_dict = _normalize_tree(briefing)
-    briefing_path = out_dir / "briefing-data.json"
-    briefing_path.write_text(
-        json.dumps(briefing_dict, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
 
-    # --- Stage 9: Summarize briefing ---
-    from seo_pipeline.analysis.summarize_briefing import (
-        summarize_briefing as _summarize_briefing,
-    )
+    def _echo(event: StageEvent) -> None:
+        # Preserve byte-identical pre-refactor stderr: emit
+        # "Stage N/11: <message>" only on stage start, and suppress
+        # the synthetic Stage 11 start that orchestrator emits when
+        # the LLM chain did not run (payload["skipped_no_llm"]=True).
+        if event.status != "start":
+            return
+        if event.payload.get("skipped_no_llm"):
+            return
+        typer.echo(
+            f"Stage {event.stage_index}/{event.stage_total}: {event.message}",
+            err=True,
+        )
 
-    _log("Stage 9/11: Summarizing briefing...")
-    summary = _summarize_briefing(str(briefing_path))
-    _log(summary)
-
-    # --- Stage 10: LLM stages (qualitative + briefing md + draft) ---
-    _log(
-        "Stage 10/11: LLM stages "
-        "(fill-qualitative, assemble-briefing-md, write-draft)..."
-    )
-
-    import importlib.util
-
-    from seo_pipeline.llm.config import LLMConfig
-
+    _log = lambda msg: typer.echo(msg, err=True)  # noqa: E731
     try:
-        LLMConfig.from_env()
-        if importlib.util.find_spec("litellm") is None:
-            raise ImportError("litellm is not installed")
-        llm_configured = True
-    except (ValueError, ImportError):
-        llm_configured = False
-
-    if llm_configured:
-        from seo_pipeline.analysis.assemble_briefing_md import (
-            assemble_briefing_md as _assemble_briefing_md,
-        )
-        from seo_pipeline.analysis.fill_qualitative import (
-            fill_qualitative as _fill_qualitative,
-        )
-        from seo_pipeline.analysis.merge_qualitative import (
-            merge_qualitative as _merge_qualitative,
-        )
-        from seo_pipeline.drafting.write_draft import write_draft as _write_draft
-
-        _fill_qualitative(str(out_dir))
-        _assemble_briefing_md(
-            str(out_dir),
-            template_path=str(template) if template else None,
-            tov_path=str(tov) if tov else None,
-        )
-        brief_path = out_dir / f"brief-{slug}.md"
-        _write_draft(
-            str(brief_path),
-            tov_path=str(tov) if tov else None,
-        )
-
-        # --- Stage 11: Fact-check draft ---
-        _log("Stage 11/11: Fact-checking draft...")
-        from seo_pipeline.analysis.fact_check import (
-            fact_check as _fact_check,
-        )
-        from seo_pipeline.utils.load_api_config import (
-            load_env as _load_env,
-        )
-
-        env_path_str = str(
-            Path(__file__).resolve().parent.parent.parent / "api.env"
-        )
-        try:
-            api_cfg = _load_env(env_path_str)
-            draft_path = out_dir / f"draft-{slug}.md"
-            if draft_path.exists():
-                _fact_check(
-                    str(draft_path),
-                    str(out_dir),
-                    LLMConfig.from_env(),
-                    api_cfg,
-                )
-            else:
-                _log(
-                    "  Warning: draft not found, "
-                    "skipping fact-check"
-                )
-        except Exception as exc:
-            _log(
-                f"  Warning: fact-check failed ({exc}), "
-                "continuing..."
-            )
-
-        # Emit a sibling .docx from the (potentially fact-check-modified)
-        # draft markdown. Runs whether fact-check succeeded or failed —
-        # we want a docx of whatever state the .md ends up in. Any docx
-        # failure is logged and swallowed so the pipeline never breaks.
-        _emit_draft_docx(out_dir / f"draft-{slug}.md")
-    else:
-        _log("  LLM not configured — run these stages manually:")
-        tov_flag = f" --tov {tov}" if tov else ""
-        template_flag = f" --template {template}" if template else ""
-        ud_flag = f" --user-domain {user_domain}" if user_domain else ""
-        bc_flag = f" --business-context '{business_context}'" if business_context else ""
-        _log(f"  uv run seo-pipeline fill-qualitative --dir {out_dir}")
-        _log(f"  uv run seo-pipeline merge-qualitative --dir {out_dir}")
-        _log(
-            f"  uv run seo-pipeline assemble-briefing-md"
-            f" --dir {out_dir}{template_flag}{tov_flag}{ud_flag}{bc_flag}"
-        )
-        _log(
-            f"  uv run seo-pipeline write-draft"
-            f" --brief {out_dir}/brief-{slug}.md{tov_flag}"
-        )
-        _log(
-            f"  uv run seo-pipeline fact-check"
-            f" --draft {out_dir}/draft-{slug}.md"
-        )
-
-    _log(f"\nPipeline complete. Output directory: {out_dir}")
+        run_pipeline_core(config, on_event=_echo, on_log=_log)
+    except FileNotFoundError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
