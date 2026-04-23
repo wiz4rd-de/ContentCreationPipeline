@@ -37,15 +37,13 @@ Produce a complete article in markdown following these guidelines:
 - Write the meta description from the brief or improve it
 - Suggest image alt texts where images are recommended
 
+**Tone of Voice (PRIORITY):**
+If a ToV file is loaded (Step 1.2), it is the authoritative style guide. When any other instruction contradicts the ToV, the ToV wins. Pay special attention to Constraint-Gruppe A (A1-A7: critical frequency patterns), Constraint-Gruppe B (B1-B8: brand and legal rules), and Constraint-Gruppe C (formatting rules).
+
 **Quality:**
+- Follow the Tone of Voice guidelines provided — they override any generic quality rules
 - Write in the target language natively — no translation artifacts
-- Match the tone and brand voice specified in the brief
-- Use short paragraphs (3-4 sentences max) for readability
-- Vary sentence length and structure for a natural flow
 - Include concrete examples, data points, or expert quotes where the brief suggests them
-- Avoid filler phrases, generic statements, and unnecessary superlatives
-- Write a compelling introduction that hooks the reader and addresses the search intent
-- End with a clear conclusion and the CTA(s) from the brief
 
 **Formatting:**
 - Use markdown formatting: headers, bold, lists, blockquotes where appropriate
@@ -95,6 +93,24 @@ Before saving, review the draft against the brief's SEO checklist:
 - [ ] Meta info table present below document title with all required fields
 - [ ] Title Tag and Meta Description in table match SEO guidelines
 - [ ] No unverified facts stated as definitive (mark uncertain claims with `> **[VERIFY]** ...`)
+
+**ToV-Compliance self-review:**
+- [ ] No "fuer jeden etwas zu bieten" or similar hedging phrases (A1)
+- [ ] No unqualified superlatives -- only with "einer der", "gilt als", "zaehlt zu" (A2)
+- [ ] No tricolon lists as stylistic device "Sonne, Strand und Meer" (A3)
+- [ ] No imperative cascades "Entdecke... Erlebe... Geniesse..." (A4)
+- [ ] No pseudo-personal promises "Du wirst es lieben" (A5)
+- [ ] No vague quality claims "erstklassige Hotels", "traumhafte Straende" (A6)
+- [ ] No monotonous sentence structure across consecutive sentences (A7)
+- [ ] DERTOUR always uppercase, no hyphen in brand combinations (B1)
+- [ ] No "Sterne" for hotels -- use "Kategorie" or "Rauten" (B2)
+- [ ] "kostenfrei" instead of "kostenlos"/"gratis" (B3)
+- [ ] No competitor names (B5)
+- [ ] No animal attractions in unnatural environments (B6)
+- [ ] No guarantees or performance promises "garantiert", "perfekt" (B8)
+- [ ] Numbers < 12 spelled out, >= 12 as digits; units spelled out; abbreviations spelled out (C)
+- [ ] No sentence exceeds 40 words (Schicht 2.2)
+- [ ] Paragraph openings vary -- no two consecutive paragraphs with same opening strategy (Schicht 2.3)
 
 If any item fails, fix it before proceeding.
 

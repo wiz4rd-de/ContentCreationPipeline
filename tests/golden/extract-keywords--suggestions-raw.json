@@ -3,34 +3,24 @@
     "keyword": "keyword recherche tool",
     "search_volume": 400,
     "cpc": 2,
-    "monthly_searches": [],
     "difficulty": null
   },
   {
     "keyword": "Keyword Analyse",
     "search_volume": 900,
     "cpc": 1.9,
-    "monthly_searches": [
-      {
-        "year": 2025,
-        "month": 1,
-        "search_volume": 880
-      }
-    ],
     "difficulty": null
   },
   {
     "keyword": "keyword recherche kostenlos",
     "search_volume": 350,
     "cpc": 0.5,
-    "monthly_searches": [],
     "difficulty": null
   },
   {
     "keyword": "seo keyword recherche",
     "search_volume": 500,
     "cpc": 2.3,
-    "monthly_searches": [],
     "difficulty": null
   }
 ]

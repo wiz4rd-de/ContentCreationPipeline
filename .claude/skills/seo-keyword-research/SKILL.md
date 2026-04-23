@@ -35,13 +35,13 @@ All steps in this phase are deterministic scripts. No LLM inference.
 #### 1a. Resolve location code
 
 ```sh
-node src/utils/resolve-location.mjs "$SEO_MARKET"
+uv run python -m seo_pipeline.utils.resolve_location "$SEO_MARKET"
 ```
 
 #### 1b. Expand keywords (related + suggestions)
 
 ```sh
-node src/keywords/fetch-keywords.mjs "<SEED_KEYWORD>" \
+uv run seo-pipeline fetch-keywords "<SEED_KEYWORD>" \
   --market "$SEO_MARKET" --language "$SEO_LANGUAGE" --outdir "$OUTDIR" --limit 50
 ```
 
@@ -53,7 +53,7 @@ Produces:
 #### 1c. Process keywords into structured skeleton
 
 ```sh
-node src/keywords/process-keywords.mjs \
+uv run seo-pipeline process-keywords \
   --related "$OUTDIR/keywords-related-raw.json" \
   --suggestions "$OUTDIR/keywords-suggestions-raw.json" \
   --seed "<SEED_KEYWORD>" \
@@ -84,7 +84,7 @@ Write the final results to:
 output/YYYY-MM-DD_<SEED_KEYWORD_SLUG>/keywords-<SEED_KEYWORD_SLUG>.json
 ```
 
-JSON schema (output of `process-keywords.mjs`):
+JSON schema (output of `seo-pipeline process-keywords`):
 ```json
 {
   "seed_keyword": "...",

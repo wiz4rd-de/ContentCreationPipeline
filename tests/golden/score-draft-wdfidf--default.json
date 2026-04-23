@@ -1,0 +1,1846 @@
+{
+  "meta": {
+    "draft": "tests/fixtures/score-draft-wdfidf/draft.txt",
+    "pages_dir": "tests/fixtures/score-draft-wdfidf/pages",
+    "language": "de",
+    "threshold": 0.1,
+    "competitor_count": 2,
+    "idf_source": "reference"
+  },
+  "terms": [
+    {
+      "term": "spass",
+      "draft_wdfidf": 3.746245,
+      "competitor_avg_wdfidf": 0,
+      "delta": 3.746245,
+      "signal": "decrease"
+    },
+    {
+      "term": "proviant",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 2.585756,
+      "delta": -2.585756,
+      "signal": "increase"
+    },
+    {
+      "term": "natur",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.70235,
+      "delta": -1.70235,
+      "signal": "increase"
+    },
+    {
+      "term": "gute",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.667063,
+      "delta": -1.667063,
+      "signal": "increase"
+    },
+    {
+      "term": "vergessen",
+      "draft_wdfidf": 2.463174,
+      "competitor_avg_wdfidf": 0.996839,
+      "delta": 1.466335,
+      "signal": "decrease"
+    },
+    {
+      "term": "markiert",
+      "draft_wdfidf": 2.454026,
+      "competitor_avg_wdfidf": 0.993137,
+      "delta": 1.460889,
+      "signal": "decrease"
+    },
+    {
+      "term": "herrlich",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.448123,
+      "delta": -1.448123,
+      "signal": "increase"
+    },
+    {
+      "term": "aussichten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.257802,
+      "delta": -1.257802,
+      "signal": "increase"
+    },
+    {
+      "term": "locken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.202547,
+      "delta": -1.202547,
+      "signal": "increase"
+    },
+    {
+      "term": "gesund",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.185094,
+      "delta": -1.185094,
+      "signal": "increase"
+    },
+    {
+      "term": "erholung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.182348,
+      "delta": -1.182348,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderer",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.157099,
+      "delta": -1.157099,
+      "signal": "increase"
+    },
+    {
+      "term": "beliebte",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.101362,
+      "delta": -1.101362,
+      "signal": "increase"
+    },
+    {
+      "term": "freude",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.038425,
+      "delta": -1.038425,
+      "signal": "increase"
+    },
+    {
+      "term": "alpen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.033775,
+      "delta": -1.033775,
+      "signal": "increase"
+    },
+    {
+      "term": "alltag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.032539,
+      "delta": -1.032539,
+      "signal": "increase"
+    },
+    {
+      "term": "erleben",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.031709,
+      "delta": -1.031709,
+      "signal": "increase"
+    },
+    {
+      "term": "unbedingt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 1.022496,
+      "delta": -1.022496,
+      "signal": "increase"
+    },
+    {
+      "term": "wiesen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.986648,
+      "delta": -0.986648,
+      "signal": "increase"
+    },
+    {
+      "term": "gesundheit",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.944578,
+      "delta": -0.944578,
+      "signal": "increase"
+    },
+    {
+      "term": "geist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.937776,
+      "delta": -0.937776,
+      "signal": "increase"
+    },
+    {
+      "term": "bieten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.884654,
+      "delta": -0.884654,
+      "signal": "increase"
+    },
+    {
+      "term": "notwendig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.865799,
+      "delta": -0.865799,
+      "signal": "increase"
+    },
+    {
+      "term": "bietet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.791037,
+      "delta": -0.791037,
+      "signal": "increase"
+    },
+    {
+      "term": "tag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.735313,
+      "delta": -0.735313,
+      "signal": "increase"
+    },
+    {
+      "term": "wasser",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.71926,
+      "delta": -0.71926,
+      "signal": "increase"
+    },
+    {
+      "term": "menschen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.626103,
+      "delta": -0.626103,
+      "signal": "increase"
+    },
+    {
+      "term": "frische",
+      "draft_wdfidf": 2.855903,
+      "competitor_avg_wdfidf": 2.345034,
+      "delta": 0.510869,
+      "signal": "decrease"
+    },
+    {
+      "term": "wandern",
+      "draft_wdfidf": 4.302939,
+      "competitor_avg_wdfidf": 4.812129,
+      "delta": -0.50919,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderwege",
+      "draft_wdfidf": 2.736978,
+      "competitor_avg_wdfidf": 2.247382,
+      "delta": 0.489596,
+      "signal": "decrease"
+    },
+    {
+      "term": "schuhe",
+      "draft_wdfidf": 2.73017,
+      "competitor_avg_wdfidf": 2.241792,
+      "delta": 0.488378,
+      "signal": "decrease"
+    },
+    {
+      "term": "berge",
+      "draft_wdfidf": 2.439772,
+      "competitor_avg_wdfidf": 2.003341,
+      "delta": 0.436431,
+      "signal": "decrease"
+    },
+    {
+      "term": "bergen",
+      "draft_wdfidf": 2.395946,
+      "competitor_avg_wdfidf": 1.967355,
+      "delta": 0.428591,
+      "signal": "decrease"
+    },
+    {
+      "term": "wichtig",
+      "draft_wdfidf": 2.229579,
+      "competitor_avg_wdfidf": 1.830747,
+      "delta": 0.398832,
+      "signal": "decrease"
+    },
+    {
+      "term": "luft",
+      "draft_wdfidf": 2.16384,
+      "competitor_avg_wdfidf": 1.776768,
+      "delta": 0.387072,
+      "signal": "decrease"
+    },
+    {
+      "term": "ausruestung nicht",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "ausruestung nicht vergessen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "beim wandern ausruestung",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "berge sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "berge sind wunderschoen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "bergen macht",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "bergen macht spass",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "den bergen macht",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "die berge sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "frische luft tut",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "gut markiert frische",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "luft tut",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "luft tut gut",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "macht spass",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "macht spass die",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "markiert frische",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "markiert frische luft",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "nicht vergessen wanderwege",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "schuhe sind wichtig",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "sind wichtig",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "sind wichtig beim",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "sind wunderschoen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "sind wunderschoen schuhe",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "spass die",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "spass die berge",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "vergessen wanderwege",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "vergessen wanderwege sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wandern ausruestung",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wandern ausruestung nicht",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wandern in den",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wunderschoen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wunderschoen schuhe",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "wunderschoen schuhe sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0,
+      "delta": 0.337195,
+      "signal": "decrease"
+    },
+    {
+      "term": "gute schuhe",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": -0.276877,
+      "signal": "increase"
+    },
+    {
+      "term": "gute schuhe sind",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": -0.276877,
+      "signal": "increase"
+    },
+    {
+      "term": "schoene",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": -0.276877,
+      "signal": "increase"
+    },
+    {
+      "term": "gut markiert",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "nicht vergessen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "sind gut markiert",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "wanderwege sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "wanderwege sind gut",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "wichtig beim",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "wichtig beim wandern",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": 0.200733,
+      "signal": "decrease"
+    },
+    {
+      "term": "wandern in",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": 0.19678,
+      "signal": "decrease"
+    },
+    {
+      "term": "alltag die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "alltag die frische",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "an schoene",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "an schoene wanderwege",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ausruestung sollte",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ausruestung sollte gut",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "beim wandern wichtig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "berge locken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "berge locken viele",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "bergen ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "bergen ist herrlich",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "bietet erholung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "bietet erholung vom",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "den bergen ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "den tag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "den tag einpacken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "der natur",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "der natur ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "die berge locken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "die frische",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "die frische luft",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "durch waelder",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "durch waelder und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "einpacken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "entspannend",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "entspannend und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "entspannend und gesund",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "erholung vom",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "erholung vom alltag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "frische luft in",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "fuehren",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "fuehren durch",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "fuehren durch waelder",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "fuer den tag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gesund die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gesund die berge",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gewaehlt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gewaehlt werden",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gewaehlt werden proviant",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gut gewaehlt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "gut gewaehlt werden",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "herrlich ausruestung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "herrlich ausruestung sollte",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "in der natur",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ist entspannend",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ist entspannend und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ist herrlich",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "ist herrlich ausruestung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "locken viele",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "locken viele wanderer",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "luft in",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "luft in den",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "natur ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "natur ist entspannend",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "proviant fuer",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "proviant fuer den",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "schoene wanderwege",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "schoene wanderwege fuehren",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "schuhe sind beim",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "sind beim wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "sollte gut gewaehlt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "tag einpacken",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "und gesund",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "und gesund die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "und wiesen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "und wiesen gute",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "viele wanderer",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "viele wanderer an",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "vom alltag",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "vom alltag die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "waelder",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "waelder und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "waelder und wiesen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderer an",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderer an schoene",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern bietet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern bietet erholung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern in der",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern wichtig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern wichtig wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderwege fuehren",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wanderwege fuehren durch",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "werden proviant",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "werden proviant fuer",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wichtig wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wichtig wandern bietet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wiesen gute",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "wiesen gute schuhe",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.140415,
+      "delta": -0.140415,
+      "signal": "increase"
+    },
+    {
+      "term": "alpen die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "alpen die berge",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ausruestung ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ausruestung ist wichtig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "aussichten und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "aussichten und frische",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "beim wandern gute",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "beliebte freizeitaktivitaet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "beliebte freizeitaktivitaet in",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "berge bieten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "berge bieten schoene",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "bergen viele",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "bergen viele menschen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "bieten schoene",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "bieten schoene aussichten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "den alpen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "den alpen die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "den bergen viele",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "den geist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "den geist die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "die berge bieten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "die gesundheit",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "die gesundheit und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "die natur",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "die natur erleben",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "eine beliebte",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "eine beliebte freizeitaktivitaet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "erleben macht",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "erleben macht freude",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "freizeitaktivitaet",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "freizeitaktivitaet in",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "freizeitaktivitaet in den",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "frische luft wanderwege",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "geist die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "geist die natur",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "gesundheit und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "gesundheit und den",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "gut markiert und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "in den alpen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ist eine beliebte",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ist wichtig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ist wichtig beim",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "luft wanderwege",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "luft wanderwege sind",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "macht freude",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "markiert und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "markiert und sicher",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "menschen wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "menschen wandern gerne",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "natur erleben",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "natur erleben macht",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "nicht vergessen wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "notwendig wasser",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "notwendig wasser und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "proviant nicht",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "proviant nicht vergessen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "schoene aussichten",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "schoene aussichten und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "schuhe sind unbedingt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "sicher ausruestung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "sicher ausruestung ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "sind unbedingt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "sind unbedingt notwendig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "staerkt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "staerkt die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "staerkt die gesundheit",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "unbedingt notwendig",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "unbedingt notwendig wasser",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und den geist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und frische",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und frische luft",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und proviant",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und proviant nicht",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "und sicher ausruestung",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "vergessen wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "vergessen wandern staerkt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "viele menschen",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "viele menschen wandern",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern gerne",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern gerne in",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern gute",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern gute schuhe",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern ist",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern ist eine",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern staerkt",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wandern staerkt die",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wasser und",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "wasser und proviant",
+      "draft_wdfidf": 0,
+      "competitor_avg_wdfidf": 0.136462,
+      "delta": -0.136462,
+      "signal": "increase"
+    },
+    {
+      "term": "ausruestung",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "beim wandern",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "den bergen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "die berge",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "frische luft",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "in den bergen",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    },
+    {
+      "term": "schuhe sind",
+      "draft_wdfidf": 0.337195,
+      "competitor_avg_wdfidf": 0.276877,
+      "delta": 0.060318,
+      "signal": "ok"
+    }
+  ]
+}
