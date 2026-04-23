@@ -14,7 +14,6 @@ class Keyword(PipelineBaseModel):
         keyword: The keyword text.
         search_volume: Monthly search volume (optional).
         cpc: Cost per click for ads (optional).
-        monthly_searches: List of monthly search volume data (optional).
         difficulty: Keyword difficulty score 0-100 (optional).
         intent: Search intent type (optional).
         opportunity_score: Calculated opportunity score (optional).
@@ -26,7 +25,6 @@ class Keyword(PipelineBaseModel):
     keyword: str
     search_volume: int | None = Field(default=None)
     cpc: float | None = Field(default=None)
-    monthly_searches: list[dict[str, Any]] | None = Field(default=None)
     difficulty: int | None = Field(default=None)
     intent: str | None = Field(default=None)
     opportunity_score: float | None = Field(default=None)

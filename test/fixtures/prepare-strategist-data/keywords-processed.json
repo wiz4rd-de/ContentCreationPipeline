@@ -13,7 +13,6 @@
           "keyword": "seo reporting",
           "search_volume": 590,
           "cpc": 5.83,
-          "monthly_searches": null,
           "difficulty": 40,
           "intent": null,
           "opportunity_score": 14.39
@@ -22,7 +21,6 @@
           "keyword": "seo reporting 2025",
           "search_volume": 200,
           "cpc": 3.0,
-          "monthly_searches": null,
           "difficulty": 30,
           "intent": null,
           "opportunity_score": 6.45
@@ -31,7 +29,6 @@
           "keyword": "seo reporting 2026",
           "search_volume": 150,
           "cpc": 2.5,
-          "monthly_searches": null,
           "difficulty": 25,
           "intent": null,
           "opportunity_score": 5.77
@@ -40,7 +37,6 @@
           "keyword": "SEO Reporting",
           "search_volume": 590,
           "cpc": 5.83,
-          "monthly_searches": null,
           "difficulty": 40,
           "intent": null,
           "opportunity_score": 14.39
@@ -58,16 +54,14 @@
           "keyword": "seo report erstellen",
           "search_volume": 320,
           "cpc": 4.0,
-          "monthly_searches": null,
           "difficulty": 35,
           "intent": "informational",
           "opportunity_score": 8.89
         },
         {
-          "keyword": "\u0441\u0435\u043e \u0440\u0435\u043f\u043e\u0440\u0442\u0438\u043d\u0433",
+          "keyword": "сео репортинг",
           "search_volume": 100,
           "cpc": 1.0,
-          "monthly_searches": null,
           "difficulty": 10,
           "intent": null,
           "opportunity_score": 9.09
@@ -85,16 +79,14 @@
           "keyword": "seo kpi dashboard",
           "search_volume": 450,
           "cpc": 6.0,
-          "monthly_searches": null,
           "difficulty": 50,
           "intent": null,
           "opportunity_score": 8.82
         },
         {
-          "keyword": "\u5e7f\u544a\u5206\u6790",
+          "keyword": "广告分析",
           "search_volume": 80,
           "cpc": 0.5,
-          "monthly_searches": null,
           "difficulty": 5,
           "intent": null,
           "opportunity_score": 13.33

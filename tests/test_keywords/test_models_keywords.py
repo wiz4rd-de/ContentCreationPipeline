@@ -67,15 +67,6 @@ class TestKeyword:
         assert kw.filter_status == "removed"
         assert kw.filter_reason == "ethics"
 
-    def test_keyword_monthly_searches(self):
-        """Test keyword with monthly search data."""
-        monthly_data = [
-            {"year": 2025, "month": 1, "search_volume": 1100},
-            {"year": 2025, "month": 2, "search_volume": 1300},
-        ]
-        kw = Keyword(keyword="test", monthly_searches=monthly_data)
-        assert kw.monthly_searches == monthly_data
-
     def test_keyword_serialization(self):
         """Test keyword serialization to JSON."""
         kw = Keyword(

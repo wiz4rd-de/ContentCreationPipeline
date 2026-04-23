@@ -79,7 +79,6 @@ class TestNormalizeItem:
         # info should be the item itself (flat keys)
         assert result["info"]["search_volume"] == 210
         assert result["info"]["cpc"] == 1.07
-        assert result["info"]["monthly_searches"][0]["search_volume"] == 170
         # No keyword_properties in KFK
         assert result["props"] == {}
 
@@ -156,7 +155,7 @@ class TestExtractKeywords:
         assert all("keyword" in r for r in results)
         assert all("search_volume" in r for r in results)
         assert all("cpc" in r for r in results)
-        assert all("monthly_searches" in r for r in results)
+        assert all("monthly_searches" not in r for r in results)
         # Should not have difficulty when include_difficulty=False
         assert all("difficulty" not in r for r in results)
 
@@ -177,7 +176,7 @@ class TestExtractKeywords:
         assert all("keyword" in r for r in results)
         assert all("search_volume" in r for r in results)
         assert all("cpc" in r for r in results)
-        assert all("monthly_searches" in r for r in results)
+        assert all("monthly_searches" not in r for r in results)
         assert all("difficulty" not in r for r in results)
 
     def test_extract_from_kfk_fixture(self):
@@ -197,7 +196,7 @@ class TestExtractKeywords:
         assert all("keyword" in r for r in results)
         assert all("search_volume" in r for r in results)
         assert all("cpc" in r for r in results)
-        assert all("monthly_searches" in r for r in results)
+        assert all("monthly_searches" not in r for r in results)
         # Check specific values
         assert results[0]["keyword"] == "sintra pena palace"
         assert results[0]["search_volume"] == 210
