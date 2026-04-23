@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from seo_pipeline.analysis.assemble_briefing_data import (
+    PIPELINE_VERSION,
     _build_cluster_ranking,
     _build_entity_candidates,
     _build_serp_features,
@@ -377,7 +378,7 @@ class TestAssembleBriefingData:
         assert result["meta"]["seed_keyword"] == "test keyword"
         assert result["meta"]["date"] == "2026-03-09"
         assert result["meta"]["current_year"] == 2026
-        assert result["meta"]["pipeline_version"] == "0.2.0"
+        assert result["meta"]["pipeline_version"] == PIPELINE_VERSION
         assert result["meta"]["phase1_completed_at"] == GOLDEN_TIMESTAMP
 
     def test_stats(self):

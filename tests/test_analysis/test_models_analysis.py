@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from seo_pipeline.analysis.assemble_briefing_data import PIPELINE_VERSION
 from seo_pipeline.models import (
     BriefingCompetitor,
     BriefingData,
@@ -450,7 +451,7 @@ class TestBriefingData:
         assert model.meta.seed_keyword == "test keyword"
         assert model.meta.date == "2026-03-09"
         assert model.meta.current_year == 2026
-        assert model.meta.pipeline_version == "0.2.0"
+        assert model.meta.pipeline_version == PIPELINE_VERSION
         assert model.meta.market is None
         assert model.meta.phase1_completed_at == "2026-01-01T00:00:00.000Z"
         assert model.meta.data_sources.location_code == 2276

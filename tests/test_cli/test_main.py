@@ -45,9 +45,11 @@ def test_help_returns_zero():
 
 
 def test_version_returns_zero():
+    from seo_pipeline import __version__
+
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in _plain(result.output)
+    assert __version__ in _plain(result.output)
 
 
 # ---------------------------------------------------------------------------

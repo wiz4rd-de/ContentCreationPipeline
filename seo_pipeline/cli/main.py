@@ -24,7 +24,9 @@ app = typer.Typer(
 
 def _version_callback(value: bool) -> None:
     if value:
-        typer.echo("seo-pipeline 0.1.0")
+        from seo_pipeline import __version__
+
+        typer.echo(f"seo-pipeline {__version__}")
         raise typer.Exit()
 
 
