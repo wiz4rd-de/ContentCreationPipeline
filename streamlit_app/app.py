@@ -50,7 +50,6 @@ _STUB_PAGES = [
     ("pipeline/analysis", "05 Analysis", "Competitor analysis stage."),
     ("pipeline/briefing", "06 Briefing", "Content briefing stage."),
     ("pipeline/draft", "07 Draft", "Drafting stage."),
-    ("pipeline/past_runs", "08 Past Runs", "Browse past pipeline runs."),
 ]
 
 
@@ -80,8 +79,13 @@ def _build_pages(gate_open: bool) -> dict[str, list]:
         )
         for url_path, title, description in _STUB_PAGES
     ]
+    past_runs_page = st.Page(
+        "pages/08_past_runs.py",
+        title="08 Past Runs",
+        url_path="pipeline/past_runs",
+    )
     return {
-        "Pipeline": [run_pipeline_page, *stub_pages],
+        "Pipeline": [run_pipeline_page, *stub_pages, past_runs_page],
         "Setup": [settings_page],
     }
 
