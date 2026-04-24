@@ -44,7 +44,6 @@ def _placeholder(title: str, description: str) -> Callable[[], None]:
 
 
 _STUB_PAGES = [
-    ("pipeline/run", "01 Run Pipeline", "End-to-end pipeline run with live progress."),
     ("pipeline/keywords", "02 Keywords", "Keyword research stage."),
     ("pipeline/serp", "03 SERP", "SERP fetching stage."),
     ("pipeline/extract", "04 Extract", "Content extraction stage."),
@@ -66,17 +65,23 @@ def _build_pages(gate_open: bool) -> dict[str, list]:
     if not gate_open:
         return {"Setup": [settings_page]}
 
-    pipeline_pages = [
+    run_pipeline_page = st.Page(
+        "pages/01_run_pipeline.py",
+        title="01 Run Pipeline",
+        url_path="pipeline/run",
+        default=True,
+    )
+
+    stub_pages = [
         st.Page(
             _placeholder(title, description),
             title=title,
             url_path=url_path,
-            default=(idx == 0),
         )
-        for idx, (url_path, title, description) in enumerate(_STUB_PAGES)
+        for url_path, title, description in _STUB_PAGES
     ]
     return {
-        "Pipeline": pipeline_pages,
+        "Pipeline": [run_pipeline_page, *stub_pages],
         "Setup": [settings_page],
     }
 
