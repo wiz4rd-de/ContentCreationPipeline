@@ -25,6 +25,7 @@ dev = ["pytest>=8.0", "pytest-asyncio", "ruff"]
 anthropic = ["anthropic>=0.25"]
 openai = ["openai>=1.30"]
 google = ["google-generativeai>=0.5"]
+ui = ["streamlit>=1.36", "watchdog"]
 
 [project.scripts]
 seo-pipeline = "seo_pipeline.cli.main:app"
