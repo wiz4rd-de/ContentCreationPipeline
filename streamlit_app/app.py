@@ -6,13 +6,12 @@ Launch with::
 
 Renders navigation via :func:`st.navigation`. When required credentials are
 missing from ``api.env``, only the Settings page is shown; otherwise the full
-nav is available. Concrete stage pages (01–08) are still stubs — they will be
-filled in by subsequent Phase 2/3 tickets (#199 and later).
+nav is available: Run Pipeline (end-to-end), individual stage pages
+02–07 (keyword research, competitor analysis, briefing, draft, fact-check,
+ToV check), and the Past Runs browser.
 """
 
 from __future__ import annotations
-
-from typing import Callable
 
 import streamlit as st
 
@@ -35,25 +34,6 @@ _current_env = load_api_env()
 apply_to_process_env(_current_env)
 
 
-def _placeholder(title: str, description: str) -> Callable[[], None]:
-    def render() -> None:
-        st.title(title)
-        st.info(f"{description}\n\nComing soon.")
-
-    return render
-
-
-_STUB_PAGES = [
-    ("pipeline/keywords", "02 Keywords", "Keyword research stage."),
-    ("pipeline/serp", "03 SERP", "SERP fetching stage."),
-    ("pipeline/extract", "04 Extract", "Content extraction stage."),
-    ("pipeline/analysis", "05 Analysis", "Competitor analysis stage."),
-    ("pipeline/briefing", "06 Briefing", "Content briefing stage."),
-    ("pipeline/draft", "07 Draft", "Drafting stage."),
-    ("pipeline/past_runs", "08 Past Runs", "Browse past pipeline runs."),
-]
-
-
 def _build_pages(gate_open: bool) -> dict[str, list]:
     settings_page = st.Page(
         "pages/99_settings.py",
@@ -71,17 +51,52 @@ def _build_pages(gate_open: bool) -> dict[str, list]:
         url_path="pipeline/run",
         default=True,
     )
-
-    stub_pages = [
-        st.Page(
-            _placeholder(title, description),
-            title=title,
-            url_path=url_path,
-        )
-        for url_path, title, description in _STUB_PAGES
-    ]
+    keyword_research_page = st.Page(
+        "pages/02_keyword_research.py",
+        title="02 Keyword Research",
+        url_path="pipeline/keywords",
+    )
+    competitor_analysis_page = st.Page(
+        "pages/03_competitor_analysis.py",
+        title="03 Competitor Analysis",
+        url_path="pipeline/competitors",
+    )
+    briefing_page = st.Page(
+        "pages/04_briefing.py",
+        title="04 Briefing",
+        url_path="pipeline/briefing",
+    )
+    draft_page = st.Page(
+        "pages/05_draft.py",
+        title="05 Draft",
+        url_path="pipeline/draft",
+    )
+    fact_check_page = st.Page(
+        "pages/06_fact_check.py",
+        title="06 Fact Check",
+        url_path="pipeline/fact_check",
+    )
+    tov_check_page = st.Page(
+        "pages/07_tov_check.py",
+        title="07 ToV Check",
+        url_path="pipeline/tov_check",
+    )
+    past_runs_page = st.Page(
+        "pages/08_past_runs.py",
+        title="08 Past Runs",
+        url_path="pipeline/past_runs",
+    )
     return {
-        "Pipeline": [run_pipeline_page, *stub_pages],
+        "Pipeline": [
+            run_pipeline_page,
+            keyword_research_page,
+            competitor_analysis_page,
+            briefing_page,
+            draft_page,
+            fact_check_page,
+            tov_check_page,
+            past_runs_page,
+        ],
         "Setup": [settings_page],
     }
 
